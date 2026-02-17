@@ -16,6 +16,9 @@ const selectors = {
              * In client-managed Sense, the object ID is embedded in a CSS class
              * on the .qv-object element, e.g. `.qv-object-APdJrgp`.
              * NOTE: There is NO `data-id` attribute on .qv-object elements.
+             *
+             * @param {string} objectId - The Qlik object ID.
+             * @returns {string} CSS selector string.
              */
             objectById: (objectId) => `.qv-object-${objectId}`,
 
@@ -42,6 +45,9 @@ const selectors = {
             /**
              * Cloud uses data-testid attributes more extensively.
              * Falls back to class-based selector if data-testid is absent.
+             *
+             * @param {string} objectId - The Qlik object ID.
+             * @returns {string} CSS selector string.
              */
             objectById: (objectId) => `[data-testid="object-${objectId}"], .qv-object-${objectId}`,
 
@@ -63,7 +69,7 @@ const selectors = {
  *
  * @param {string} platform - 'client-managed' or 'cloud'
  * @param {string} [version] - Specific Sense version string (e.g. '14.254.6')
- * @returns {Object} Selector functions/strings for the given platform.
+ * @returns {object} Selector functions/strings for the given platform.
  */
 export function getSelectors(platform, version) {
     const platformSelectors = selectors[platform];

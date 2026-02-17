@@ -10,6 +10,7 @@ import { getSelectors } from './selectors';
 
 /**
  * Get the current sheet ID from URL, Qlik API, or DOM.
+ *
  * @returns {string|null} The sheet ID or null.
  */
 export function getCurrentSheetId() {
@@ -39,9 +40,10 @@ export function getCurrentSheetId() {
         const selectors = getSelectors('client-managed');
         const sheetEl = document.querySelector(selectors.sheetContainer);
         if (sheetEl) {
-            const domId = sheetEl.getAttribute('data-id')
-                || sheetEl.getAttribute('data-qid')
-                || sheetEl.getAttribute('id')?.replace('qv-sheet-', '');
+            const domId =
+                sheetEl.getAttribute('data-id') ||
+                sheetEl.getAttribute('data-qid') ||
+                sheetEl.getAttribute('id')?.replace('qv-sheet-', '');
             if (domId && domId.length > 5) {
                 logger.debug('Sheet ID via DOM:', domId);
                 return domId;
@@ -56,14 +58,20 @@ export function getCurrentSheetId() {
 /**
  * Get the list of objects on the current sheet.
  *
- * @param {Object} app - Enigma app object from useApp().
+ * @param {object} app - Enigma app object from useApp().
  * @returns {Promise<Array<{id: string, title: string, type: string}>>} Sheet objects.
  */
 export async function getSheetObjects(app) {
     const excludeTypes = [
-        'sheet', 'story', 'appprops', 'loadmodel',
-        'dimension', 'measure', 'masterobject',
-        'qix-system-dimension', 'onboard-qs',
+        'sheet',
+        'story',
+        'appprops',
+        'loadmodel',
+        'dimension',
+        'measure',
+        'masterobject',
+        'qix-system-dimension',
+        'onboard-qs',
     ];
 
     try {
@@ -91,10 +99,7 @@ export async function getSheetObjects(app) {
         }
 
         const objects = infos
-            .filter((info) =>
-                !excludeTypes.includes(info.qType) &&
-                !info.qType.includes('system')
-            )
+            .filter((info) => !excludeTypes.includes(info.qType) && !info.qType.includes('system'))
             .map((info) => ({
                 id: info.qId,
                 title: info.qTitle || info.qId,
@@ -146,7 +151,7 @@ export function getObjectSelector(objectId, version) {
 /**
  * Detect whether we are in edit mode or analysis mode.
  *
- * @param {Object} options - Options from useOptions().
+ * @param {object} options - Options from useOptions().
  * @returns {boolean} True if in edit mode.
  */
 export function isEditMode(options) {

@@ -16,12 +16,12 @@ let currentHighlight = null;
 /**
  * Open the tour editor modal.
  *
- * @param {Object} params
- * @param {Object} params.layout - Current extension layout.
- * @param {Object} params.model - Enigma model from useModel().
- * @param {Object} params.app - Enigma app from useApp().
+ * @param {object} params - Configuration parameters for the tour editor.
+ * @param {object} params.layout - Current extension layout.
+ * @param {object} params.model - Enigma model from useModel().
+ * @param {object} params.app - Enigma app from useApp().
  * @param {Array<{id: string, title: string, type: string}>} params.sheetObjects - Available objects.
- * @param {Function} [params.onClose] - Called when modal is closed.
+ * @param {() => void} [params.onClose] - Called when modal is closed.
  */
 export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose }) {
     // Prevent multiple modals
@@ -52,7 +52,12 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
     function render() {
         const body = overlay.querySelector('.onboard-qs-editor__body');
         if (body) {
-            body.outerHTML = buildEditorInnerHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex);
+            body.outerHTML = buildEditorInnerHTML(
+                tours,
+                sheetObjects,
+                selectedTourIndex,
+                selectedStepIndex
+            );
             attachInnerListeners();
         }
     }
@@ -221,7 +226,9 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
             objectSelect.addEventListener('change', (e) => {
                 step.targetObjectId = e.target.value;
                 // Update step list to show new target name
-                const stepItem = overlay.querySelector(`.onboard-qs-editor__step-item[data-step-index="${selectedStepIndex}"]`);
+                const stepItem = overlay.querySelector(
+                    `.onboard-qs-editor__step-item[data-step-index="${selectedStepIndex}"]`
+                );
                 if (stepItem) {
                     const obj = sheetObjects.find((o) => o.id === step.targetObjectId);
                     const nameEl = stepItem.querySelector('.onboard-qs-editor__step-name');
@@ -287,32 +294,43 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
             nameInput.addEventListener('input', (e) => {
                 tour.tourName = e.target.value;
                 // Update tour list name
-                const tourItem = overlay.querySelector(`.onboard-qs-editor__tour-item[data-tour-index="${selectedTourIndex}"]`);
+                const tourItem = overlay.querySelector(
+                    `.onboard-qs-editor__tour-item[data-tour-index="${selectedTourIndex}"]`
+                );
                 if (tourItem) {
                     const nameEl = tourItem.querySelector('.onboard-qs-editor__tour-item-name');
-                    if (nameEl) nameEl.textContent = e.target.value || `Tour ${selectedTourIndex + 1}`;
+                    if (nameEl)
+                        nameEl.textContent = e.target.value || `Tour ${selectedTourIndex + 1}`;
                 }
             });
         }
 
         const autoStartCheck = overlay.querySelector('.onboard-qs-editor__tour-autostart');
         if (autoStartCheck) {
-            autoStartCheck.addEventListener('change', (e) => { tour.autoStart = e.target.checked; });
+            autoStartCheck.addEventListener('change', (e) => {
+                tour.autoStart = e.target.checked;
+            });
         }
 
         const showOnceCheck = overlay.querySelector('.onboard-qs-editor__tour-showonce');
         if (showOnceCheck) {
-            showOnceCheck.addEventListener('change', (e) => { tour.showOnce = e.target.checked; });
+            showOnceCheck.addEventListener('change', (e) => {
+                tour.showOnce = e.target.checked;
+            });
         }
 
         const progressCheck = overlay.querySelector('.onboard-qs-editor__tour-progress');
         if (progressCheck) {
-            progressCheck.addEventListener('change', (e) => { tour.showProgress = e.target.checked; });
+            progressCheck.addEventListener('change', (e) => {
+                tour.showProgress = e.target.checked;
+            });
         }
 
         const keyboardCheck = overlay.querySelector('.onboard-qs-editor__tour-keyboard');
         if (keyboardCheck) {
-            keyboardCheck.addEventListener('change', (e) => { tour.allowKeyboard = e.target.checked; });
+            keyboardCheck.addEventListener('change', (e) => {
+                tour.allowKeyboard = e.target.checked;
+            });
         }
     }
 
@@ -329,6 +347,11 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
     });
 
     // Close on ESC
+    /**
+     * Handle ESC key to close the editor.
+     *
+     * @param {KeyboardEvent} e - The keyboard event.
+     */
     const escHandler = (e) => {
         if (e.key === 'Escape') {
             closeEditor();
@@ -339,6 +362,9 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
     // Attach initial inner listeners
     attachInnerListeners();
 
+    /**
+     * Close the editor modal and clean up resources.
+     */
     function closeEditor() {
         if (currentHighlight) {
             destroyTour(currentHighlight);
@@ -353,8 +379,8 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
 /**
  * Save tour configuration back to the Qlik model.
  *
- * @param {Object} model - Enigma model.
- * @param {Object} layout - Current layout.
+ * @param {object} model - Enigma model.
+ * @param {object} layout - Current layout.
  * @param {Array} tours - Modified tours array.
  */
 async function saveToModel(model, layout, tours) {
@@ -370,6 +396,12 @@ async function saveToModel(model, layout, tours) {
 
 /**
  * Build the complete editor HTML.
+ *
+ * @param {Array} tours - Array of tour configuration objects.
+ * @param {Array<{id: string, title: string, type: string}>} sheetObjects - Available sheet objects.
+ * @param {number} selectedTourIndex - Index of the currently selected tour.
+ * @param {number} selectedStepIndex - Index of the currently selected step.
+ * @returns {string} HTML string for the editor.
  */
 function buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex) {
     return `
@@ -388,11 +420,17 @@ function buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepInd
 
 /**
  * Build the inner content (panels) — called on re-render.
+ *
+ * @param {Array} tours - Array of tour configuration objects.
+ * @param {Array<{id: string, title: string, type: string}>} sheetObjects - Available sheet objects.
+ * @param {number} selectedTourIndex - Index of the currently selected tour.
+ * @param {number} selectedStepIndex - Index of the currently selected step.
+ * @returns {string} HTML string for the inner panels.
  */
 function buildEditorInnerHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex) {
     const selectedTour = selectedTourIndex >= 0 ? tours[selectedTourIndex] : null;
-    const selectedStep = selectedTour && selectedStepIndex >= 0
-        ? selectedTour.steps[selectedStepIndex] : null;
+    const selectedStep =
+        selectedTour && selectedStepIndex >= 0 ? selectedTour.steps[selectedStepIndex] : null;
 
     return `
         <div class="onboard-qs-editor__body">
@@ -405,16 +443,24 @@ function buildEditorInnerHTML(tours, sheetObjects, selectedTourIndex, selectedSt
 
 /**
  * Build the tour list panel (left).
+ *
+ * @param {Array} tours - Array of tour configuration objects.
+ * @param {number} selectedTourIndex - Index of the currently selected tour.
+ * @returns {string} HTML string for the tour list panel.
  */
 function buildTourListPanel(tours, selectedTourIndex) {
-    const tourItems = tours.map((tour, i) => `
+    const tourItems = tours
+        .map(
+            (tour, i) => `
         <div class="onboard-qs-editor__tour-item ${i === selectedTourIndex ? 'onboard-qs-editor__tour-item--selected' : ''}"
              data-tour-index="${i}">
             <span class="onboard-qs-editor__tour-item-name">${escapeHtml(tour.tourName || `Tour ${i + 1}`)}</span>
             <span class="onboard-qs-editor__tour-item-badge">${tour.steps?.length || 0} steps</span>
             <button class="onboard-qs-editor__delete-tour" data-tour-index="${i}" title="Delete tour">&times;</button>
         </div>
-    `).join('');
+    `
+        )
+        .join('');
 
     return `
         <div class="onboard-qs-editor__panel onboard-qs-editor__panel--tours">
@@ -431,6 +477,12 @@ function buildTourListPanel(tours, selectedTourIndex) {
 
 /**
  * Build the step list panel (center).
+ *
+ * @param {object|null} tour - The selected tour object or null.
+ * @param {number} tourIndex - Index of the selected tour.
+ * @param {number} selectedStepIndex - Index of the currently selected step.
+ * @param {Array<{id: string, title: string, type: string}>} sheetObjects - Available sheet objects.
+ * @returns {string} HTML string for the step list panel.
  */
 function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
     if (!tour) {
@@ -445,17 +497,20 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
     }
 
     const steps = tour.steps || [];
-    const stepItems = steps.map((step, i) => {
-        let name;
-        if (step.selectorType === 'css') {
-            name = step.customCssSelector ? `CSS: ${step.customCssSelector}` : '(no selector)';
-        } else {
-            const obj = sheetObjects.find((o) => o.id === step.targetObjectId);
-            name = obj ? obj.title : (step.targetObjectId || '(no target)');
-        }
-        const title = step.popoverTitle ? ` — ${step.popoverTitle}` : '';
+    const stepItems = steps
+        .map((step, i) => {
+            let name;
+            if (step.selectorType === 'none') {
+                name = 'Standalone dialog';
+            } else if (step.selectorType === 'css') {
+                name = step.customCssSelector ? `CSS: ${step.customCssSelector}` : '(no selector)';
+            } else {
+                const obj = sheetObjects.find((o) => o.id === step.targetObjectId);
+                name = obj ? obj.title : step.targetObjectId || '(no target)';
+            }
+            const title = step.popoverTitle ? ` — ${step.popoverTitle}` : '';
 
-        return `
+            return `
             <div class="onboard-qs-editor__step-item ${i === selectedStepIndex ? 'onboard-qs-editor__step-item--selected' : ''}"
                  data-step-index="${i}">
                 <span class="onboard-qs-editor__step-number">${i + 1}</span>
@@ -470,7 +525,8 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
                 </div>
             </div>
         `;
-    }).join('');
+        })
+        .join('');
 
     return `
         <div class="onboard-qs-editor__panel onboard-qs-editor__panel--steps">
@@ -487,6 +543,12 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
 
 /**
  * Build the detail/editing panel (right).
+ *
+ * @param {object|null} tour - The selected tour object or null.
+ * @param {object|null} step - The selected step object or null.
+ * @param {number} stepIndex - Index of the selected step.
+ * @param {Array<{id: string, title: string, type: string}>} sheetObjects - Available sheet objects.
+ * @returns {string} HTML string for the detail panel.
  */
 function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
     if (!tour) {
@@ -533,11 +595,15 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
 
     if (step && stepIndex >= 0) {
         const selectorType = step.selectorType || 'object';
-        const objectOptions = sheetObjects.map((obj) => `
+        const objectOptions = sheetObjects
+            .map(
+                (obj) => `
             <option value="${escapeAttr(obj.id)}" ${obj.id === step.targetObjectId ? 'selected' : ''}>
                 ${escapeHtml(obj.title)} (${escapeHtml(obj.type)})
             </option>
-        `).join('');
+        `
+            )
+            .join('');
 
         html += `
                 <div class="onboard-qs-editor__section">
@@ -547,16 +613,17 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-selector-type">
                             <option value="object" ${selectorType === 'object' ? 'selected' : ''}>Sheet Object</option>
                             <option value="css" ${selectorType === 'css' ? 'selected' : ''}>Custom CSS Selector</option>
+                            <option value="none" ${selectorType === 'none' ? 'selected' : ''}>Standalone Dialog (no target)</option>
                         </select>
                     </label>
-                    <label class="onboard-qs-editor__field" style="${selectorType === 'css' ? 'display:none' : ''}">
+                    <label class="onboard-qs-editor__field" style="${selectorType !== 'object' ? 'display:none' : ''}">
                         <span>Target Object</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-object">
                             <option value="">-- Select an object --</option>
                             ${objectOptions}
                         </select>
                     </label>
-                    <label class="onboard-qs-editor__field" style="${selectorType === 'object' ? 'display:none' : ''}">
+                    <label class="onboard-qs-editor__field" style="${selectorType !== 'css' ? 'display:none' : ''}">
                         <span>CSS Selector</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-css-selector"
                                value="${escapeAttr(step.customCssSelector || '')}"
@@ -619,7 +686,10 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
 }
 
 /**
- * Escape HTML.
+ * Escape HTML entities for safe rendering.
+ *
+ * @param {string} str - Raw string to escape.
+ * @returns {string} HTML-escaped string.
  */
 function escapeHtml(str) {
     if (!str) return '';
@@ -629,9 +699,16 @@ function escapeHtml(str) {
 }
 
 /**
- * Escape for HTML attributes.
+ * Escape string for use in HTML attributes.
+ *
+ * @param {string} str - Raw string to escape.
+ * @returns {string} Attribute-safe escaped string.
  */
 function escapeAttr(str) {
     if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }

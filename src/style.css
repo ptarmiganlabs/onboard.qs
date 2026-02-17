@@ -46,7 +46,9 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
     font-family: inherit;
     line-height: 1.4;
 }
@@ -86,31 +88,21 @@
     cursor: not-allowed;
 }
 
-/* --- Dropdown (multiple tours selector) --- */
+/* --- Floating dropdown menu (appended to body to escape overflow:hidden) --- */
 
-.onboard-qs-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.onboard-qs-dropdown__menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 100;
+.onboard-qs-floating-menu {
+    position: fixed;
+    z-index: 10000;
     min-width: 180px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin-top: 4px;
+    padding: 4px 0;
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.onboard-qs-dropdown__menu--hidden {
-    display: none;
-}
-
-.onboard-qs-dropdown__item {
+.onboard-qs-floating-menu__item {
     display: block;
     width: 100%;
     padding: 8px 14px;
@@ -123,7 +115,7 @@
     font-family: inherit;
 }
 
-.onboard-qs-dropdown__item:hover {
+.onboard-qs-floating-menu__item:hover {
     background: #f0f0f0;
 }
 

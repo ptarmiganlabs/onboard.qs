@@ -27,8 +27,8 @@ import driverCSS from 'driver.js/dist/driver.css';
  * Provides interactive onboarding tours for Qlik Sense apps
  * using driver.js as the tour engine.
  *
- * @param {Object} galaxy - Nebula galaxy object.
- * @returns {Object} Supernova definition.
+ * @param {object} galaxy - Nebula galaxy object.
+ * @returns {object} Supernova definition.
  */
 export default function supernova(galaxy) {
     return {
@@ -58,9 +58,10 @@ export default function supernova(galaxy) {
             }
 
             // Detect edit vs analysis mode
-            const isEditMode = options.readOnly !== undefined
-                ? !options.readOnly
-                : window.location.href.includes('/state/edit');
+            const isEditMode =
+                options.readOnly !== undefined
+                    ? !options.readOnly
+                    : window.location.href.includes('/state/edit');
 
             // Keep layout ref current
             useEffect(() => {
@@ -107,6 +108,9 @@ export default function supernova(galaxy) {
                     // Attach "Edit Tours" button handler
                     const editBtn = element.querySelector('.onboard-qs-edit-tours-btn');
                     if (editBtn) {
+                        /**
+                         * Handle click on "Edit Tours" button to open the tour editor.
+                         */
                         editBtn.addEventListener('click', async () => {
                             const sheetObjects = await getSheetObjects(app);
                             openTourEditor({
@@ -114,6 +118,9 @@ export default function supernova(galaxy) {
                                 model,
                                 app,
                                 sheetObjects,
+                                /**
+                                 * Callback when the tour editor is closed.
+                                 */
                                 onClose: () => {
                                     logger.debug('Tour editor closed');
                                 },
@@ -122,6 +129,10 @@ export default function supernova(galaxy) {
                     }
                 } else {
                     // Analysis mode: render the tour widget
+                    // Clean up previous render's event listeners
+                    if (element._onboardCleanup) {
+                        element._onboardCleanup();
+                    }
                     renderWidget(element, layout, {
                         appId,
                         sheetId,

@@ -12,7 +12,8 @@ import { getSelectors } from './selectors';
 
 /**
  * Get the current sheet ID from the Cloud URL.
- * @returns {string|null}
+ *
+ * @returns {string|null} The sheet ID or null if not found.
  */
 export function getCurrentSheetId() {
     const url = window.location.href;
@@ -31,8 +32,8 @@ export function getCurrentSheetId() {
 /**
  * Get sheet objects — same Engine API, different fallback selectors.
  *
- * @param {Object} app - Enigma app object.
- * @returns {Promise<Array<{id: string, title: string, type: string}>>}
+ * @param {object} app - Enigma app object.
+ * @returns {Promise<Array<{id: string, title: string, type: string}>>} Array of sheet objects with id, title and type.
  */
 export async function getSheetObjects(app) {
     // Cloud uses the same Engine API as client-managed.
@@ -57,8 +58,8 @@ export function getObjectSelector(objectId, version) {
 /**
  * Detect edit mode in Cloud.
  *
- * @param {Object} options - Options from useOptions().
- * @returns {boolean}
+ * @param {object} options - Options from useOptions().
+ * @returns {boolean} True if in edit mode.
  */
 export function isEditMode(options) {
     if (options.readOnly !== undefined) {

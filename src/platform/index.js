@@ -10,7 +10,7 @@ import logger from '../util/logger';
 /**
  * Detect the current platform.
  *
- * @returns {{ type: 'client-managed' | 'cloud', version: string | null }}
+ * @returns {{ type: 'client-managed' | 'cloud', version: string | null }} Platform detection result.
  */
 export function detectPlatform() {
     const url = window.location.href;
@@ -30,7 +30,7 @@ export function detectPlatform() {
 /**
  * Get the platform adapter module.
  *
- * @returns {Promise<Object>} The platform adapter with: getCurrentSheetId, getSheetObjects,
+ * @returns {Promise<object>} The platform adapter with: getCurrentSheetId, getSheetObjects,
  *   getObjectSelector, isEditMode, injectCSS
  */
 export async function getPlatformAdapter() {
@@ -49,12 +49,15 @@ export async function getPlatformAdapter() {
  * Falls back to client-managed if detection fails.
  *
  * @param {string} platformType - 'client-managed' or 'cloud'
- * @returns {Object} Adapter with getObjectSelector function.
+ * @param {string} objectId - The Qlik object identifier.
+ * @param {string} [_version] - Sense version (unused).
+ * @returns {object} Adapter with getObjectSelector function.
  */
 export function getObjectSelectorSync(platformType, objectId, _version) {
     // Use class-based selectors — Qlik objects have .qv-object-{objectId} class
-    const selector = platformType === 'cloud'
-        ? `[data-testid="object-${objectId}"], .qv-object-${objectId}`
-        : `.qv-object-${objectId}`;
+    const selector =
+        platformType === 'cloud'
+            ? `[data-testid="object-${objectId}"], .qv-object-${objectId}`
+            : `.qv-object-${objectId}`;
     return selector;
 }

@@ -12,11 +12,11 @@ const PREFIX = 'onboard-qs';
 /**
  * Build the localStorage key for a tour.
  *
- * @param {string} appId
- * @param {string} sheetId
- * @param {string} tourId
- * @param {number} tourVersion
- * @returns {string}
+ * @param {string} appId - The Qlik app identifier.
+ * @param {string} sheetId - The sheet identifier.
+ * @param {string} tourId - The tour identifier.
+ * @param {number} tourVersion - The tour version number.
+ * @returns {string} The localStorage key.
  */
 function buildKey(appId, sheetId, tourId, tourVersion) {
     return `${PREFIX}:${appId}:${sheetId}:${tourId}:v${tourVersion}`;
@@ -25,11 +25,11 @@ function buildKey(appId, sheetId, tourId, tourVersion) {
 /**
  * Check if the user has already seen a specific tour version.
  *
- * @param {string} appId
- * @param {string} sheetId
- * @param {string} tourId
- * @param {number} tourVersion
- * @returns {boolean}
+ * @param {string} appId - The Qlik app identifier.
+ * @param {string} sheetId - The sheet identifier.
+ * @param {string} tourId - The tour identifier.
+ * @param {number} tourVersion - The tour version number.
+ * @returns {boolean} True if the tour version has been seen.
  */
 export function hasSeenTour(appId, sheetId, tourId, tourVersion) {
     try {
@@ -47,18 +47,21 @@ export function hasSeenTour(appId, sheetId, tourId, tourVersion) {
 /**
  * Mark a tour as seen by the current user.
  *
- * @param {string} appId
- * @param {string} sheetId
- * @param {string} tourId
- * @param {number} tourVersion
+ * @param {string} appId - The Qlik app identifier.
+ * @param {string} sheetId - The sheet identifier.
+ * @param {string} tourId - The tour identifier.
+ * @param {number} tourVersion - The tour version number.
  */
 export function markTourSeen(appId, sheetId, tourId, tourVersion) {
     try {
         const key = buildKey(appId, sheetId, tourId, tourVersion);
-        localStorage.setItem(key, JSON.stringify({
-            timestamp: new Date().toISOString(),
-            version: tourVersion,
-        }));
+        localStorage.setItem(
+            key,
+            JSON.stringify({
+                timestamp: new Date().toISOString(),
+                version: tourVersion,
+            })
+        );
         logger.debug(`markTourSeen(${key})`);
     } catch (e) {
         logger.warn('Could not write to localStorage:', e);
@@ -68,10 +71,10 @@ export function markTourSeen(appId, sheetId, tourId, tourVersion) {
 /**
  * Reset the "seen" flag for a tour (e.g., from property panel button).
  *
- * @param {string} appId
- * @param {string} sheetId
- * @param {string} tourId
- * @param {number} tourVersion
+ * @param {string} appId - The Qlik app identifier.
+ * @param {string} sheetId - The sheet identifier.
+ * @param {string} tourId - The tour identifier.
+ * @param {number} tourVersion - The tour version number.
  */
 export function resetTourSeen(appId, sheetId, tourId, tourVersion) {
     try {

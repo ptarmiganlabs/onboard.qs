@@ -1,6 +1,11 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
+/**
+ * Post-build script that replaces build-time tokens in output files.
+ *
+ * @returns {Promise<void>} Resolves when all tokens are replaced.
+ */
 async function main() {
     const pkg = JSON.parse(await readFile('package.json', 'utf-8'));
     const buildType = process.env.BUILD_TYPE || 'development';

@@ -1,5 +1,6 @@
 /**
  * Simple UUID v4 generator for tour/step IDs.
+ *
  * @returns {string} A UUID v4 string.
  */
 export function generateUUID() {

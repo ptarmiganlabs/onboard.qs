@@ -31,9 +31,7 @@ export function markdownToHtml(md) {
 
     // Escape HTML entities (but preserve already-written HTML tags for power users)
     // We only escape & and angle brackets that are NOT part of existing HTML tags
-    text = text
-        .replace(/&(?!#?\w+;)/g, '&amp;')
-        .replace(/<(?![/a-zA-Z!])/g, '&lt;');
+    text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/<(?![/a-zA-Z!])/g, '&lt;');
 
     // Horizontal rules: --- or *** or ___ on their own line
     text = text.replace(/^(?:[-*_]){3,}\s*$/gm, '<hr>');
@@ -51,28 +49,29 @@ export function markdownToHtml(md) {
 
     // Unordered lists: lines starting with - or *
     text = text.replace(/(?:^[*-]\s+.+\n?)+/gm, (match) => {
-        const items = match.trim().split('\n').map(
-            (line) => `<li>${line.replace(/^[*-]\s+/, '')}</li>`
-        ).join('');
+        const items = match
+            .trim()
+            .split('\n')
+            .map((line) => `<li>${line.replace(/^[*-]\s+/, '')}</li>`)
+            .join('');
         return `<ul>${items}</ul>`;
     });
 
     // Ordered lists: lines starting with digits followed by .
     text = text.replace(/(?:^\d+\.\s+.+\n?)+/gm, (match) => {
-        const items = match.trim().split('\n').map(
-            (line) => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`
-        ).join('');
+        const items = match
+            .trim()
+            .split('\n')
+            .map((line) => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
+            .join('');
         return `<ol>${items}</ol>`;
     });
 
     // Images: ![alt](src "title") — title is optional
-    text = text.replace(
-        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
-        (_, alt, src, title) => {
-            const titleAttr = title ? ` title="${title}"` : '';
-            return `<img src="${src}" alt="${alt}"${titleAttr} style="max-width:100%;height:auto;" />`;
-        }
-    );
+    text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, alt, src, title) => {
+        const titleAttr = title ? ` title="${title}"` : '';
+        return `<img src="${src}" alt="${alt}"${titleAttr} style="max-width:100%;height:auto;" />`;
+    });
 
     // Links: [text](url)
     text = text.replace(

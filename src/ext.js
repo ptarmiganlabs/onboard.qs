@@ -8,27 +8,38 @@ import { PACKAGE_VERSION } from './util/logger';
  *   - Basic tour/step configuration via the Qlik property panel
  *   - Rich editing via the in-extension modal editor (see tour-editor.js)
  *
- * @param {Object} _galaxy - Nebula galaxy object.
- * @returns {Object} Property panel definition.
+ * @param {object} _galaxy - Nebula galaxy object.
+ * @returns {object} Property panel definition.
  */
 export default function ext(_galaxy) {
     /**
      * Get the list of objects on the current sheet for dropdown population.
      *
-     * @param {Object} data - Current data row.
-     * @param {Object} handler - Property handler (contains app, properties).
-     * @returns {Promise<Array<{value: string, label: string}>>}
+     * @param {object} data - Current data row.
+     * @param {object} handler - Property handler (contains app, properties).
+     * @returns {Promise<Array<{value: string, label: string}>>} List of sheet objects for dropdown population.
      */
     const getObjectList = async (data, handler) => {
         const { app } = handler;
         logger.debug('Fetching object list for property panel...');
 
         const excludeTypes = [
-            'sheet', 'story', 'appprops', 'loadmodel',
-            'dimension', 'measure', 'masterobject',
-            'qix-system-dimension', 'onboard-qs',
+            'sheet',
+            'story',
+            'appprops',
+            'loadmodel',
+            'dimension',
+            'measure',
+            'masterobject',
+            'qix-system-dimension',
+            'onboard-qs',
         ];
 
+        /**
+         * Get the current sheet ID from the URL or Qlik navigation API.
+         *
+         * @returns {string|null} The sheet ID or null if not found.
+         */
         const getCurrentSheetId = () => {
             const url = window.location.href;
             const match = url.match(/\/sheet\/([a-zA-Z0-9-]+)/);
@@ -69,9 +80,7 @@ export default function ext(_galaxy) {
 
             const items = infos
                 .filter(
-                    (info) =>
-                        !excludeTypes.includes(info.qType) &&
-                        !info.qType.includes('system')
+                    (info) => !excludeTypes.includes(info.qType) && !info.qType.includes('system')
                 )
                 .map((info) => ({
                     value: info.qId,
@@ -137,6 +146,12 @@ export default function ext(_galaxy) {
                             label: 'Button text',
                             defaultValue: 'Start Tour',
                             expression: 'optional',
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
                             show: (data) => data.widget?.showButton !== false,
                         },
                         buttonStyle: {
@@ -150,6 +165,12 @@ export default function ext(_galaxy) {
                                 { value: 'secondary', label: 'Secondary (gray)' },
                                 { value: 'minimal', label: 'Minimal (outline)' },
                             ],
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
                             show: (data) => data.widget?.showButton !== false,
                         },
                     },
@@ -196,6 +217,12 @@ export default function ext(_galaxy) {
                                         { value: true, label: 'On' },
                                         { value: false, label: 'Off' },
                                     ],
+                                    /**
+                                     * Determine visibility of this property panel item.
+                                     *
+                                     * @param {object} data - Current property data row.
+                                     * @returns {boolean} True if item should be shown.
+                                     */
                                     show: (data) => data.autoStart === true,
                                 },
                                 tourVersion: {
@@ -247,6 +274,10 @@ export default function ext(_galaxy) {
                                             options: [
                                                 { value: 'object', label: 'Sheet Object' },
                                                 { value: 'css', label: 'Custom CSS Selector' },
+                                                {
+                                                    value: 'none',
+                                                    label: 'Standalone Dialog (no target)',
+                                                },
                                             ],
                                         },
                                         targetObjectId: {
@@ -255,7 +286,15 @@ export default function ext(_galaxy) {
                                             label: 'Target object',
                                             component: 'dropdown',
                                             options: getObjectList,
-                                            show: (data) => data.selectorType !== 'css',
+                                            /**
+                                             * Determine visibility of this property panel item.
+                                             *
+                                             * @param {object} data - Current property data row.
+                                             * @returns {boolean} True if item should be shown.
+                                             */
+                                            show: (data) =>
+                                                !data.selectorType ||
+                                                data.selectorType === 'object',
                                         },
                                         customCssSelector: {
                                             ref: 'customCssSelector',
@@ -263,6 +302,12 @@ export default function ext(_galaxy) {
                                             label: 'CSS selector',
                                             defaultValue: '',
                                             expression: 'optional',
+                                            /**
+                                             * Determine visibility of this property panel item.
+                                             *
+                                             * @param {object} data - Current property data row.
+                                             * @returns {boolean} True if item should be shown.
+                                             */
                                             show: (data) => data.selectorType === 'css',
                                         },
                                         popoverTitle: {

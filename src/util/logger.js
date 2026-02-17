@@ -13,6 +13,7 @@ let muteAll = false;
 const logger = {
     /**
      * Sets whether all logging should be suppressed.
+     *
      * @param {boolean} value - True to suppress all logs.
      */
     setMuteAll: (value) => {
@@ -21,7 +22,8 @@ const logger = {
 
     /**
      * Debug level logging - only shown in development builds.
-     * @param {...*} args - Arguments to log.
+     *
+     * @param {...unknown} args - Arguments to log.
      */
     debug: (...args) => {
         if (!muteAll && !IS_PRODUCTION) {
@@ -31,7 +33,8 @@ const logger = {
 
     /**
      * Info level logging - shown in all builds.
-     * @param {...*} args - Arguments to log.
+     *
+     * @param {...unknown} args - Arguments to log.
      */
     info: (...args) => {
         if (!muteAll) {
@@ -41,7 +44,8 @@ const logger = {
 
     /**
      * Warning level logging - always shown.
-     * @param {...*} args - Arguments to log.
+     *
+     * @param {...unknown} args - Arguments to log.
      */
     warn: (...args) => {
         if (!muteAll) {
@@ -51,7 +55,8 @@ const logger = {
 
     /**
      * Error level logging - always shown.
-     * @param {...*} args - Arguments to log.
+     *
+     * @param {...unknown} args - Arguments to log.
      */
     error: (...args) => {
         if (!muteAll) {

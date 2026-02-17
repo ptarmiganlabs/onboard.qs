@@ -2,6 +2,11 @@ import { createWriteStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import archiver from 'archiver';
 
+/**
+ * Create a ZIP archive of the extension for distribution.
+ *
+ * @returns {Promise<void>} Resolves when the archive is finalized.
+ */
 async function main() {
     const pkg = JSON.parse(await readFile('package.json', 'utf-8'));
     const zipName = `${pkg.name}.zip`;
