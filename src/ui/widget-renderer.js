@@ -1,6 +1,7 @@
 import logger from '../util/logger';
 import { runTour } from '../tour/tour-runner';
 import { hasSeenTour } from '../tour/tour-storage';
+import { resolveTheme, applyThemeToElement } from '../theme/resolve';
 
 /**
  * Widget renderer for analysis mode.
@@ -20,10 +21,14 @@ import { hasSeenTour } from '../tour/tour-storage';
  * @param {string} context.sheetId - Sheet ID.
  * @param {string} context.platformType - 'client-managed' or 'cloud'.
  * @param {string} [context.senseVersion] - Sense version.
+ * @param {string} [context.codePath] - Code-path name for selector lookup.
  */
 export function renderWidget(element, layout, context) {
     const tours = layout.tours || [];
     const widgetConfig = layout.widget || {};
+
+    // Resolve and apply theme CSS variables to the widget container
+    const cssVars = resolveTheme(layout);
 
     if (tours.length === 0) {
         element.innerHTML = `
@@ -46,11 +51,14 @@ export function renderWidget(element, layout, context) {
     // Build button UI
     const buttonText = widgetConfig.buttonText || 'Start Tour';
     const buttonStyle = widgetConfig.buttonStyle || 'primary';
+    const hAlign = widgetConfig.horizontalAlign || 'center';
+    const vAlign = widgetConfig.verticalAlign || 'center';
+    const alignClasses = `onboard-qs-widget--h-${hAlign} onboard-qs-widget--v-${vAlign}`;
 
     if (tours.length === 1) {
         // Single tour — simple button
         element.innerHTML = `
-            <div class="onboard-qs-widget">
+            <div class="onboard-qs-widget ${alignClasses}">
                 <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn">
                     ${escapeHtml(buttonText)}
                 </button>
@@ -59,12 +67,18 @@ export function renderWidget(element, layout, context) {
     } else {
         // Multiple tours — button that opens a floating menu
         element.innerHTML = `
-            <div class="onboard-qs-widget">
+            <div class="onboard-qs-widget ${alignClasses}">
                 <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger">
                     ${escapeHtml(buttonText)} &#9662;
                 </button>
             </div>
         `;
+    }
+
+    // Apply theme CSS variables to the widget container
+    const widgetEl = element.querySelector('.onboard-qs-widget');
+    if (widgetEl) {
+        applyThemeToElement(widgetEl, cssVars);
     }
 
     // Remove any stale floating dropdown from previous renders
@@ -145,12 +159,13 @@ function handleAutoStart(tours, layout, context) {
  * Start a specific tour.
  *
  * @param {object} tourConfig - Tour configuration.
- * @param {object} context - Context with platformType, senseVersion, appId, sheetId.
+ * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId.
  */
 function startTour(tourConfig, context) {
     runTour(tourConfig, {
         platformType: context.platformType,
         senseVersion: context.senseVersion,
+        codePath: context.codePath,
         appId: context.appId,
         sheetId: context.sheetId,
     });
@@ -232,13 +247,17 @@ export function renderEditPlaceholder(element, layout) {
         <div class="onboard-qs-widget onboard-qs-widget--edit">
             <div class="onboard-qs-widget__edit-info">
                 <div class="onboard-qs-widget__icon">&#127891;</div>
-                <div class="onboard-qs-widget__title">Onboard QS</div>
+                <div class="onboard-qs-widget__title">Onboard.qs</div>
                 <div class="onboard-qs-widget__stats">
                     ${tourCount} tour${tourCount !== 1 ? 's' : ''} &middot; ${stepCount} step${stepCount !== 1 ? 's' : ''}
                 </div>
                 <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-edit-tours-btn">
                     Edit Tours
                 </button>
+                <div class="onboard-qs-widget__links">
+                    <a href="https://ptarmiganlabs.com" target="_blank" rel="noopener noreferrer">ptarmiganlabs.com</a> &mdash; Qlik Sense tools, blog posts, extensions &amp; consulting
+                    <a href="https://github.com/ptarmiganlabs/onboard.qs" target="_blank" rel="noopener noreferrer">GitHub</a> &mdash; source code, docs &amp; issues
+                </div>
             </div>
         </div>
     `;

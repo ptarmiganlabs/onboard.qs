@@ -1,7 +1,8 @@
 import logger from '../util/logger';
 import { generateUUID } from '../util/uuid';
 import { highlightStep, destroyTour } from '../tour/tour-runner';
-import { detectPlatform } from '../platform/index';
+import { detectPlatformType } from '../platform/index';
+import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
 
 /**
  * Modal tour editor for edit mode.
@@ -34,7 +35,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
     let selectedTourIndex = tours.length > 0 ? 0 : -1;
     let selectedStepIndex = -1;
 
-    const platform = detectPlatform();
+    const platformType = detectPlatformType();
 
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -192,7 +193,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                     destroyTour(currentHighlight);
                     currentHighlight = null;
                 }
-                currentHighlight = highlightStep(step, platform.type);
+                currentHighlight = highlightStep(step, platformType);
                 // Auto-dismiss after 3 seconds
                 setTimeout(() => {
                     if (currentHighlight) {
@@ -346,6 +347,40 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
         closeEditor();
     });
 
+    // Export button
+    overlay.querySelector('.onboard-qs-editor__export')?.addEventListener('click', () => {
+        // Build a synthetic layout from the in-memory tours clone + current layout
+        const exportLayout = {
+            tours,
+            theme: layout.theme || {},
+            widget: layout.widget || {},
+        };
+        exportToursAndTheme(exportLayout);
+    });
+
+    // Import button
+    overlay.querySelector('.onboard-qs-editor__import')?.addEventListener('click', async () => {
+        try {
+            const importData = await importFromFile();
+            showImportDialog(overlay, importData, tours, layout, (mergedTours, mergedTheme) => {
+                tours.length = 0;
+                tours.push(...mergedTours);
+                if (mergedTheme) {
+                    // Store theme to apply on save
+                    layout._importedTheme = mergedTheme;
+                }
+                selectedTourIndex = tours.length > 0 ? 0 : -1;
+                selectedStepIndex = -1;
+                render();
+            });
+        } catch (err) {
+            if (err.message !== 'Import cancelled') {
+                logger.error('Import failed:', err);
+                alert(`Import failed: ${err.message}`);
+            }
+        }
+    });
+
     // Close on ESC
     /**
      * Handle ESC key to close the editor.
@@ -387,6 +422,11 @@ async function saveToModel(model, layout, tours) {
     try {
         const props = await model.getProperties();
         props.tours = tours;
+        // Apply imported theme if present
+        if (layout._importedTheme) {
+            props.theme = { ...props.theme, ...layout._importedTheme };
+            delete layout._importedTheme;
+        }
         await model.setProperties(props);
         logger.info('Tours saved to model');
     } catch (e) {
@@ -407,8 +447,10 @@ function buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepInd
     return `
         <div class="onboard-qs-editor">
             <div class="onboard-qs-editor__header">
-                <h2 class="onboard-qs-editor__header-title">Onboard QS — Tour Editor</h2>
+                <h2 class="onboard-qs-editor__header-title">Onboard.qs — Tour Editor</h2>
                 <div class="onboard-qs-editor__header-actions">
+                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__export" title="Export tours to JSON file">&#128229; Export</button>
+                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__import" title="Import tours from JSON file">&#128228; Import</button>
                     <button class="onboard-qs-btn onboard-qs-btn--primary onboard-qs-editor__save">Save</button>
                     <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-editor__cancel">Cancel</button>
                 </div>
@@ -683,6 +725,80 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
     `;
 
     return html;
+}
+
+/**
+ * Show an import confirmation dialog as a sub-overlay.
+ *
+ * @param {HTMLElement} parentOverlay - The editor overlay element.
+ * @param {object} importData - Validated import data { tours, theme, widget }.
+ * @param {Array} existingTours - Current in-memory tours array.
+ * @param {object} layout - Current layout (for theme reference).
+ * @param {(mergedTours: Array, mergedTheme: object|null) => void} onConfirm - Callback with merged result.
+ */
+function showImportDialog(parentOverlay, importData, existingTours, layout, onConfirm) {
+    const hasTheme = importData.theme && Object.keys(importData.theme).length > 0;
+    const tourCount = importData.tours.length;
+    const tourNames = importData.tours.map((t) => t.tourName).join(', ');
+
+    const dialog = document.createElement('div');
+    dialog.className = 'onboard-qs-import-dialog-overlay';
+    dialog.innerHTML = `
+        <div class="onboard-qs-import-dialog">
+            <h3 class="onboard-qs-import-dialog__title">Import Tours</h3>
+            <div class="onboard-qs-import-dialog__summary">
+                <p>Found <strong>${tourCount}</strong> tour${tourCount !== 1 ? 's' : ''}: ${escapeHtml(tourNames)}</p>
+                ${hasTheme ? '<p>Theme configuration included.</p>' : ''}
+            </div>
+            <div class="onboard-qs-import-dialog__options">
+                <label class="onboard-qs-import-dialog__option">
+                    <input type="radio" name="oqs-import-mode" value="replaceMatching" checked />
+                    <span><strong>Replace matching</strong> — Overwrite tours with the same name, keep the rest</span>
+                </label>
+                <label class="onboard-qs-import-dialog__option">
+                    <input type="radio" name="oqs-import-mode" value="replaceAll" />
+                    <span><strong>Replace all</strong> — Clear existing tours, load imported ones</span>
+                </label>
+                <label class="onboard-qs-import-dialog__option">
+                    <input type="radio" name="oqs-import-mode" value="addToExisting" />
+                    <span><strong>Add to existing</strong> — Append imported tours alongside existing ones</span>
+                </label>
+            </div>
+            ${
+                hasTheme
+                    ? `<label class="onboard-qs-import-dialog__theme-toggle">
+                    <input type="checkbox" class="oqs-import-theme-check" checked />
+                    <span>Also import theme settings</span>
+                </label>`
+                    : ''
+            }
+            <div class="onboard-qs-import-dialog__actions">
+                <button class="onboard-qs-btn onboard-qs-btn--primary onboard-qs-import-dialog__confirm">Import</button>
+                <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-import-dialog__cancel">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    parentOverlay.appendChild(dialog);
+
+    // Prevent clicks from propagating to the editor
+    dialog.addEventListener('click', (e) => e.stopPropagation());
+    dialog.addEventListener('keydown', (e) => e.stopPropagation());
+
+    dialog.querySelector('.onboard-qs-import-dialog__confirm')?.addEventListener('click', () => {
+        const mode = dialog.querySelector('input[name="oqs-import-mode"]:checked')?.value || 'replaceMatching';
+        const importTheme = dialog.querySelector('.oqs-import-theme-check')?.checked ?? false;
+
+        const mergedTours = mergeTours(existingTours, importData.tours, mode);
+        const mergedTheme = importTheme && importData.theme ? importData.theme : null;
+
+        dialog.remove();
+        onConfirm(mergedTours, mergedTheme);
+    });
+
+    dialog.querySelector('.onboard-qs-import-dialog__cancel')?.addEventListener('click', () => {
+        dialog.remove();
+    });
 }
 
 /**

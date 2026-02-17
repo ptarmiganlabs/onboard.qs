@@ -1,4 +1,4 @@
-# Onboard QS
+# Onboard.qs
 
 Interactive onboarding tours for Qlik Sense apps, powered by a Qlik Sense extension.  
 Works with both Qlik Sense Cloud and Qlik Sense Enterprise on Windows (client-managed).
@@ -42,7 +42,7 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 
 1. Open the **Qlik Management Console (QMC)** → Extensions.
 2. Click **Import**, select `onboard-qs.zip`.
-3. Open any app in the Sense hub, enter edit mode, and drag the **Onboard QS** extension from the custom objects panel onto a sheet.
+3. Open any app in the Sense hub, enter edit mode, and drag the **Onboard.qs** extension from the custom objects panel onto a sheet.
 
 ### Create Your First Tour
 
