@@ -1,0 +1,62 @@
+{
+    "name": "onboard-qs",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Qlik Sense extension for interactive app onboarding tours using driver.js",
+    "license": "MIT",
+    "author": "Ptarmigan Labs",
+    "keywords": [
+        "qlik",
+        "nebula",
+        "stardust",
+        "onboarding",
+        "tour",
+        "driver.js"
+    ],
+    "files": [
+        "dist",
+        "onboard-qs.js",
+        "onboard-qs.qext"
+    ],
+    "engines": {
+        "node": ">=18.10.0"
+    },
+    "main": "dist/onboard-qs.js",
+    "module": "dist/onboard-qs.esm.js",
+    "scripts": {
+        "build": "cross-env BUILD_TYPE=development nebula build --config nebula.config.cjs --sourcemap false --mode development",
+        "build:dist": "cross-env BUILD_TYPE=production nebula build --config nebula.config.cjs --sourcemap false",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
+        "start": "nebula serve",
+        "sense": "nebula sense --meta src/meta.json",
+        "post-build": "node scripts/post-build.mjs",
+        "zip": "node scripts/zip-extension.mjs",
+        "pack:dev": "cross-env BUILD_TYPE=development npm run build && npm run sense && cross-env BUILD_TYPE=development npm run post-build && npm run zip",
+        "pack:prod": "cross-env BUILD_TYPE=production npm run build:dist && cross-env BUILD_TYPE=production npm run sense && cross-env BUILD_TYPE=production npm run post-build && npm run zip",
+        "cloc": "cloc --exclude-dir=node_modules src/",
+        "version:major": "npm version major --no-git-tag-version",
+        "version:minor": "npm version minor --no-git-tag-version",
+        "version:patch": "npm version patch --no-git-tag-version"
+    },
+    "dependencies": {
+        "driver.js": "^1.3.1"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@nebula.js/cli": "^6.5.0",
+        "@nebula.js/cli-build": "^6.5.0",
+        "@nebula.js/cli-sense": "^6.5.0",
+        "@nebula.js/cli-serve": "^6.5.0",
+        "@rollup/plugin-replace": "^6.0.2",
+        "archiver": "^7.0.1",
+        "cloc": "^2.6.0-cloc",
+        "cross-env": "^10.1.0",
+        "esbuild": "^0.27.3",
+        "eslint": "^9.39.2",
+        "globals": "^17.3.0"
+    },
+    "peerDependencies": {
+        "@nebula.js/stardust": ">=5.0.0"
+    }
+}

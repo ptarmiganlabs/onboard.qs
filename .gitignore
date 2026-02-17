@@ -1,3 +1,11 @@
+node_modules/
+dist/
+onboard-qs-ext/
+*.zip
+coverage/
+.DS_Store
+
+
 # Logs
 logs
 *.log

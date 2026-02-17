@@ -1,0 +1,15 @@
+{
+  "name": "Onboard QS",
+  "description": "Interactive onboarding tours for Qlik Sense apps",
+  "type": "visualization",
+  "version": "0.1.0",
+  "icon": "puzzle",
+  "author": "Ptarmigan Labs",
+  "homepage": "https://github.com/ptarmiganlabs/onboard.qs",
+  "keywords": "qlik-sense, visualization, onboarding, tour",
+  "license": "MIT",
+  "repository": "https://github.com/ptarmiganlabs/onboard.qs",
+  "dependencies": {
+    "qlik-sense": ">=3.0.x"
+  }
+}

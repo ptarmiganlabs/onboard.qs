@@ -1,0 +1,160 @@
+import { driver } from 'driver.js';
+import logger from '../util/logger';
+import { markdownToHtml } from '../util/markdown';
+import { getObjectSelectorSync, detectPlatform } from '../platform/index';
+import { markTourSeen } from './tour-storage';
+
+/**
+ * Tour runner — builds driver.js step configurations from the extension
+ * layout and manages tour execution.
+ */
+
+/**
+ * Build driver.js steps from a tour configuration.
+ *
+ * @param {Object} tourConfig - A single tour from the layout's tours array.
+ * @param {string} platformType - 'client-managed' or 'cloud'
+ * @param {string} [senseVersion] - Sense version for selector lookup.
+ * @returns {Array<Object>} Array of driver.js DriveStep objects.
+ */
+export function buildDriverSteps(tourConfig, platformType, senseVersion) {
+    if (!tourConfig.steps || !Array.isArray(tourConfig.steps)) {
+        return [];
+    }
+
+    return tourConfig.steps
+        .filter((step) => step.targetObjectId || (step.selectorType === 'css' && step.customCssSelector))
+        .map((step) => {
+            const cssSelector = step.selectorType === 'css' && step.customCssSelector
+                ? step.customCssSelector
+                : getObjectSelectorSync(platformType, step.targetObjectId, senseVersion);
+
+            return {
+                // Use a function for lazy evaluation — the Qlik object DOM
+                // element may not exist yet when steps are configured
+                element: () => document.querySelector(cssSelector),
+                popover: {
+                    title: step.popoverTitle || '',
+                    description: markdownToHtml(step.popoverDescription || ''),
+                    side: step.popoverSide || 'bottom',
+                    align: step.popoverAlign || 'center',
+                },
+                disableActiveInteraction: step.disableInteraction !== false,
+            };
+        });
+}
+
+/**
+ * Create and run a tour.
+ *
+ * @param {Object} tourConfig - Tour configuration from layout.
+ * @param {Object} [options] - Additional options.
+ * @param {string} [options.platformType] - Platform type.
+ * @param {string} [options.senseVersion] - Sense version.
+ * @param {string} [options.appId] - App ID for localStorage tracking.
+ * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
+ * @param {Function} [options.onComplete] - Callback when tour finishes.
+ * @returns {Object} The driver.js instance.
+ */
+export function runTour(tourConfig, options = {}) {
+    const {
+        platformType = detectPlatform().type,
+        senseVersion,
+        appId,
+        sheetId,
+        onComplete,
+    } = options;
+
+    const steps = buildDriverSteps(tourConfig, platformType, senseVersion);
+
+    if (steps.length === 0) {
+        logger.warn('Tour has no valid steps, nothing to show');
+        return null;
+    }
+
+    logger.info(`Starting tour "${tourConfig.tourName}" with ${steps.length} steps`);
+
+    const driverConfig = {
+        steps,
+        animate: true,
+        smoothScroll: true,
+        allowClose: true,
+        allowKeyboardControl: tourConfig.allowKeyboard !== false,
+        showProgress: tourConfig.showProgress !== false,
+        progressText: '{{current}} of {{total}}',
+        showButtons: ['next', 'previous', 'close'],
+        overlayColor: tourConfig.overlayColor || 'rgba(0, 0, 0, 0.6)',
+        overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
+        stagePadding: tourConfig.stagePadding || 8,
+        stageRadius: tourConfig.stageRadius || 5,
+        popoverClass: 'onboard-qs-popover',
+        nextBtnText: tourConfig.nextBtnText || 'Next',
+        prevBtnText: tourConfig.prevBtnText || 'Previous',
+        doneBtnText: tourConfig.doneBtnText || 'Done',
+        onDestroyed: () => {
+            logger.info(`Tour "${tourConfig.tourName}" completed/closed`);
+            // Mark as seen in localStorage
+            if (appId && sheetId && tourConfig.tourId) {
+                markTourSeen(appId, sheetId, tourConfig.tourId, tourConfig.tourVersion || 1);
+            }
+            if (onComplete) {
+                onComplete(tourConfig);
+            }
+        },
+    };
+
+    const driverObj = driver(driverConfig);
+    driverObj.drive();
+    return driverObj;
+}
+
+/**
+ * Highlight a single step for live preview in the editor.
+ *
+ * @param {Object} step - A single step configuration.
+ * @param {string} platformType - Platform type.
+ * @param {string} [senseVersion] - Sense version.
+ * @returns {Object|null} The driver.js instance, or null if element not found.
+ */
+export function highlightStep(step, platformType, senseVersion) {
+    if (!step.targetObjectId && !(step.selectorType === 'css' && step.customCssSelector)) return null;
+
+    const cssSelector = step.selectorType === 'css' && step.customCssSelector
+        ? step.customCssSelector
+        : getObjectSelectorSync(platformType, step.targetObjectId, senseVersion);
+    const element = document.querySelector(cssSelector);
+
+    if (!element) {
+        logger.warn(`Cannot highlight: element not found for selector ${cssSelector}`);
+        return null;
+    }
+
+    const driverObj = driver({
+        popoverClass: 'onboard-qs-popover',
+        stagePadding: 8,
+        stageRadius: 5,
+    });
+
+    driverObj.highlight({
+        element,
+        popover: {
+            title: step.popoverTitle || '(No title)',
+            description: markdownToHtml(step.popoverDescription || '(No description)'),
+            side: step.popoverSide || 'bottom',
+            align: step.popoverAlign || 'center',
+        },
+    });
+
+    return driverObj;
+}
+
+/**
+ * Destroy any active driver.js instance.
+ *
+ * @param {Object} driverObj - A driver.js instance.
+ */
+export function destroyTour(driverObj) {
+    if (driverObj && driverObj.isActive()) {
+        driverObj.destroy();
+    }
+}
