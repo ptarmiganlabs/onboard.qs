@@ -35,6 +35,11 @@ graph TD
             TE[ui/tour-editor.js<br/>Edit Mode Modal Editor]
         end
 
+        subgraph "Theme Layer"
+            TH[theme/resolve.js<br/>Preset + Override Resolver]
+            TP[theme/presets.js<br/>Built-in Theme Presets]
+        end
+
         subgraph "Utilities"
             LG[util/logger.js]
             MD[util/markdown.js]
@@ -58,6 +63,8 @@ graph TD
     CL --> EA
     EP --> WR
     EP --> TE
+    EP --> TH
+    TH --> TP
     WR --> TR
     TR --> TS
     TE --> TR
@@ -73,6 +80,8 @@ graph TD
 | `platform/client-managed.js` | Client-managed Qlik Sense adapter: sheet ID detection (URL → Qlik API → DOM), Engine API sheet objects, Sense version detection, version-range-to-code-path mapping. |
 | `platform/cloud.js` | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently. |
 | `platform/selectors.js` | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions. |
+| `theme/resolve.js` | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`. |
+| `theme/presets.js` | Built-in theme presets (Default, Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values. |
 | `tour/tour-runner.js` | Transforms tour config into driver.js steps, launches tours, handles highlight preview. |
 | `tour/tour-storage.js` | localStorage-based tracking of "has user seen this tour version". |
 | `ui/widget-renderer.js` | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic. |
@@ -174,6 +183,9 @@ src/
 ├── tour/
 │   ├── tour-runner.js        # driver.js integration
 │   └── tour-storage.js       # localStorage tracking
+├── theme/
+│   ├── resolve.js            # Theme resolver (preset + overrides → CSS vars)
+│   └── presets.js            # Built-in theme presets (4)
 ├── ui/
 │   ├── widget-renderer.js    # Analysis mode widget
 │   └── tour-editor.js        # Edit mode modal editor

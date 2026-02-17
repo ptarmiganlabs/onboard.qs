@@ -155,5 +155,5 @@ The Cloud selectors were validated via Playwright browser automation (Feb 2026) 
 - Grid cells: `.qv-gridcell[tid="{objectId}"]`
 - Sheet container: `.qvt-sheet.qv-panel-sheet`
 - Toolbar chrome: `[data-testid="top-bar-root"]`, `[data-testid="qs-sub-toolbar"]`, `[data-testid="toolbar-edit-button"]`
-- Edit mode: URL contains `/state/edit`, objects gain `qv-mode-edit` class
+- Edit mode: URL contains `/edit` at a word boundary (client-managed uses `/state/edit`, Cloud uses `/sheet/{id}/edit`). Objects gain `qv-mode-edit` class.
 - No `window.qlik` global API in Cloud
