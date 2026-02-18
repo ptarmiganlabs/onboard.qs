@@ -17,4 +17,4 @@ jobs:
           request_rate: 4
           update_release_body: true
           files: |
-            .zip$
+            *.zip
