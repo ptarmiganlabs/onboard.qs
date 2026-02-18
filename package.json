@@ -2,9 +2,9 @@
     "name": "onboard-qs",
     "version": "0.1.0",
     "type": "module",
-    "description": "Qlik Sense extension for interactive app onboarding tours using driver.js",
+    "description": "Qlik Sense extension for interactive app onboarding tours",
     "license": "MIT",
-    "author": "Göran Sander",
+    "author": "Göran Sander, Ptarmigan Labs",
     "bugs": {
         "url": "https://github.com/ptarmiganlabs/onboard.qs/issues"
     },

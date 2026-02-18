@@ -1,7 +1,7 @@
 import { driver } from 'driver.js';
 import logger from '../util/logger';
 import { markdownToHtml } from '../util/markdown';
-import { getObjectSelectorSync, detectPlatform } from '../platform/index';
+import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 
 /**
@@ -14,10 +14,10 @@ import { markTourSeen } from './tour-storage';
  *
  * @param {object} tourConfig - A single tour from the layout's tours array.
  * @param {string} platformType - 'client-managed' or 'cloud'
- * @param {string} [senseVersion] - Sense version for selector lookup.
+ * @param {string} [codePath] - Code-path name for selector lookup (e.g. 'default').
  * @returns {Array<object>} Array of driver.js DriveStep objects.
  */
-export function buildDriverSteps(tourConfig, platformType, senseVersion) {
+export function buildDriverSteps(tourConfig, platformType, codePath) {
     if (!tourConfig.steps || !Array.isArray(tourConfig.steps)) {
         return [];
     }
@@ -52,7 +52,7 @@ export function buildDriverSteps(tourConfig, platformType, senseVersion) {
                 const cssSelector =
                     step.selectorType === 'css' && step.customCssSelector
                         ? step.customCssSelector
-                        : getObjectSelectorSync(platformType, step.targetObjectId, senseVersion);
+                        : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
 
                 return {
                     // Use a function for lazy evaluation — the Qlik object DOM
@@ -81,7 +81,8 @@ export function buildDriverSteps(tourConfig, platformType, senseVersion) {
  * @param {object} tourConfig - Tour configuration from layout.
  * @param {object} [options] - Additional options.
  * @param {string} [options.platformType] - Platform type.
- * @param {string} [options.senseVersion] - Sense version.
+ * @param {string} [options.senseVersion] - Sense version (informational, unused).
+ * @param {string} [options.codePath] - Code-path name for selector lookup.
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
@@ -89,14 +90,15 @@ export function buildDriverSteps(tourConfig, platformType, senseVersion) {
  */
 export function runTour(tourConfig, options = {}) {
     const {
-        platformType = detectPlatform().type,
-        senseVersion,
+        platformType = detectPlatformType(),
+        senseVersion: _senseVersion,
+        codePath = 'default',
         appId,
         sheetId,
         onComplete,
     } = options;
 
-    const steps = buildDriverSteps(tourConfig, platformType, senseVersion);
+    const steps = buildDriverSteps(tourConfig, platformType, codePath);
 
     if (steps.length === 0) {
         logger.warn('Tour has no valid steps, nothing to show');
@@ -147,10 +149,10 @@ export function runTour(tourConfig, options = {}) {
  *
  * @param {object} step - A single step configuration.
  * @param {string} platformType - Platform type.
- * @param {string} [senseVersion] - Sense version.
+ * @param {string} [codePath] - Code-path name for selector lookup.
  * @returns {object | null} The driver.js instance, or null if element not found.
  */
-export function highlightStep(step, platformType, senseVersion) {
+export function highlightStep(step, platformType, codePath) {
     // Standalone dialog — no element to highlight
     if (step.selectorType === 'none') {
         const driverObj = driver({
@@ -171,7 +173,7 @@ export function highlightStep(step, platformType, senseVersion) {
     const cssSelector =
         step.selectorType === 'css' && step.customCssSelector
             ? step.customCssSelector
-            : getObjectSelectorSync(platformType, step.targetObjectId, senseVersion);
+            : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
     const element = document.querySelector(cssSelector);
 
     if (!element) {

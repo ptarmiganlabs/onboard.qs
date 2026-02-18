@@ -1,4 +1,4 @@
-# Onboard QS
+# Onboard.qs
 
 Interactive onboarding tours for Qlik Sense apps, powered by a Qlik Sense extension.  
 Works with both Qlik Sense Cloud and Qlik Sense Enterprise on Windows (client-managed).
@@ -15,10 +15,11 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Custom CSS selector targeting** — target any DOM element (toolbar buttons, header items, other extensions) with a raw CSS selector.
 - **Markdown descriptions** — step descriptions support Markdown: **bold**, _italic_, [links](url), ![images](url), lists, blockquotes, inline code, and more. Converted to HTML at render time with a built-in mini parser (~100 lines, zero dependencies).
 - **Auto-start with show-once** — tours can launch automatically when the sheet loads and remember (via `localStorage`) whether the user has already seen them.
-- **Configurable appearance** — button label, style (primary/secondary/outline), progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
-- **Platform abstraction** — selector resolution and DOM helpers are isolated behind a platform layer, making it straightforward to support Qlik Cloud in the future.
+- **Theme presets & color pickers** — choose from four built-in presets (Default, Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually with native Qlik color pickers. Font sizes, border radii, font weight, and font family are all configurable.
+- **Configurable appearance** — button label, style (primary/secondary/minimal/outlined/pill), horizontal & vertical alignment, progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
+- **Platform abstraction** — selector resolution and DOM helpers are isolated behind a platform layer. Both Qlik Cloud and client-managed (Qlik Sense Enterprise on Windows) are fully supported.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
-- **Lightweight** — production build is ~25 KB zipped. Only runtime dependency is driver.js (~5 KB gzip).
+- **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is driver.js (~5 KB gzip).
 
 ---
 
@@ -27,7 +28,8 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 ### Prerequisites
 
 - Node.js ≥ 18.10 and npm
-- Qlik Sense Enterprise on Windows (client-managed) — February 2020 or later
+- **Qlik Cloud**, or
+- **Qlik Sense Enterprise on Windows** (client-managed) — February 2020 or later
 
 ### Install & Build
 
@@ -40,9 +42,17 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 
 ### Deploy to Qlik Sense
 
+**Qlik Cloud:**
+
+1. Open the **Management Console** → Extensions.
+2. Click **Add**, upload `onboard-qs.zip`.
+3. Open any app, enter edit mode, and drag **Onboard.qs** from the custom objects panel onto a sheet.
+
+**Client-managed (QSEoW):**
+
 1. Open the **Qlik Management Console (QMC)** → Extensions.
 2. Click **Import**, select `onboard-qs.zip`.
-3. Open any app in the Sense hub, enter edit mode, and drag the **Onboard QS** extension from the custom objects panel onto a sheet.
+3. Open any app in the Sense hub, enter edit mode, and drag the **Onboard.qs** extension from the custom objects panel onto a sheet.
 
 ### Create Your First Tour
 
@@ -74,9 +84,11 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 
 | Property          | Type     | Default      | Description                                                |
 | ----------------- | -------- | ------------ | ---------------------------------------------------------- |
-| Show start button | Boolean  | `true`       | Display a "Start Tour" button in analysis mode             |
-| Button text       | String   | `Start Tour` | Label on the start button (expression-enabled)             |
-| Button style      | Dropdown | `Primary`    | `Primary` (green), `Secondary` (grey), `Minimal` (outline) |
+| Show start button      | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                             |
+| Button text            | String   | `Start Tour` | Label on the start button (expression-enabled)                             |
+| Button style           | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                      |
+| Horizontal alignment   | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                  |
+| Vertical alignment     | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                  |
 
 ### Tour Settings
 
@@ -88,6 +100,23 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 | Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
 | Show progress  | Boolean | `true`     | Display "1 of 5" progress indicator in popovers                                  |
 | Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
+
+### Theme & Styling
+
+| Property              | Type         | Default            | Description                                                                 |
+| --------------------- | ------------ | ------------------ | --------------------------------------------------------------------------- |
+| Theme preset          | Dropdown     | `Lean Green Machine` | `Default`, `Lean Green Machine`, `Corporate Blue`, `Corporate Gold`       |
+| Font family           | String       | (from preset)      | CSS font-family value (expression-enabled)                                  |
+| Button colors         | Color pickers | (from preset)     | Background, text, hover background, border color                           |
+| Button font size      | String (px)  | (from preset)      | Font size in pixels                                                         |
+| Button border radius  | String (px)  | (from preset)      | Border radius in pixels                                                     |
+| Button font weight    | Dropdown     | (from preset)      | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`             |
+| Popover colors        | Color pickers | (from preset)     | Background, text, title, button bg/text/hover, progress bar               |
+| Popover font size     | String (px)  | (from preset)      | Font size in pixels                                                         |
+| Popover border radius | String (px)  | (from preset)      | Border radius in pixels                                                     |
+| Menu colors           | Color pickers | (from preset)     | Background, text, hover background for the multi-tour dropdown menu        |
+
+All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
 
 ### Step Settings
 
@@ -375,10 +404,13 @@ onboard.qs/
     │   ├── index.js          # Platform detection + selector helper
     │   ├── selectors.js      # Versioned CSS selector registry
     │   ├── client-managed.js # Client-managed Sense DOM helpers
-    │   └── cloud.js          # Qlik Cloud adapter (stub)
+    │   └── cloud.js          # Qlik Cloud adapter
     ├── tour/
     │   ├── tour-runner.js    # driver.js integration: build steps, run/highlight/destroy
     │   └── tour-storage.js   # localStorage "show once" tracking
+    ├── theme/
+    │   ├── resolve.js        # Theme resolver (preset + overrides → CSS vars)
+    │   └── presets.js        # Built-in theme presets (4 presets)
     ├── ui/
     │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
     │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
@@ -392,15 +424,12 @@ onboard.qs/
 
 ## Platform Support
 
-| Platform                                          | Status                                                          |
-| ------------------------------------------------- | --------------------------------------------------------------- |
-| Qlik Sense Enterprise on Windows (client-managed) | Supported                                                       |
-| Qlik Cloud                                        | Planned — platform layer is in place, selectors need validation |
+| Platform                                          | Status    |
+| ------------------------------------------------- | --------- |
+| Qlik Sense Enterprise on Windows (client-managed) | Supported |
+| Qlik Cloud                                        | Supported |
 
-The platform abstraction layer ([src/platform/](src/platform/)) isolates all DOM interaction behind a unified interface. Adding Qlik Cloud support requires:
-
-1. Validating / updating CSS selectors in [src/platform/selectors.js](src/platform/selectors.js)
-2. Implementing cloud-specific helpers in [src/platform/cloud.js](src/platform/cloud.js)
+The platform abstraction layer ([src/platform/](src/platform/)) isolates all DOM interaction behind a unified interface. Each platform has its own standalone adapter module with platform-specific CSS selectors, sheet-ID detection, and DOM helpers.
 
 ---
 

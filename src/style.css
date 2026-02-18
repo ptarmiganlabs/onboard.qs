@@ -1,5 +1,5 @@
 /* ========================================================================
-   Onboard QS — Extension Styles
+   Onboard.qs — Extension Styles
    ======================================================================== */
 
 /* --- Widget styles (analysis mode) --- */
@@ -10,9 +10,18 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
     box-sizing: border-box;
 }
+
+/* --- Button alignment modifiers --- */
+
+.onboard-qs-widget--h-left   { justify-content: flex-start; padding-left: 8px; }
+.onboard-qs-widget--h-center { justify-content: center; }
+.onboard-qs-widget--h-right  { justify-content: flex-end; padding-right: 8px; }
+.onboard-qs-widget--v-top    { align-items: flex-start; padding-top: 8px; }
+.onboard-qs-widget--v-center { align-items: center; }
+.onboard-qs-widget--v-bottom { align-items: flex-end; padding-bottom: 8px; }
 
 .onboard-qs-widget--empty {
     background: #f8f9fa;
@@ -42,9 +51,9 @@
     justify-content: center;
     padding: 8px 16px;
     border: none;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
+    border-radius: var(--oqs-btn-border-radius, 4px);
+    font-size: var(--oqs-btn-font-size, 13px);
+    font-weight: var(--oqs-btn-font-weight, 500);
     cursor: pointer;
     transition:
         background-color 0.15s ease,
@@ -54,11 +63,11 @@
 }
 
 .onboard-qs-btn--primary {
-    background: #009845;
-    color: #fff;
+    background: var(--oqs-btn-bg, #595959);
+    color: var(--oqs-btn-text, #fff);
 }
 .onboard-qs-btn--primary:hover {
-    background: #007a38;
+    background: var(--oqs-btn-hover-bg, #404040);
 }
 
 .onboard-qs-btn--secondary {
@@ -71,11 +80,30 @@
 
 .onboard-qs-btn--minimal {
     background: transparent;
-    color: #009845;
-    border: 1px solid #009845;
+    color: var(--oqs-btn-bg, #595959);
+    border: 1px solid var(--oqs-btn-border, var(--oqs-btn-bg, #595959));
 }
 .onboard-qs-btn--minimal:hover {
-    background: rgba(0, 152, 69, 0.08);
+    background: color-mix(in srgb, var(--oqs-btn-bg, #595959) 8%, transparent);
+}
+
+.onboard-qs-btn--outlined {
+    background: transparent;
+    color: var(--oqs-btn-bg, #595959);
+    border: 2px solid var(--oqs-btn-border, var(--oqs-btn-bg, #595959));
+}
+.onboard-qs-btn--outlined:hover {
+    background: var(--oqs-btn-bg, #595959);
+    color: var(--oqs-btn-text, #fff);
+}
+
+.onboard-qs-btn--pill {
+    background: var(--oqs-btn-bg, #595959);
+    color: var(--oqs-btn-text, #fff);
+    border-radius: 999px;
+}
+.onboard-qs-btn--pill:hover {
+    background: var(--oqs-btn-hover-bg, #404040);
 }
 
 .onboard-qs-btn--small {
@@ -94,12 +122,12 @@
     position: fixed;
     z-index: 10000;
     min-width: 180px;
-    background: #fff;
+    background: var(--oqs-menu-bg, #fff);
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--oqs-btn-border-radius, 4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px 0;
-    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
 }
 
 .onboard-qs-floating-menu__item {
@@ -109,14 +137,14 @@
     border: none;
     background: none;
     text-align: left;
-    font-size: 13px;
+    font-size: var(--oqs-btn-font-size, 13px);
     cursor: pointer;
-    color: #333;
+    color: var(--oqs-menu-text, #333);
     font-family: inherit;
 }
 
 .onboard-qs-floating-menu__item:hover {
-    background: #f0f0f0;
+    background: var(--oqs-menu-hover-bg, #f0f0f0);
 }
 
 /* --- Edit mode placeholder --- */
@@ -133,7 +161,7 @@
 }
 
 .onboard-qs-widget__icon {
-    font-size: 32px;
+    font-size: 48px;
     margin-bottom: 8px;
 }
 
@@ -148,6 +176,24 @@
     font-size: 12px;
     color: #666;
     margin-bottom: 12px;
+}
+
+.onboard-qs-widget__links {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: #888;
+}
+
+.onboard-qs-widget__links a {
+    color: #009845;
+    text-decoration: none;
+}
+
+.onboard-qs-widget__links a:hover {
+    text-decoration: underline;
 }
 
 /* ========================================================================
@@ -482,19 +528,21 @@
    ======================================================================== */
 
 .onboard-qs-popover {
-    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
     max-width: 380px;
+    background: var(--oqs-popover-bg, #fff);
+    border-radius: var(--oqs-popover-border-radius, 4px);
 }
 
 .onboard-qs-popover .driver-popover-title {
-    font-size: 16px;
+    font-size: calc(var(--oqs-popover-font-size, 13px) + 3px);
     font-weight: 600;
-    color: #333;
+    color: var(--oqs-popover-title, #333);
 }
 
 .onboard-qs-popover .driver-popover-description {
-    font-size: 13px;
-    color: #555;
+    font-size: var(--oqs-popover-font-size, 13px);
+    color: var(--oqs-popover-text, #555);
     line-height: 1.5;
 }
 
@@ -506,29 +554,29 @@
 
 .onboard-qs-popover .driver-popover-footer button {
     font-family: inherit;
-    border-radius: 4px;
-    font-size: 12px;
+    border-radius: var(--oqs-popover-border-radius, 4px);
+    font-size: calc(var(--oqs-popover-font-size, 13px) - 1px);
     padding: 6px 14px;
 }
 
 .onboard-qs-popover .driver-popover-next-btn {
-    background: #009845;
-    color: #fff;
+    background: var(--oqs-popover-btn-bg, #595959);
+    color: var(--oqs-popover-btn-text, #fff);
     border: none;
 }
 
 .onboard-qs-popover .driver-popover-next-btn:hover {
-    background: #007a38;
+    background: var(--oqs-popover-btn-hover-bg, #404040);
 }
 
 .onboard-qs-popover .driver-popover-prev-btn {
-    background: #e8e8e8;
-    color: #333;
+    background: var(--oqs-popover-prev-bg, #e8e8e8);
+    color: var(--oqs-popover-prev-text, #333);
     border: none;
 }
 
 .onboard-qs-popover .driver-popover-prev-btn:hover {
-    background: #d0d0d0;
+    background: var(--oqs-popover-prev-hover-bg, #d0d0d0);
 }
 
 .onboard-qs-popover .driver-popover-close-btn {
@@ -536,12 +584,12 @@
 }
 
 .onboard-qs-popover .driver-popover-close-btn:hover {
-    color: #333;
+    color: var(--oqs-popover-title, #333);
 }
 
 .onboard-qs-popover .driver-popover-progress-text {
     font-size: 11px;
-    color: #888;
+    color: var(--oqs-progress-color, #888);
 }
 
 /* --- Markdown content inside popovers --- */
@@ -566,7 +614,7 @@
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 .onboard-qs-popover .driver-popover-description a {
-    color: #009845;
+    color: var(--oqs-popover-btn-bg, #595959);
     text-decoration: underline;
 }
 .onboard-qs-popover .driver-popover-description img {
@@ -584,11 +632,11 @@
     margin: 2px 0;
 }
 .onboard-qs-popover .driver-popover-description blockquote {
-    border-left: 3px solid #009845;
+    border-left: 3px solid var(--oqs-popover-btn-bg, #595959);
     margin: 4px 0;
     padding: 2px 8px;
-    color: #555;
-    background: rgba(0, 152, 69, 0.04);
+    color: var(--oqs-popover-text, #555);
+    background: color-mix(in srgb, var(--oqs-popover-btn-bg, #595959) 4%, transparent);
 }
 .onboard-qs-popover .driver-popover-description hr {
     border: none;
@@ -602,4 +650,105 @@
     color: #888;
     font-weight: 400;
     font-size: 11px;
+}
+
+/* ========================================================================
+   Import Dialog
+   ======================================================================== */
+
+.onboard-qs-import-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100001;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboard-qs-import-dialog {
+    background: #fff;
+    border-radius: 8px;
+    width: 480px;
+    max-width: 90vw;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.onboard-qs-import-dialog__title {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.onboard-qs-import-dialog__summary {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.onboard-qs-import-dialog__summary p {
+    margin: 0 0 4px 0;
+}
+
+.onboard-qs-import-dialog__options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.onboard-qs-import-dialog__option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.onboard-qs-import-dialog__option input[type='radio'] {
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.onboard-qs-import-dialog__theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.onboard-qs-import-dialog__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ========================================================================
+   Cloud-specific overrides
+   ======================================================================== */
+
+/*
+ * Qlik Cloud uses MUI-based toolbars with z-index ~1200.
+ * Ensure driver.js overlays render above them so tour popovers
+ * are never hidden behind the Cloud toolbar / sub-toolbar.
+ */
+.driver-active .driver-overlay {
+    z-index: 99999 !important;
+}
+.driver-active .driver-popover {
+    z-index: 100000 !important;
 }

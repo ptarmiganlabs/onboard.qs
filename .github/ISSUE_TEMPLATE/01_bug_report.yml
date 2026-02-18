@@ -1,0 +1,61 @@
+name: 🐞 Bug Report
+description: Create a bug report for Onboard.qs
+labels: 'template: bug'
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+  - type: markdown
+    attributes:
+      value: 'Please first search the repository for similar issues and discussions.'
+  - type: input
+    attributes:
+      label: What version of Onboard.qs are you using?
+      description: 'Check the About section in the extension property panel, or look at the .qext file. For example: 0.1.0'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What Qlik Sense platform are you using?
+      description: 'For example: Qlik Cloud, Qlik Sense Enterprise on Windows February 2024'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What browser are you using?
+      description: 'For example: Chrome 120, Edge 120, Firefox 121'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior. Screenshots can be provided in the issue body below.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Extension configuration
+      description: 'Relevant property panel settings (tour config, theme preset, button style, etc.)'
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: Before posting the issue go through the steps you've written down to make sure the steps provided are detailed and clear.
+  - type: markdown
+    attributes:
+      value: Contributors should be able to follow the steps provided in order to reproduce the bug.
+  - type: markdown
+    attributes:
+      value: The information you enter on this page will be used to improve and enhance this project. Thanks in advance!

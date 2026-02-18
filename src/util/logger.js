@@ -1,5 +1,5 @@
 /**
- * Logger utility for Onboard QS extension.
+ * Logger utility for Onboard.qs extension.
  * Controls logging based on build type.
  */
 
@@ -27,7 +27,7 @@ const logger = {
      */
     debug: (...args) => {
         if (!muteAll && !IS_PRODUCTION) {
-            console.log('Onboard QS [DEBUG]:', ...args);
+            console.log('Onboard.qs [DEBUG]:', ...args);
         }
     },
 
@@ -38,7 +38,7 @@ const logger = {
      */
     info: (...args) => {
         if (!muteAll) {
-            console.log('Onboard QS [INFO]:', ...args);
+            console.log('Onboard.qs [INFO]:', ...args);
         }
     },
 
@@ -49,7 +49,7 @@ const logger = {
      */
     warn: (...args) => {
         if (!muteAll) {
-            console.warn('Onboard QS [WARN]:', ...args);
+            console.warn('Onboard.qs [WARN]:', ...args);
         }
     },
 
@@ -60,7 +60,7 @@ const logger = {
      */
     error: (...args) => {
         if (!muteAll) {
-            console.error('Onboard QS [ERROR]:', ...args);
+            console.error('Onboard.qs [ERROR]:', ...args);
         }
     },
 };

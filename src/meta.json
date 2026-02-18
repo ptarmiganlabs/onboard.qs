@@ -1,10 +1,10 @@
 {
-    "name": "Onboard QS",
+    "name": "Onboard.qs",
     "description": "Interactive onboarding tours for Qlik Sense apps",
     "type": "visualization",
     "version": "0.1.0",
     "icon": "puzzle",
-    "author": "Ptarmigan Labs",
+    "author": "Göran Sander, Ptarmigan Labs",
     "homepage": "https://github.com/ptarmiganlabs/onboard.qs",
     "keywords": "qlik-sense, visualization, onboarding, tour",
     "license": "MIT",
