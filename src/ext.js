@@ -810,6 +810,54 @@ export default function ext(_galaxy) {
                                                 { value: 'end', label: 'End' },
                                             ],
                                         },
+                                        dialogSize: {
+                                            ref: 'dialogSize',
+                                            type: 'string',
+                                            label: 'Dialog size',
+                                            component: 'dropdown',
+                                            defaultValue: 'medium',
+                                            options: [
+                                                { value: 'dynamic', label: 'Dynamic (fit content)' },
+                                                { value: 'small', label: 'Small (320 × 220)' },
+                                                { value: 'medium', label: 'Medium (480 × 320)' },
+                                                { value: 'large', label: 'Large (640 × 420)' },
+                                                { value: 'x-large', label: 'Extra large (800 × 520)' },
+                                                { value: 'custom', label: 'Custom…' },
+                                            ],
+                                            /**
+                                             * Determine visibility of this property panel item.
+                                             *
+                                             * @param {object} data - Current property data row.
+                                             * @returns {boolean} True if item should be shown.
+                                             */
+                                            show: (data) => data.selectorType === 'none',
+                                        },
+                                        customDialogWidth: {
+                                            ref: 'customDialogWidth',
+                                            type: 'integer',
+                                            label: 'Custom width (px)',
+                                            defaultValue: 500,
+                                            /**
+                                             * @param {object} data - Current property data row.
+                                             * @returns {boolean} True if item should be shown.
+                                             */
+                                            show: (data) =>
+                                                data.selectorType === 'none' &&
+                                                data.dialogSize === 'custom',
+                                        },
+                                        customDialogHeight: {
+                                            ref: 'customDialogHeight',
+                                            type: 'integer',
+                                            label: 'Custom height (px)',
+                                            defaultValue: 350,
+                                            /**
+                                             * @param {object} data - Current property data row.
+                                             * @returns {boolean} True if item should be shown.
+                                             */
+                                            show: (data) =>
+                                                data.selectorType === 'none' &&
+                                                data.dialogSize === 'custom',
+                                        },
                                         disableInteraction: {
                                             ref: 'disableInteraction',
                                             type: 'boolean',

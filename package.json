@@ -1,6 +1,6 @@
 {
     "name": "onboard-qs",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "type": "module",
     "description": "Qlik Sense extension for interactive app onboarding tours",
     "license": "MIT",
@@ -16,7 +16,8 @@
         "stardust",
         "onboarding",
         "tour",
-        "driver.js"
+        "driver.js",
+        "ptarmiganlabs"
     ],
     "files": [
         "dist",

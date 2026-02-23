@@ -39,14 +39,28 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
             .map((step) => {
                 // Standalone dialog — no element, driver.js shows a centered modal
                 if (step.selectorType === 'none') {
-                    return {
-                        popover: {
-                            title: step.popoverTitle || '',
-                            description: markdownToHtml(step.popoverDescription || ''),
-                            side: step.popoverSide || 'bottom',
-                            align: step.popoverAlign || 'center',
-                        },
+                    const size = step.dialogSize || 'medium';
+                    const sizeClass = `onboard-qs-dialog-${size}`;
+                    const popoverConfig = {
+                        title: step.popoverTitle || '',
+                        description: markdownToHtml(step.popoverDescription || ''),
+                        side: step.popoverSide || 'bottom',
+                        align: step.popoverAlign || 'center',
+                        popoverClass: `onboard-qs-popover ${sizeClass}`,
                     };
+                    // For custom size, apply inline dimensions via onPopoverRender
+                    if (size === 'custom') {
+                        const w = step.customDialogWidth || 500;
+                        const h = step.customDialogHeight || 350;
+                        popoverConfig.onPopoverRender = (popover) => {
+                            if (popover?.wrapper) {
+                                popover.wrapper.style.width = `${w}px`;
+                                popover.wrapper.style.maxWidth = `${w}px`;
+                                popover.wrapper.style.minHeight = `${h}px`;
+                            }
+                        };
+                    }
+                    return { popover: popoverConfig };
                 }
 
                 const cssSelector =
@@ -155,9 +169,23 @@ export function runTour(tourConfig, options = {}) {
 export function highlightStep(step, platformType, codePath) {
     // Standalone dialog — no element to highlight
     if (step.selectorType === 'none') {
-        const driverObj = driver({
-            popoverClass: 'onboard-qs-popover',
-        });
+        const size = step.dialogSize || 'medium';
+        const sizeClass = `onboard-qs-dialog-${size}`;
+        const driverConfig = {
+            popoverClass: `onboard-qs-popover ${sizeClass}`,
+        };
+        if (size === 'custom') {
+            const w = step.customDialogWidth || 500;
+            const h = step.customDialogHeight || 350;
+            driverConfig.onPopoverRender = (popover) => {
+                if (popover?.wrapper) {
+                    popover.wrapper.style.width = `${w}px`;
+                    popover.wrapper.style.maxWidth = `${w}px`;
+                    popover.wrapper.style.minHeight = `${h}px`;
+                }
+            };
+        }
+        const driverObj = driver(driverConfig);
         driverObj.highlight({
             popover: {
                 title: step.popoverTitle || '(No title)',

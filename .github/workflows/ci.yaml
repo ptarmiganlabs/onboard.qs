@@ -1,0 +1,98 @@
+name: ci
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      release_tag_name: ${{ steps.release.outputs['tag_name'] }}
+      release_version: ${{ steps.release.outputs['version'] }}
+      release_upload_url: ${{ steps.release.outputs['upload_url'] }}
+    env:
+      GITHUB_REF: ${{ github.ref }}
+    steps:
+      - name: Show github.ref
+        run: echo "$GITHUB_REF"
+
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        id: release
+        if: github.repository_owner == 'ptarmiganlabs'
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_PAT }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main
+
+      - name: Show output from Release-Please
+        if: always()
+        env:
+          RELEASE_PLEASE_OUTPUT: ${{ toJSON(steps.release.outputs) }}
+        run: echo "$RELEASE_PLEASE_OUTPUT"
+
+  build-release:
+    needs: release-please
+    runs-on: ubuntu-latest
+    if: needs.release-please.outputs.releases_created == 'true'
+    permissions:
+      contents: write
+    env:
+      DIST_FILE_NAME: onboard-qs
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production zip
+        run: npm run pack:prod
+
+      - name: Assemble release package
+        env:
+          VERSION: ${{ needs.release-please.outputs.release_version }}
+        run: |
+          # Create staging directory
+          mkdir -p release-staging
+
+          # Copy the extension zip (the file users upload to Sense)
+          cp "${DIST_FILE_NAME}.zip" "release-staging/${DIST_FILE_NAME}.zip"
+
+          # Generate readme.txt from template with version injected
+          sed "s/__VERSION__/${VERSION}/g" release-config/readme-template.txt > release-staging/readme.txt
+
+          # Copy LICENSE
+          cp LICENSE release-staging/LICENSE
+
+          # Create the outer release zip
+          cd release-staging
+          zip -r "../${DIST_FILE_NAME}-v${VERSION}.zip" .
+          cd ..
+
+      - name: List release zip contents (debug)
+        run: |
+          echo "=== Outer release zip ==="
+          zipinfo "${DIST_FILE_NAME}-v${{ needs.release-please.outputs.release_version }}.zip"
+          echo ""
+          echo "=== Inner extension zip ==="
+          zipinfo "release-staging/${DIST_FILE_NAME}.zip"
+
+      - name: Upload release artifacts
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        with:
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitDraftDuringUpdate: true
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
+          token: ${{ secrets.RELEASE_PLEASE_PAT }}
+          artifacts: |
+            ${{ env.DIST_FILE_NAME }}-v${{ needs.release-please.outputs.release_version }}.zip

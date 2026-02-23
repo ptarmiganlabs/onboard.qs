@@ -97,7 +97,7 @@ export const corporateBluePreset = {
     popoverPrevHoverBgColor: '#D0D2D3',
     popoverFontSize: 14,
     popoverBorderRadius: 3,
-    progressBarColor: '#FFCC33',
+    progressBarColor: '#2C5F8A',
     fontFamily: "'Open Sans', Arial, sans-serif",
 };
 
