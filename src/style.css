@@ -532,6 +532,43 @@
     max-width: 380px;
     background: var(--oqs-popover-bg, #fff);
     border-radius: var(--oqs-popover-border-radius, 4px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Standalone dialog size presets — compound selectors override
+   both driver.js's max-width:300px and our base max-width:380px */
+.onboard-qs-popover.onboard-qs-dialog-dynamic {
+    max-width: 480px;
+    width: auto;
+}
+
+.onboard-qs-popover.onboard-qs-dialog-small {
+    width: 320px;
+    max-width: 320px;
+    min-height: 220px;
+}
+
+.onboard-qs-popover.onboard-qs-dialog-medium {
+    width: 480px;
+    max-width: 480px;
+    min-height: 320px;
+}
+
+.onboard-qs-popover.onboard-qs-dialog-large {
+    width: 640px;
+    max-width: 640px;
+    min-height: 420px;
+}
+
+.onboard-qs-popover.onboard-qs-dialog-x-large {
+    width: 800px;
+    max-width: 800px;
+    min-height: 520px;
+}
+
+.onboard-qs-popover.onboard-qs-dialog-custom {
+    /* width/max-width/min-height set via inline style */
 }
 
 .onboard-qs-popover .driver-popover-title {

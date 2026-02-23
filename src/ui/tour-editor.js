@@ -139,6 +139,9 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                     popoverDescription: '',
                     popoverSide: 'bottom',
                     popoverAlign: 'center',
+                    dialogSize: 'medium',
+                    customDialogWidth: 500,
+                    customDialogHeight: 350,
                     disableInteraction: true,
                 });
                 selectedStepIndex = tour.steps.length - 1;
@@ -271,6 +274,28 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
         if (alignSelect) {
             alignSelect.addEventListener('change', (e) => {
                 step.popoverAlign = e.target.value;
+            });
+        }
+
+        const dialogSizeSelect = overlay.querySelector('.onboard-qs-editor__step-dialog-size');
+        if (dialogSizeSelect) {
+            dialogSizeSelect.addEventListener('change', (e) => {
+                step.dialogSize = e.target.value;
+                render(); // show/hide custom dimension fields
+            });
+        }
+
+        const customWidthInput = overlay.querySelector('.onboard-qs-editor__step-custom-width');
+        if (customWidthInput) {
+            customWidthInput.addEventListener('input', (e) => {
+                step.customDialogWidth = parseInt(e.target.value, 10) || 500;
+            });
+        }
+
+        const customHeightInput = overlay.querySelector('.onboard-qs-editor__step-custom-height');
+        if (customHeightInput) {
+            customHeightInput.addEventListener('input', (e) => {
+                step.customDialogHeight = parseInt(e.target.value, 10) || 350;
             });
         }
 
@@ -705,6 +730,29 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                                 <option value="center" ${step.popoverAlign === 'center' || !step.popoverAlign ? 'selected' : ''}>Center</option>
                                 <option value="end" ${step.popoverAlign === 'end' ? 'selected' : ''}>End</option>
                             </select>
+                        </label>
+                    </div>
+                    <label class="onboard-qs-editor__field" style="${selectorType !== 'none' ? 'display:none' : ''}">
+                        <span>Dialog Size</span>
+                        <select class="onboard-qs-editor__select onboard-qs-editor__step-dialog-size">
+                            <option value="dynamic" ${step.dialogSize === 'dynamic' ? 'selected' : ''}>Dynamic (fit content)</option>
+                            <option value="small" ${step.dialogSize === 'small' ? 'selected' : ''}>Small (320 × 220)</option>
+                            <option value="medium" ${step.dialogSize === 'medium' || !step.dialogSize ? 'selected' : ''}>Medium (480 × 320)</option>
+                            <option value="large" ${step.dialogSize === 'large' ? 'selected' : ''}>Large (640 × 420)</option>
+                            <option value="x-large" ${step.dialogSize === 'x-large' ? 'selected' : ''}>Extra large (800 × 520)</option>
+                            <option value="custom" ${step.dialogSize === 'custom' ? 'selected' : ''}>Custom…</option>
+                        </select>
+                    </label>
+                    <div class="onboard-qs-editor__field-row" style="${selectorType !== 'none' || step.dialogSize !== 'custom' ? 'display:none' : ''}">
+                        <label class="onboard-qs-editor__field">
+                            <span>Width (px)</span>
+                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
+                                   value="${step.customDialogWidth || 500}" min="200" max="1200" />
+                        </label>
+                        <label class="onboard-qs-editor__field">
+                            <span>Height (px)</span>
+                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-height"
+                                   value="${step.customDialogHeight || 350}" min="100" max="900" />
                         </label>
                     </div>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">

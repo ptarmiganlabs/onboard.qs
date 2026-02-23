@@ -5,6 +5,7 @@ import {
     useApp,
     useModel,
     useRef,
+    useState,
     useOptions,
 } from '@nebula.js/stardust';
 import ext from './ext';
@@ -51,12 +52,10 @@ export default function supernova(galaxy) {
             const layoutRef = useRef(layout);
             const initRef = useRef(false);
 
-            // Platform detection: async, cached after first run.
-            // Holds { type, version, codePath } once resolved.
-            const platformRef = useRef(null);
-
-            // Platform adapter module: { getCurrentSheetId, getSheetObjects, injectCSS, ... }
-            const adapterRef = useRef(null);
+            // Platform detection: async, resolved once then cached in state.
+            // useState (not useRef) ensures a re-render when detection completes.
+            const [platform, setPlatform] = useState(null);
+            const [adapter, setAdapter] = useState(null);
 
             // Detect edit vs analysis mode.
             // options.readOnly is preferred (set by Qlik after first toggle) but may
@@ -73,36 +72,38 @@ export default function supernova(galaxy) {
                 layoutRef.current = layout;
             }, [layout]);
 
-            // One-time async platform detection + adapter loading
+            // One-time async platform detection + adapter loading.
+            // Using useState (above) ensures the component re-renders once
+            // detection finishes, so the main render effect picks up the values.
             useEffect(() => {
                 let cancelled = false;
 
                 (async () => {
-                    if (platformRef.current && adapterRef.current) return;
+                    if (platform && adapter) return;
 
                     try {
-                        const adapter = getPlatformAdapter();
-                        const platform = await detectPlatform();
+                        const detectedAdapter = getPlatformAdapter();
+                        const detectedPlatform = await detectPlatform();
 
                         if (cancelled) return;
 
-                        platformRef.current = platform;
-                        adapterRef.current = adapter;
+                        setPlatform(detectedPlatform);
+                        setAdapter(detectedAdapter);
 
                         // Inject driver.js CSS via the adapter's injectCSS
                         if (typeof driverCSS === 'string' && driverCSS.length > 0) {
-                            adapter.injectCSS(driverCSS, 'onboard-qs-driver-css');
+                            detectedAdapter.injectCSS(driverCSS, 'onboard-qs-driver-css');
                         }
 
                         logger.info(
-                            `Platform ready: ${platform.type} v${platform.version ?? '?'} (${platform.codePath})`
+                            `Platform ready: ${detectedPlatform.type} v${detectedPlatform.version ?? '?'} (${detectedPlatform.codePath})`
                         );
                     } catch (err) {
                         logger.error('Platform detection failed:', err);
                         // Fallback: use synchronous type detection
                         const type = detectPlatformType();
-                        platformRef.current = { type, version: null, codePath: 'default' };
-                        adapterRef.current = getPlatformAdapter();
+                        setPlatform({ type, version: null, codePath: 'default' });
+                        setAdapter(getPlatformAdapter());
                     }
                 })();
 
@@ -152,8 +153,8 @@ export default function supernova(galaxy) {
                          */
                         editBtn.addEventListener('click', async () => {
                             // Ensure adapter is available before opening editor
-                            const adapter = adapterRef.current || getPlatformAdapter();
-                            const sheetObjects = await adapter.getSheetObjects(app);
+                            const currentAdapter = adapter || getPlatformAdapter();
+                            const sheetObjects = await currentAdapter.getSheetObjects(app);
                             openTourEditor({
                                 layout: layoutRef.current,
                                 model,
@@ -173,10 +174,8 @@ export default function supernova(galaxy) {
                 }
 
                 // Analysis mode: needs platform for tour selector resolution
-                if (!platformRef.current || !adapterRef.current) return;
+                if (!platform || !adapter) return;
 
-                const adapter = adapterRef.current;
-                const platform = platformRef.current;
                 const sheetId = adapter.getCurrentSheetId();
                 const appId = app?.id || 'unknown';
 
@@ -193,7 +192,7 @@ export default function supernova(galaxy) {
                 });
 
                 initRef.current = true;
-            }, [element, layout, isEditMode, platformRef.current, adapterRef.current]);
+            }, [element, layout, isEditMode, platform, adapter]);
         },
 
         ext: ext(galaxy),
