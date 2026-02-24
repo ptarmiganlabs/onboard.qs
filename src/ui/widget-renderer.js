@@ -313,7 +313,13 @@ export function openAboutModal(version) {
     document.body.appendChild(overlay);
 
     /** Close handler for the about modal. */
-    const close = () => overlay.remove();
+    const close = () => {
+        document.removeEventListener('keydown', onKey);
+        overlay.remove();
+    };
+    /** @param {KeyboardEvent} e */
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
     overlay.querySelector('.onboard-qs-about-close-btn').addEventListener('click', close);
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) close();
