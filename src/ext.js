@@ -984,12 +984,17 @@ export default function ext(_galaxy) {
                         },
                         homepageGit: {
                             component: 'link',
-                            label: 'Documentation',
+                            label: 'Documentation & Source Code',
                             url: 'https://github.com/ptarmiganlabs/onboard.qs',
+                        },
+                        reportBug: {
+                            component: 'link',
+                            label: 'Report a Bug / Request a Feature',
+                            url: 'https://github.com/ptarmiganlabs/onboard.qs/issues/new/choose',
                         },
                         homepagePlabs: {
                             component: 'link',
-                            label: 'Ptarmigan Labs - Home of SenseOps',
+                            label: 'Ptarmigan Labs — Qlik Sense tools & consulting',
                             url: 'https://ptarmiganlabs.com/',
                         },
                     },
