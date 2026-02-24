@@ -655,12 +655,16 @@ export default function ext(_galaxy) {
                                     ref: 'tourName',
                                     type: 'string',
                                     label: 'Tour name',
+                                    description:
+                                        'A descriptive name for this tour. Shown in the tour launch menu.',
                                     defaultValue: 'New Tour',
                                 },
                                 autoStart: {
                                     ref: 'autoStart',
                                     type: 'boolean',
                                     label: 'Auto-start on sheet load',
+                                    description:
+                                        'Automatically launch this tour when the sheet is opened, instead of requiring the user to click.',
                                     defaultValue: false,
                                     component: 'switch',
                                     options: [
@@ -672,6 +676,8 @@ export default function ext(_galaxy) {
                                     ref: 'showOnce',
                                     type: 'boolean',
                                     label: 'Show only once per user',
+                                    description:
+                                        'When enabled, the auto-started tour is only shown once per user (tracked in localStorage). Increment Tour version to reset.',
                                     defaultValue: true,
                                     component: 'switch',
                                     options: [
@@ -690,6 +696,8 @@ export default function ext(_galaxy) {
                                     ref: 'tourVersion',
                                     type: 'integer',
                                     label: 'Tour version (increment to reset "seen" flag)',
+                                    description:
+                                        'Incrementing this number clears the per-user "already seen" flag, so the auto-start tour will be shown again.',
                                     defaultValue: 1,
                                     min: 1,
                                 },
@@ -697,6 +705,8 @@ export default function ext(_galaxy) {
                                     ref: 'showProgress',
                                     type: 'boolean',
                                     label: 'Show progress indicator',
+                                    description:
+                                        'Display a "Step X of Y" progress text inside each popover.',
                                     defaultValue: true,
                                     component: 'switch',
                                     options: [
@@ -708,12 +718,79 @@ export default function ext(_galaxy) {
                                     ref: 'allowKeyboard',
                                     type: 'boolean',
                                     label: 'Allow keyboard navigation',
+                                    description:
+                                        'Let users navigate steps with arrow keys and close the tour with Escape.',
                                     defaultValue: true,
                                     component: 'switch',
                                     options: [
                                         { value: true, label: 'On' },
                                         { value: false, label: 'Off' },
                                     ],
+                                },
+
+                                // --- Overlay & navigation button text ---
+                                overlayColor: {
+                                    ref: 'overlayColor',
+                                    type: 'string',
+                                    label: 'Overlay color',
+                                    description:
+                                        'CSS color for the backdrop behind the highlighted element, e.g. rgba(0,0,0,0.6) or #000.',
+                                    defaultValue: 'rgba(0, 0, 0, 0.6)',
+                                },
+                                overlayOpacity: {
+                                    ref: 'overlayOpacity',
+                                    type: 'integer',
+                                    label: 'Overlay opacity (0–100)',
+                                    description:
+                                        'How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque.',
+                                    defaultValue: 60,
+                                    min: 0,
+                                    max: 100,
+                                },
+                                stagePadding: {
+                                    ref: 'stagePadding',
+                                    type: 'integer',
+                                    label: 'Stage padding (px)',
+                                    description:
+                                        'Extra space (in pixels) between the highlighted element and the cutout edge.',
+                                    defaultValue: 8,
+                                    min: 0,
+                                },
+                                stageRadius: {
+                                    ref: 'stageRadius',
+                                    type: 'integer',
+                                    label: 'Stage border radius (px)',
+                                    description:
+                                        'Corner rounding (in pixels) of the highlight cutout around the target element.',
+                                    defaultValue: 5,
+                                    min: 0,
+                                },
+                                nextBtnText: {
+                                    ref: 'nextBtnText',
+                                    type: 'string',
+                                    label: 'Next button text',
+                                    description:
+                                        'Label shown on the Next button in the popover. Supports expressions for localization.',
+                                    defaultValue: 'Next',
+                                    expression: 'optional',
+                                },
+                                prevBtnText: {
+                                    ref: 'prevBtnText',
+                                    type: 'string',
+                                    label: 'Previous button text',
+                                    description:
+                                        'Label shown on the Previous button. Supports expressions for localization.',
+                                    defaultValue: 'Previous',
+                                    expression: 'optional',
+                                },
+                                doneBtnText: {
+                                    ref: 'doneBtnText',
+                                    type: 'string',
+                                    label: 'Done button text',
+                                    description:
+                                        'Label shown on the final step button. Supports expressions for localization.',
+                                    defaultValue: 'Done',
+                                    expression: 'optional',
                                 },
 
                                 // Steps sub-array
@@ -730,6 +807,8 @@ export default function ext(_galaxy) {
                                             ref: 'selectorType',
                                             type: 'string',
                                             label: 'Target type',
+                                            description:
+                                                'How the step finds its target: a Qlik object, a CSS selector, or no target (standalone dialog).',
                                             component: 'dropdown',
                                             defaultValue: 'object',
                                             options: [
@@ -761,6 +840,8 @@ export default function ext(_galaxy) {
                                             ref: 'customCssSelector',
                                             type: 'string',
                                             label: 'CSS selector',
+                                            description:
+                                                'A CSS selector (e.g. .my-class or #my-id) that identifies the DOM element to highlight.',
                                             defaultValue: '',
                                             expression: 'optional',
                                             /**
@@ -775,6 +856,8 @@ export default function ext(_galaxy) {
                                             ref: 'popoverTitle',
                                             type: 'string',
                                             label: 'Popover title',
+                                            description:
+                                                'Bold heading displayed at the top of the tour step popover.',
                                             defaultValue: '',
                                             expression: 'optional',
                                         },
@@ -782,6 +865,8 @@ export default function ext(_galaxy) {
                                             ref: 'popoverDescription',
                                             type: 'string',
                                             label: 'Popover description',
+                                            description:
+                                                'Body text of the popover. Supports Markdown and raw HTML.',
                                             defaultValue: '',
                                             expression: 'optional',
                                         },
@@ -789,6 +874,8 @@ export default function ext(_galaxy) {
                                             ref: 'popoverSide',
                                             type: 'string',
                                             label: 'Popover position',
+                                            description:
+                                                'Which side of the highlighted element the popover appears on.',
                                             component: 'dropdown',
                                             defaultValue: 'bottom',
                                             options: [
@@ -802,6 +889,8 @@ export default function ext(_galaxy) {
                                             ref: 'popoverAlign',
                                             type: 'string',
                                             label: 'Popover alignment',
+                                            description:
+                                                'How the popover is aligned along its chosen side (start, center, or end).',
                                             component: 'dropdown',
                                             defaultValue: 'center',
                                             options: [
@@ -814,6 +903,8 @@ export default function ext(_galaxy) {
                                             ref: 'dialogSize',
                                             type: 'string',
                                             label: 'Dialog size',
+                                            description:
+                                                'Fixed dimensions for the standalone dialog. Only applies when Target type is "Standalone Dialog".',
                                             component: 'dropdown',
                                             defaultValue: 'medium',
                                             options: [
@@ -862,6 +953,8 @@ export default function ext(_galaxy) {
                                             ref: 'disableInteraction',
                                             type: 'boolean',
                                             label: 'Disable interaction during step',
+                                            description:
+                                                'When on, the user cannot click the highlighted element while the step is active.',
                                             defaultValue: true,
                                             component: 'switch',
                                             options: [
@@ -891,12 +984,17 @@ export default function ext(_galaxy) {
                         },
                         homepageGit: {
                             component: 'link',
-                            label: 'Documentation',
+                            label: 'Documentation & Source Code',
                             url: 'https://github.com/ptarmiganlabs/onboard.qs',
+                        },
+                        reportBug: {
+                            component: 'link',
+                            label: 'Report a Bug / Request a Feature',
+                            url: 'https://github.com/ptarmiganlabs/onboard.qs/issues/new/choose',
                         },
                         homepagePlabs: {
                             component: 'link',
-                            label: 'Ptarmigan Labs - Home of SenseOps',
+                            label: 'Ptarmigan Labs — Qlik Sense tools & consulting',
                             url: 'https://ptarmiganlabs.com/',
                         },
                     },

@@ -243,24 +243,81 @@ export function renderEditPlaceholder(element, layout) {
     const tourCount = tours.length;
     const stepCount = tours.reduce((sum, t) => sum + (t.steps?.length || 0), 0);
 
+    const statsText = `${tourCount} tour${tourCount !== 1 ? 's' : ''} \u00b7 ${stepCount} step${stepCount !== 1 ? 's' : ''}`;
+
     element.innerHTML = `
-        <div class="onboard-qs-widget onboard-qs-widget--edit">
+        <div class="onboard-qs-widget onboard-qs-widget--edit"
+             title="Onboard.qs \u2014 ${statsText}">
             <div class="onboard-qs-widget__edit-info">
                 <div class="onboard-qs-widget__icon">&#127891;</div>
                 <div class="onboard-qs-widget__title">Onboard.qs</div>
                 <div class="onboard-qs-widget__stats">
                     ${tourCount} tour${tourCount !== 1 ? 's' : ''} &middot; ${stepCount} step${stepCount !== 1 ? 's' : ''}
                 </div>
-                <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-edit-tours-btn">
-                    Edit Tours
-                </button>
-                <div class="onboard-qs-widget__links">
-                    <a href="https://ptarmiganlabs.com" target="_blank" rel="noopener noreferrer">ptarmiganlabs.com</a> &mdash; Qlik Sense tools, blog posts, extensions &amp; consulting
-                    <a href="https://github.com/ptarmiganlabs/onboard.qs" target="_blank" rel="noopener noreferrer">GitHub</a> &mdash; source code, docs &amp; issues
+                <div class="onboard-qs-widget__edit-actions">
+                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-edit-tours-btn">
+                        Edit Tours
+                    </button>
+                    <button class="onboard-qs-btn onboard-qs-btn--ghost onboard-qs-about-btn"
+                            title="About Onboard.qs">
+                        &#9432; About
+                    </button>
                 </div>
             </div>
         </div>
     `;
+}
+
+/**
+ * Open a modal "About" dialog with extension info, version, and links.
+ *
+ * @param {string} version - Extension version string.
+ */
+export function openAboutModal(version) {
+    // Remove any existing about modal
+    const existing = document.querySelector('.onboard-qs-about-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'onboard-qs-about-overlay';
+    overlay.innerHTML = `
+        <div class="onboard-qs-about-modal">
+            <div class="onboard-qs-about-modal__header">
+                <span class="onboard-qs-about-modal__icon">&#127891;</span>
+                <span class="onboard-qs-about-modal__title">Onboard.qs</span>
+                <span class="onboard-qs-about-modal__version">v${escapeHtml(version)}</span>
+            </div>
+            <p class="onboard-qs-about-modal__tagline">
+                Interactive onboarding tours for Qlik Sense apps.
+            </p>
+            <div class="onboard-qs-about-modal__links">
+                <a href="https://github.com/ptarmiganlabs/onboard.qs" target="_blank" rel="noopener noreferrer">
+                    <strong>Documentation &amp; Source Code</strong>
+                    <span>README, architecture docs, and full source on GitHub.</span>
+                </a>
+                <a href="https://github.com/ptarmiganlabs/onboard.qs/issues/new/choose" target="_blank" rel="noopener noreferrer">
+                    <strong>Report a Bug / Request a Feature</strong>
+                    <span>Open an issue on GitHub to report problems or suggest improvements.</span>
+                </a>
+                <a href="https://ptarmiganlabs.com" target="_blank" rel="noopener noreferrer">
+                    <strong>Ptarmigan Labs</strong>
+                    <span>Qlik Sense tools, blog posts, extensions &amp; consulting.</span>
+                </a>
+            </div>
+            <div class="onboard-qs-about-modal__footer">
+                <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-about-close-btn">Close</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    /** Close handler for the about modal. */
+    const close = () => overlay.remove();
+    overlay.querySelector('.onboard-qs-about-close-btn').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+    });
 }
 
 /**

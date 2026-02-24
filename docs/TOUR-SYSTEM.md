@@ -22,6 +22,9 @@ classDiagram
         +Object popoverButtonBgColor
         +Object popoverButtonTextColor
         +Object popoverButtonHoverBgColor
+        +Object popoverPrevBgColor
+        +Object popoverPrevTextColor
+        +Object popoverPrevHoverBgColor
         +Object progressBarColor
         +Object menuBgColor
         +Object menuTextColor
@@ -55,6 +58,9 @@ classDiagram
         +string popoverSide
         +string popoverAlign
         +boolean disableInteraction
+        +string dialogSize
+        +number customDialogWidth
+        +number customDialogHeight
     }
 
     class Widget {
@@ -185,7 +191,7 @@ This is critical because:
 
 ## Tour editor (edit mode)
 
-The tour editor is a full-screen modal overlay (`tour-editor.js`, ~715 lines) that opens when the user clicks "Edit Tours" in the extension placeholder.
+The tour editor is a full-screen modal overlay (`tour-editor.js`, ~879 lines) that opens when the user clicks "Edit Tours" in the extension placeholder.
 
 ```mermaid
 flowchart TD
@@ -215,6 +221,64 @@ flowchart TD
 
 The step form includes a dropdown of all objects on the current sheet. The list is populated by calling `adapter.getSheetObjects(app)`, which uses the Engine API to enumerate objects and enrich their titles.
 
+## Tour import & export
+
+The tour editor includes **Export** and **Import** buttons (in the editor header) powered by `tour/tour-io.js`. This allows tour configurations to be shared across apps, backed up, or migrated between environments.
+
+### Export
+
+`exportToursAndTheme(layout)` serializes the following to a JSON file:
+
+| Field | Content |
+|---|---|
+| `version` | Schema version (currently `1`) |
+| `exportedAt` | ISO 8601 timestamp |
+| `tours` | Complete tours array (all tours, steps, and settings) |
+| `theme` | Theme configuration (preset, overrides) |
+| `widget` | Widget settings (button text, style, alignment) |
+
+The file is downloaded as `onboard-qs-tours.json` via a temporary `<a>` element.
+
+### Import
+
+`importFromFile()` opens a file picker, reads the selected JSON file, and validates it with `validateImportData()`:
+
+- Must be a JSON object with a `tours` array
+- Each tour must have a `tourName` (string) and `tourId` (string)
+- Each tour must have a `steps` array
+
+After validation, the tour editor shows an **import dialog** where the user selects a merge mode and optionally toggles **Import theme settings**.
+
+### Merge modes
+
+`mergeTours(existingTours, importedTours, mode)` combines tours according to the selected strategy:
+
+```mermaid
+flowchart TD
+    A[Import validated] --> B{Merge mode?}
+    B -- Replace Matching --> C[Match by tourName]
+    C --> C1[Replace matched tours<br/>keeping existing tourId]
+    C --> C2[Append unmatched imports<br/>with new tourId]
+    B -- Replace All --> D[Delete all existing tours]
+    D --> D1[Import all with new tourIds]
+    B -- Add to Existing --> E[Append all imports<br/>with new tourIds]
+```
+
+### Standalone dialog sizes
+
+When a step targets no element (`selectorType: 'none'`), the dialog size can be configured:
+
+| Size | CSS class | Dimensions |
+|---|---|---|
+| Dynamic | `onboard-qs-dialog-dynamic` | Fit content |
+| Small | `onboard-qs-dialog-small` | 320 × 220 px |
+| Medium (default) | `onboard-qs-dialog-medium` | 480 × 320 px |
+| Large | `onboard-qs-dialog-large` | 640 × 420 px |
+| Extra Large | `onboard-qs-dialog-x-large` | 800 × 520 px |
+| Custom | `onboard-qs-dialog-custom` | User-specified via `customDialogWidth` / `customDialogHeight` |
+
+Custom dimensions are applied via `onPopoverRender` as inline styles on the popover wrapper.
+
 ## Markdown support in descriptions
 
 Step descriptions support a subset of Markdown, converted to HTML by `util/markdown.js`:
@@ -234,22 +298,36 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 | double newline | paragraph break |
 | single newline | `<br>` |
 
-The converter is intentionally minimal (~60 lines) to keep the bundle small.
+The converter is intentionally minimal (~112 lines) to keep the bundle small.
 
 ## driver.js configuration
 
-The extension configures driver.js with these defaults (overridable per tour):
+The extension configures driver.js with the following settings. Some are configurable per tour (via the property panel or tour editor), while others are hardcoded.
 
-| Setting | Default | Notes |
+### Configurable per tour
+
+| Setting | Default | Configured in | Notes |
+|---|---|---|---|
+| `showProgress` | `true` | Property panel | "1 of 5" progress text |
+| `allowKeyboardControl` | `true` | Property panel | Arrow-key / Escape navigation |
+| `overlayColor` | `rgba(0,0,0,0.6)` | Property panel + Tour editor | Semi-transparent backdrop |
+| `overlayOpacity` | `60` (%) | Property panel + Tour editor | Opacity percentage (0–100) |
+| `stagePadding` | `8` | Property panel + Tour editor | Padding around highlighted element (px) |
+| `stageRadius` | `5` | Property panel + Tour editor | Border radius of the highlight cutout (px) |
+| `nextBtnText` | `'Next'` | Property panel + Tour editor | Label for the Next button (expression-enabled in property panel) |
+| `prevBtnText` | `'Previous'` | Property panel + Tour editor | Label for the Previous button (expression-enabled in property panel) |
+| `doneBtnText` | `'Done'` | Property panel + Tour editor | Label for the final step's button (expression-enabled in property panel) |
+
+### Fixed (not user-configurable)
+
+| Setting | Value | Notes |
 |---|---|---|
 | `animate` | `true` | Smooth transitions between steps |
 | `smoothScroll` | `true` | Scrolls to off-screen elements |
-| `allowClose` | `true` | User can dismiss at any time |
-| `showProgress` | `true` | "1 of 5" progress text |
-| `stagePadding` | `8` | Padding around highlighted element |
-| `stageRadius` | `5` | Border radius of the highlight cutout |
+| `allowClose` | `true` | User can always dismiss the tour |
 | `popoverClass` | `'onboard-qs-popover'` | Custom CSS class for Qlik Sense styling |
-| `overlayColor` | `rgba(0,0,0,0.6)` | Semi-transparent backdrop |
+| `progressText` | `'{{current}} of {{total}}'` | Progress text template |
+| `showButtons` | `['next', 'previous', 'close']` | All navigation buttons shown |
 
 ### CSS theming
 
@@ -259,7 +337,7 @@ All visual styling is driven by **CSS custom properties** (variables) generated 
 2. The resulting CSS variable map is applied to the widget container via `applyThemeToElement()`.
 3. For driver.js popovers (attached to `document.body`), `buildPopoverThemeCSS()` generates scoped CSS injected via `injectThemeStyle()`.
 
-Four built-in presets are available: **Default**, **Lean Green Machine**, **Corporate Blue**, and **Corporate Gold**. Each preset defines a complete set of colors, font sizes, border radii, and font family. Individual overrides (via color pickers and text inputs in the property panel) take precedence over the preset.
+Four built-in presets are available: **Default**, **The Lean Green Machine**, **Corporate Blue**, and **Corporate Gold**. Each preset defines a complete set of colors, font sizes, border radii, and font family. Individual overrides (via color pickers and text inputs in the property panel) take precedence over the preset.
 
 Cloud-specific z-index overrides ensure the overlay renders above the Cloud MUI toolbar:
 

@@ -28,6 +28,7 @@ graph TD
         subgraph "Tour Engine"
             TR[tour/tour-runner.js<br/>driver.js Integration]
             TS[tour/tour-storage.js<br/>localStorage Tracking]
+            TI[tour/tour-io.js<br/>Import/Export]
         end
 
         subgraph "UI Layer"
@@ -68,6 +69,7 @@ graph TD
     WR --> TR
     TR --> TS
     TE --> TR
+    TE --> TI
     TR --> PI
 ```
 
@@ -81,15 +83,16 @@ graph TD
 | `platform/cloud.js` | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently. |
 | `platform/selectors.js` | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions. |
 | `theme/resolve.js` | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`. |
-| `theme/presets.js` | Built-in theme presets (Default, Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values. |
+| `theme/presets.js` | Built-in theme presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values. |
 | `tour/tour-runner.js` | Transforms tour config into driver.js steps, launches tours, handles highlight preview. |
 | `tour/tour-storage.js` | localStorage-based tracking of "has user seen this tour version". |
+| `tour/tour-io.js` | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing). |
 | `ui/widget-renderer.js` | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic. |
 | `ui/tour-editor.js` | Full-screen modal editor for creating/editing tours and steps in edit mode. |
 | `ext.js` | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor). |
 | `object-properties.js` | Default QAE properties for new extension instances. |
 | `util/logger.js` | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`. |
-| `util/markdown.js` | Minimal Markdown-to-HTML converter (~60 lines) for tour step descriptions. |
+| `util/markdown.js` | Minimal Markdown-to-HTML converter (~112 lines) for tour step descriptions. |
 | `util/uuid.js` | UUID v4 generator for tour/step IDs. |
 | `style.css` | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes. |
 
@@ -121,6 +124,32 @@ sequenceDiagram
     PI-->>TR: CSS selector string
     TR->>DJ: driver(config).drive()
     DJ-->>QS: Overlay + popovers on Qlik objects
+```
+
+## Data flow: tour import/export
+
+```mermaid
+sequenceDiagram
+    participant TE as tour-editor.js
+    participant IO as tour-io.js
+    participant FS as File System
+    participant MD as Enigma Model
+
+    Note over TE,FS: Export Flow
+    TE->>IO: exportToursAndTheme(layout)
+    IO->>IO: Serialize {tours, theme, widget} + metadata
+    IO->>FS: Trigger download (onboard-qs-tours.json)
+
+    Note over TE,FS: Import Flow
+    TE->>IO: importFromFile()
+    IO->>FS: Open file picker
+    FS-->>IO: JSON file contents
+    IO->>IO: validateImportData(parsed)
+    IO-->>TE: { tours, theme, widget }
+    Note over TE: Show import dialog (merge mode + theme toggle)
+    TE->>IO: mergeTours(existing, imported, mode)
+    IO-->>TE: Merged tours array
+    TE->>MD: model.setProperties(updated)
 ```
 
 ## Data flow: edit mode
@@ -182,7 +211,8 @@ src/
 │   └── selectors.js          # CSS selector registry
 ├── tour/
 │   ├── tour-runner.js        # driver.js integration
-│   └── tour-storage.js       # localStorage tracking
+│   ├── tour-storage.js       # localStorage tracking
+│   └── tour-io.js            # Tour import/export (JSON, merge modes)
 ├── theme/
 │   ├── resolve.js            # Theme resolver (preset + overrides → CSS vars)
 │   └── presets.js            # Built-in theme presets (4)

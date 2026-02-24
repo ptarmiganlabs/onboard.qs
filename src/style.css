@@ -106,6 +106,19 @@
     background: var(--oqs-btn-hover-bg, #404040);
 }
 
+.onboard-qs-btn--ghost {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    padding: 5px 10px;
+}
+.onboard-qs-btn--ghost:hover {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #999;
+}
+
 .onboard-qs-btn--small {
     padding: 4px 10px;
     font-size: 12px;
@@ -153,47 +166,186 @@
     background: linear-gradient(135deg, #f0faf4, #e8f5ee);
     border: 2px dashed #009845;
     border-radius: 6px;
+    overflow: hidden;
 }
 
 .onboard-qs-widget__edit-info {
     text-align: center;
-    padding: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
 
 .onboard-qs-widget__icon {
-    font-size: 48px;
-    margin-bottom: 8px;
+    font-size: 32px;
+    line-height: 1;
 }
 
 .onboard-qs-widget__title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
 }
 
 .onboard-qs-widget__stats {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
 
-.onboard-qs-widget__links {
-    margin-top: 10px;
+.onboard-qs-widget__edit-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* --- Edit mode: responsive size tiers (xs / sm / md via data-size) --- */
+
+/*
+ * md  (height >= 160px) — icon, title, stats, buttons: everything visible.
+ * sm  (80-159px)        — hide stats; tighten padding.
+ * xs  (< 80px)          — hide icon + stats; compact single-row layout.
+ */
+
+/* sm tier */
+.onboard-qs-widget--edit[data-size="sm"] .onboard-qs-widget__stats {
+    display: none;
+}
+.onboard-qs-widget--edit[data-size="sm"] .onboard-qs-widget__edit-info {
+    padding: 6px;
+}
+
+/* xs tier */
+.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__icon {
+    display: none;
+}
+.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__stats {
+    display: none;
+}
+.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__edit-info {
+    flex-direction: row;
+    gap: 6px;
+    padding: 4px 8px;
+    text-align: left;
+}
+.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__title {
+    font-size: 12px;
+    white-space: nowrap;
+}
+.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* xs + narrow: stack vertically again */
+.onboard-qs-widget--edit[data-size="xs"][data-narrow="true"] .onboard-qs-widget__edit-info {
+    flex-direction: column;
+    text-align: center;
+}
+
+/* --- About modal --- */
+
+.onboard-qs-about-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.onboard-qs-about-modal {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    width: 380px;
+    max-width: 92vw;
+    padding: 28px 28px 20px;
+    animation: oqs-about-fade-in 0.15s ease;
+}
+
+@keyframes oqs-about-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.onboard-qs-about-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.onboard-qs-about-modal__icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.onboard-qs-about-modal__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.onboard-qs-about-modal__version {
+    font-size: 12px;
+    color: #888;
+    margin-left: auto;
+}
+
+.onboard-qs-about-modal__tagline {
+    font-size: 13px;
+    color: #555;
+    margin: 4px 0 16px;
+    line-height: 1.4;
+}
+
+.onboard-qs-about-modal__links {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 13px;
-    color: #888;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.onboard-qs-widget__links a {
-    color: #009845;
+.onboard-qs-about-modal__links a {
+    display: block;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
 }
 
-.onboard-qs-widget__links a:hover {
-    text-decoration: underline;
+.onboard-qs-about-modal__links a:hover {
+    border-color: #009845;
+    background: #f6fcf8;
+}
+
+.onboard-qs-about-modal__links a strong {
+    display: block;
+    font-size: 13px;
+    color: #009845;
+    margin-bottom: 2px;
+}
+
+.onboard-qs-about-modal__links a span {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.onboard-qs-about-modal__footer {
+    text-align: right;
 }
 
 /* ========================================================================
@@ -495,6 +647,73 @@
 
 .onboard-qs-editor__field-row .onboard-qs-editor__field {
     flex: 1;
+}
+
+/* --- Info icon with tooltip --- */
+
+.onboard-qs-editor__info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
+    line-height: 1;
+    color: #888;
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.onboard-qs-editor__info:hover {
+    color: #009845;
+}
+
+.onboard-qs-editor__info::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: normal;
+    width: max-content;
+    max-width: 260px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, visibility 0.15s;
+    z-index: 10000;
+}
+
+.onboard-qs-editor__info::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, visibility 0.15s;
+    z-index: 10000;
+}
+
+.onboard-qs-editor__info:hover::after,
+.onboard-qs-editor__info:hover::before {
+    opacity: 1;
+    visibility: visible;
 }
 
 .onboard-qs-editor__input,

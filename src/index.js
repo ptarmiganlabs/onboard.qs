@@ -10,12 +10,12 @@ import {
 } from '@nebula.js/stardust';
 import ext from './ext';
 import definition from './object-properties';
-import { renderWidget, renderEditPlaceholder } from './ui/widget-renderer';
+import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
-import logger from './util/logger';
+import logger, { PACKAGE_VERSION } from './util/logger';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
@@ -145,6 +145,35 @@ export default function supernova(galaxy) {
                     // No platform detection needed — render immediately.
                     renderEditPlaceholder(element, layout);
 
+                    // --- Responsive size tiers via ResizeObserver ---
+                    const widgetEl = element.querySelector('.onboard-qs-widget--edit');
+                    let resizeObserver;
+                    if (widgetEl && typeof ResizeObserver !== 'undefined') {
+                        /**
+                         * Classify the available height into xs / sm / md tiers
+                         * and stamp a data-size attribute so CSS can adapt.
+                         */
+                        const classify = () => {
+                            const h = widgetEl.clientHeight;
+                            const w = widgetEl.clientWidth;
+                            let size = 'md';
+                            if (h < 80) size = 'xs';
+                            else if (h < 160) size = 'sm';
+                            widgetEl.setAttribute('data-size', size);
+                            // Narrow flag for xs row→column fallback
+                            widgetEl.setAttribute('data-narrow', w < 160 ? 'true' : 'false');
+                        };
+                        resizeObserver = new ResizeObserver(classify);
+                        resizeObserver.observe(widgetEl);
+                        classify(); // initial classification
+                    }
+
+                    // Attach "About" button handler
+                    const aboutBtn = element.querySelector('.onboard-qs-about-btn');
+                    if (aboutBtn) {
+                        aboutBtn.addEventListener('click', () => openAboutModal(PACKAGE_VERSION));
+                    }
+
                     // Attach "Edit Tours" button handler
                     const editBtn = element.querySelector('.onboard-qs-edit-tours-btn');
                     if (editBtn) {
@@ -170,7 +199,11 @@ export default function supernova(galaxy) {
                         });
                     }
                     initRef.current = true;
-                    return;
+
+                    // Cleanup: disconnect observer when effect re-runs or unmounts
+                    return () => {
+                        if (resizeObserver) resizeObserver.disconnect();
+                    };
                 }
 
                 // Analysis mode: needs platform for tour selector resolution
