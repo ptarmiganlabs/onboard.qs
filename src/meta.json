@@ -2,7 +2,7 @@
     "name": "Onboard.qs",
     "description": "Interactive onboarding tours for Qlik Sense apps",
     "type": "visualization",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "icon": "text-image",
     "preview": "preview.png",
     "author": "Göran Sander, Ptarmigan Labs",
