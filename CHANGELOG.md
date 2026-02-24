@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.0...onboard-qs-v1.2.1) (2026-02-24)
+
+
+### Bug Fixes
+
+* enhance about modal with keyboard close functionality ([d56f640](https://github.com/ptarmiganlabs/onboard.qs/commit/d56f640c6c110f8166da7b50787618dd7c66ade2))
+
 ## [1.2.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.1.1...onboard-qs-v1.2.0) (2026-02-24)
 
 
