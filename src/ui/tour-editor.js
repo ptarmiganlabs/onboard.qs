@@ -358,6 +358,57 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                 tour.allowKeyboard = e.target.checked;
             });
         }
+
+        // Overlay & stage settings
+        const overlayColorInput = overlay.querySelector('.onboard-qs-editor__tour-overlay-color');
+        if (overlayColorInput) {
+            overlayColorInput.addEventListener('input', (e) => {
+                tour.overlayColor = e.target.value;
+            });
+        }
+
+        const overlayOpacityInput = overlay.querySelector('.onboard-qs-editor__tour-overlay-opacity');
+        if (overlayOpacityInput) {
+            overlayOpacityInput.addEventListener('input', (e) => {
+                tour.overlayOpacity = parseInt(e.target.value, 10) || 0;
+            });
+        }
+
+        const stagePaddingInput = overlay.querySelector('.onboard-qs-editor__tour-stage-padding');
+        if (stagePaddingInput) {
+            stagePaddingInput.addEventListener('input', (e) => {
+                tour.stagePadding = parseInt(e.target.value, 10) || 0;
+            });
+        }
+
+        const stageRadiusInput = overlay.querySelector('.onboard-qs-editor__tour-stage-radius');
+        if (stageRadiusInput) {
+            stageRadiusInput.addEventListener('input', (e) => {
+                tour.stageRadius = parseInt(e.target.value, 10) || 0;
+            });
+        }
+
+        // Navigation button text
+        const nextBtnInput = overlay.querySelector('.onboard-qs-editor__tour-next-btn');
+        if (nextBtnInput) {
+            nextBtnInput.addEventListener('input', (e) => {
+                tour.nextBtnText = e.target.value;
+            });
+        }
+
+        const prevBtnInput = overlay.querySelector('.onboard-qs-editor__tour-prev-btn');
+        if (prevBtnInput) {
+            prevBtnInput.addEventListener('input', (e) => {
+                tour.prevBtnText = e.target.value;
+            });
+        }
+
+        const doneBtnInput = overlay.querySelector('.onboard-qs-editor__tour-done-btn');
+        if (doneBtnInput) {
+            doneBtnInput.addEventListener('input', (e) => {
+                tour.doneBtnText = e.target.value;
+            });
+        }
     }
 
     // Attach top-level listeners
@@ -609,6 +660,16 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
 }
 
 /**
+ * Build a small info-icon span with a CSS tooltip.
+ *
+ * @param {string} text - The tooltip text to display.
+ * @returns {string} HTML snippet for the info icon.
+ */
+function infoIcon(text) {
+    return `<span class="onboard-qs-editor__info" data-tooltip="${escapeAttr(text)}">&#9432;</span>`;
+}
+
+/**
  * Build the detail/editing panel (right).
  *
  * @param {object|null} tour - The selected tour object or null.
@@ -637,25 +698,66 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                 <div class="onboard-qs-editor__section">
                     <h4>Tour Settings</h4>
                     <label class="onboard-qs-editor__field">
-                        <span>Tour Name</span>
+                        <span>Tour Name ${infoIcon('A descriptive name for this tour. Shown in the tour launch menu.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-name-input"
                                value="${escapeAttr(tour.tourName || '')}" />
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-autostart" ${tour.autoStart ? 'checked' : ''} />
-                        <span>Auto-start on sheet load</span>
+                        <span>Auto-start on sheet load ${infoIcon('Automatically launch this tour when the sheet is opened, instead of requiring the user to click.')}</span>
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-showonce" ${tour.showOnce !== false ? 'checked' : ''} />
-                        <span>Show only once per user</span>
+                        <span>Show only once per user ${infoIcon('When enabled, the auto-started tour is only shown once per user (tracked in localStorage). Increment Tour version to reset.')}</span>
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-progress" ${tour.showProgress !== false ? 'checked' : ''} />
-                        <span>Show progress indicator</span>
+                        <span>Show progress indicator ${infoIcon('Display a "Step X of Y" progress text inside each popover.')}</span>
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-keyboard" ${tour.allowKeyboard !== false ? 'checked' : ''} />
-                        <span>Allow keyboard navigation</span>
+                        <span>Allow keyboard navigation ${infoIcon('Let users navigate steps with arrow keys and close the tour with Escape.')}</span>
+                    </label>
+                </div>
+                <div class="onboard-qs-editor__section">
+                    <h4>Overlay &amp; Stage</h4>
+                    <label class="onboard-qs-editor__field">
+                        <span>Overlay color ${infoIcon('CSS color for the backdrop behind the highlighted element, e.g. rgba(0,0,0,0.6) or #000.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-color"
+                               value="${escapeAttr(tour.overlayColor || 'rgba(0, 0, 0, 0.6)')}" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Overlay opacity (0\u2013100) ${infoIcon('How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque.')}</span>
+                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-opacity"
+                               value="${tour.overlayOpacity != null ? tour.overlayOpacity : 60}" min="0" max="100" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Stage padding (px) ${infoIcon('Extra space (in pixels) between the highlighted element and the cutout edge.')}</span>
+                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-padding"
+                               value="${tour.stagePadding != null ? tour.stagePadding : 8}" min="0" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Stage border radius (px) ${infoIcon('Corner rounding (in pixels) of the highlight cutout around the target element.')}</span>
+                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-radius"
+                               value="${tour.stageRadius != null ? tour.stageRadius : 5}" min="0" />
+                    </label>
+                </div>
+                <div class="onboard-qs-editor__section">
+                    <h4>Navigation Buttons</h4>
+                    <label class="onboard-qs-editor__field">
+                        <span>Next button text ${infoIcon('Label shown on the Next button in the popover.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-next-btn"
+                               value="${escapeAttr(tour.nextBtnText || 'Next')}" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Previous button text ${infoIcon('Label shown on the Previous button in the popover.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-prev-btn"
+                               value="${escapeAttr(tour.prevBtnText || 'Previous')}" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Done button text ${infoIcon('Label shown on the final step button to finish the tour.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-done-btn"
+                               value="${escapeAttr(tour.doneBtnText || 'Done')}" />
                     </label>
                 </div>
     `;
@@ -676,7 +778,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                 <div class="onboard-qs-editor__section">
                     <h4>Step ${stepIndex + 1} Details</h4>
                     <label class="onboard-qs-editor__field">
-                        <span>Target Type</span>
+                        <span>Target Type ${infoIcon('How the step finds its target: a Qlik object, a CSS selector, or no target (standalone dialog).')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-selector-type">
                             <option value="object" ${selectorType === 'object' ? 'selected' : ''}>Sheet Object</option>
                             <option value="css" ${selectorType === 'css' ? 'selected' : ''}>Custom CSS Selector</option>
@@ -684,26 +786,26 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         </select>
                     </label>
                     <label class="onboard-qs-editor__field" style="${selectorType !== 'object' ? 'display:none' : ''}">
-                        <span>Target Object</span>
+                        <span>Target Object ${infoIcon('The Qlik Sense sheet object to highlight during this step.')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-object">
                             <option value="">-- Select an object --</option>
                             ${objectOptions}
                         </select>
                     </label>
                     <label class="onboard-qs-editor__field" style="${selectorType !== 'css' ? 'display:none' : ''}">
-                        <span>CSS Selector</span>
+                        <span>CSS Selector ${infoIcon('A CSS selector (e.g. .my-class or #my-id) that identifies the DOM element to highlight.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-css-selector"
                                value="${escapeAttr(step.customCssSelector || '')}"
                                placeholder="e.g., .qlik-help-button, #my-element" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Popover Title</span>
+                        <span>Popover Title ${infoIcon('Bold heading displayed at the top of the tour step popover.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-title"
                                value="${escapeAttr(step.popoverTitle || '')}"
                                placeholder="e.g., Sales Overview" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Popover Description
+                        <span>Popover Description ${infoIcon('Body text of the popover. Supports Markdown and raw HTML.')}
                             <small class="onboard-qs-editor__hint">
                                 (Markdown supported)
                             </small>
@@ -715,7 +817,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     </label>
                     <div class="onboard-qs-editor__field-row">
                         <label class="onboard-qs-editor__field">
-                            <span>Popover Side</span>
+                            <span>Popover Side ${infoIcon('Which side of the highlighted element the popover appears on.')}</span>
                             <select class="onboard-qs-editor__select onboard-qs-editor__step-side">
                                 <option value="top" ${step.popoverSide === 'top' ? 'selected' : ''}>Top</option>
                                 <option value="bottom" ${step.popoverSide === 'bottom' || !step.popoverSide ? 'selected' : ''}>Bottom</option>
@@ -724,7 +826,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                             </select>
                         </label>
                         <label class="onboard-qs-editor__field">
-                            <span>Popover Align</span>
+                            <span>Popover Align ${infoIcon('How the popover is aligned along its chosen side (start, center, or end).')}</span>
                             <select class="onboard-qs-editor__select onboard-qs-editor__step-align">
                                 <option value="start" ${step.popoverAlign === 'start' ? 'selected' : ''}>Start</option>
                                 <option value="center" ${step.popoverAlign === 'center' || !step.popoverAlign ? 'selected' : ''}>Center</option>
@@ -733,7 +835,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         </label>
                     </div>
                     <label class="onboard-qs-editor__field" style="${selectorType !== 'none' ? 'display:none' : ''}">
-                        <span>Dialog Size</span>
+                        <span>Dialog Size ${infoIcon('Fixed dimensions for the standalone dialog. Only applies when Target type is "Standalone Dialog".')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-dialog-size">
                             <option value="dynamic" ${step.dialogSize === 'dynamic' ? 'selected' : ''}>Dynamic (fit content)</option>
                             <option value="small" ${step.dialogSize === 'small' ? 'selected' : ''}>Small (320 × 220)</option>
@@ -758,7 +860,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__step-interaction"
                                ${step.disableInteraction !== false ? 'checked' : ''} />
-                        <span>Disable interaction with target during this step</span>
+                        <span>Disable interaction with target during this step ${infoIcon('When enabled, the user cannot click the highlighted element while this step is active.')}</span>
                     </label>
                     <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-editor__preview-step">
                         &#128065; Preview This Step

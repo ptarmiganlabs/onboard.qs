@@ -13,10 +13,11 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Multiple tours per sheet** — define intro tours, advanced walkthroughs, or feature announcements, each with independent settings.
 - **Sheet object targeting** — select any object on the current sheet from a dropdown. The extension resolves the correct DOM element at runtime.
 - **Custom CSS selector targeting** — target any DOM element (toolbar buttons, header items, other extensions) with a raw CSS selector.
-- **Markdown descriptions** — step descriptions support Markdown: **bold**, _italic_, [links](url), ![images](url), lists, blockquotes, inline code, and more. Converted to HTML at render time with a built-in mini parser (~100 lines, zero dependencies).
+- **Markdown descriptions** — step descriptions support Markdown: **bold**, _italic_, [links](url), ![images](url), lists, blockquotes, inline code, and more. Converted to HTML at render time with a built-in mini parser (~112 lines, zero dependencies).
 - **Auto-start with show-once** — tours can launch automatically when the sheet loads and remember (via `localStorage`) whether the user has already seen them.
-- **Theme presets & color pickers** — choose from four built-in presets (Default, Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually with native Qlik color pickers. Font sizes, border radii, font weight, and font family are all configurable.
+- **Theme presets & color pickers** — choose from four built-in presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually with native Qlik color pickers. Font sizes, border radii, font weight, and font family are all configurable.
 - **Configurable appearance** — button label, style (primary/secondary/minimal/outlined/pill), horizontal & vertical alignment, progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
+- **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes: Replace Matching, Replace All, or Add to Existing. Great for sharing tours across apps or backing up configurations.
 - **Platform abstraction** — selector resolution and DOM helpers are isolated behind a platform layer. Both Qlik Cloud and client-managed (Qlik Sense Enterprise on Windows) are fully supported.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
 - **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is driver.js (~5 KB gzip).
@@ -73,6 +74,8 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 | `npm run build`     | Build only (no zip)                                           |
 | `npm run lint`      | ESLint check                                                  |
 | `npm run lint:fix`  | ESLint auto-fix                                               |
+| `npm run format`    | Format all files with Prettier                                |
+| `npm run format:check` | Check formatting without modifying files                   |
 | `npm run start`     | nebula serve (local dev mode)                                 |
 | `npm run cloc`      | Count lines of code                                           |
 
@@ -105,7 +108,7 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 
 | Property              | Type         | Default            | Description                                                                 |
 | --------------------- | ------------ | ------------------ | --------------------------------------------------------------------------- |
-| Theme preset          | Dropdown     | `Lean Green Machine` | `Default`, `Lean Green Machine`, `Corporate Blue`, `Corporate Gold`       |
+| Theme preset          | Dropdown     | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold`       |
 | Font family           | String       | (from preset)      | CSS font-family value (expression-enabled)                                  |
 | Button colors         | Color pickers | (from preset)     | Background, text, hover background, border color                           |
 | Button font size      | String (px)  | (from preset)      | Font size in pixels                                                         |
@@ -131,7 +134,32 @@ All color properties use the native Qlik color-picker component. When you switch
 | Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                              |
 | Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                            |
 
----
+### Standalone Dialog Size (when Target type = Standalone Dialog)
+
+| Size         | Dimensions         |
+| ------------ | ------------------ |
+| Dynamic      | Fit content        |
+| Small        | 320 × 220 px       |
+| Medium       | 480 × 320 px (default) |
+| Large        | 640 × 420 px       |
+| Extra Large  | 800 × 520 px       |
+| Custom       | User-specified width × height |
+
+When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
+
+### Tour Overlay & Navigation
+
+The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay and navigation buttons (expression support for button text is only available in the property panel):
+
+| Property             | Type    | Default               | Description                                                       |
+| -------------------- | ------- | --------------------- | ----------------------------------------------------------------- |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)` | Background color behind the highlighted area                      |
+| Overlay opacity      | Integer | `60`                  | Opacity percentage (0–100)                                        |
+| Stage padding        | Integer | `8`                   | Padding around the highlighted element (px)                       |
+| Stage border radius  | Integer | `5`                   | Border radius of the highlight cutout (px)                        |
+| Next button text     | String  | `Next`                | Label for the “Next” navigation button (expression-enabled)       |
+| Previous button text | String  | `Previous`            | Label for the “Previous” navigation button (expression-enabled)   |
+| Done button text     | String  | `Done`                | Label for the final step’s navigation button (expression-enabled) |---
 
 ## Markdown & HTML in Step Descriptions
 
@@ -338,6 +366,55 @@ This bar chart shows **quarterly revenue** broken down by sales region.
 
 ---
 
+## Tour Import & Export
+
+Onboard.qs lets you export all tours — including theme and widget settings — to a JSON file, and import them back into the same or a different Qlik app. This is useful for:
+
+- **Sharing** tour configurations across apps or tenants
+- **Backing up** tours before making major changes
+- **Migrating** from development to production environments
+
+### How It Works
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant TE as Tour Editor
+    participant IO as tour-io.js
+    participant FS as File System
+
+    Note over User,FS: Export
+    User->>TE: Click "Export" button
+    TE->>IO: exportToursAndTheme(layout)
+    IO->>IO: Serialize tours + theme + widget to JSON
+    IO->>FS: Trigger browser download<br/>(onboard-qs-tours.json)
+
+    Note over User,FS: Import
+    User->>TE: Click "Import" button
+    TE->>IO: importFromFile()
+    IO->>FS: Open file picker
+    FS-->>IO: Selected JSON file
+    IO->>IO: Parse & validate (validateImportData)
+    IO-->>TE: Validated { tours, theme, widget }
+    TE->>User: Show import dialog<br/>(merge mode + theme toggle)
+    User->>TE: Choose merge mode
+    TE->>IO: mergeTours(existing, imported, mode)
+    IO-->>TE: Merged tours array
+    TE->>TE: model.setProperties()
+```
+
+### Merge Modes
+
+| Mode              | Behaviour                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| Replace Matching  | Replace tours whose name matches an imported tour; keep all other existing tours; append new ones       |
+| Replace All       | Delete all existing tours and replace with the imported set                                             |
+| Add to Existing   | Append all imported tours as new entries (duplicates are allowed)                                       |
+
+During import, an optional **Import theme settings** toggle lets you also overwrite the current theme/widget configuration with the values from the import file.
+
+---
+
 ## Standalone Dialog Steps
 
 Not every tour step needs to point at a specific element. **Standalone Dialog** steps display a centered popover with no highlighted target — perfect for:
@@ -407,7 +484,8 @@ onboard.qs/
     │   └── cloud.js          # Qlik Cloud adapter
     ├── tour/
     │   ├── tour-runner.js    # driver.js integration: build steps, run/highlight/destroy
-    │   └── tour-storage.js   # localStorage "show once" tracking
+    │   ├── tour-storage.js   # localStorage "show once" tracking
+    │   └── tour-io.js        # Tour import/export (JSON serialization, merge modes)
     ├── theme/
     │   ├── resolve.js        # Theme resolver (preset + overrides → CSS vars)
     │   └── presets.js        # Built-in theme presets (4 presets)
@@ -429,7 +507,31 @@ onboard.qs/
 | Qlik Sense Enterprise on Windows (client-managed) | Supported |
 | Qlik Cloud                                        | Supported |
 
-The platform abstraction layer ([src/platform/](src/platform/)) isolates all DOM interaction behind a unified interface. Each platform has its own standalone adapter module with platform-specific CSS selectors, sheet-ID detection, and DOM helpers.
+Platform detection is **automatic** — the extension checks `window.location.href` at startup to determine whether it is running on Qlik Cloud or client-managed Qlik Sense:
+
+```mermaid
+flowchart TD
+    A[Extension loaded] --> B{URL contains<br/>qlikcloud.com<br/>or .qlik.com/sense?}
+    B -- Yes --> C[Platform = cloud]
+    B -- No --> D[Platform = client-managed]
+    C --> E[Use Cloud adapter]
+    D --> F[Fetch Sense version from<br/>product-info.js]
+    F --> G[Use Client-managed adapter]
+    E --> H[Unified adapter interface]
+    G --> H
+```
+
+Both platforms share an identical adapter interface:
+
+| Function | Description |
+| --- | --- |
+| `getCurrentSheetId()` | Get the active sheet ID (URL parsing + API fallbacks) |
+| `getSheetObjects(app)` | List objects on the current sheet via Engine API |
+| `getObjectSelector(objectId)` | Get the CSS selector for a Qlik object |
+| `isEditMode(options)` | Check if in edit mode |
+| `injectCSS(css, id)` | Inject a `<style>` element into the page |
+
+The client-managed adapter additionally detects the running Sense version and maps it to a "code path" for version-specific CSS selector overrides. See [docs/PLATFORM-DETECTION.md](docs/PLATFORM-DETECTION.md) for full details.
 
 ---
 
@@ -442,6 +544,60 @@ The platform abstraction layer ([src/platform/](src/platform/)) isolates all DOM
 3. **Show-once**: When a tour completes or is dismissed, a localStorage key (`onboard-qs:{appId}:{sheetId}:{tourId}:v{version}`) is written. Auto-start checks this key and skips if present.
 
 4. **Markdown**: Step descriptions are converted from Markdown to HTML by a built-in mini parser ([src/util/markdown.js](src/util/markdown.js)) before being passed to driver.js popovers.
+
+### Architecture Overview
+
+The following diagram shows how the major components interact:
+
+```mermaid
+flowchart TD
+    subgraph "Qlik Sense Host"
+        QS[Qlik Sense Web Client]
+        EA[Enigma App API]
+    end
+
+    subgraph "Onboard.qs Extension"
+        EP[index.js<br/>Entry Point]
+
+        subgraph "Platform Layer"
+            PI[Platform Detection]
+            CM[Client-Managed Adapter]
+            CL[Cloud Adapter]
+        end
+
+        subgraph "Tour Engine"
+            TR[Tour Runner<br/>driver.js]
+            TS[Tour Storage<br/>localStorage]
+            TI[Tour Import/Export<br/>JSON files]
+        end
+
+        subgraph "UI Layer"
+            WR[Widget Renderer<br/>Analysis Mode]
+            TE[Tour Editor<br/>Edit Mode]
+        end
+
+        subgraph "Theme Layer"
+            TH[Theme Resolver]
+            TP[Theme Presets]
+        end
+    end
+
+    QS --> EP
+    EP --> PI
+    PI --> CM
+    PI --> CL
+    CM --> EA
+    CL --> EA
+    EP --> WR
+    EP --> TE
+    TE --> TI
+    WR --> TR
+    TR --> TS
+    EP --> TH
+    TH --> TP
+```
+
+For a detailed architecture breakdown, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 

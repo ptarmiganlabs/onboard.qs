@@ -497,6 +497,73 @@
     flex: 1;
 }
 
+/* --- Info icon with tooltip --- */
+
+.onboard-qs-editor__info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
+    line-height: 1;
+    color: #888;
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.onboard-qs-editor__info:hover {
+    color: #009845;
+}
+
+.onboard-qs-editor__info::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: normal;
+    width: max-content;
+    max-width: 260px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, visibility 0.15s;
+    z-index: 10000;
+}
+
+.onboard-qs-editor__info::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, visibility 0.15s;
+    z-index: 10000;
+}
+
+.onboard-qs-editor__info:hover::after,
+.onboard-qs-editor__info:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 .onboard-qs-editor__input,
 .onboard-qs-editor__select,
 .onboard-qs-editor__textarea {
