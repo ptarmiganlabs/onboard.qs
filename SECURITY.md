@@ -23,9 +23,8 @@ Please include:
 
 ## Response Timeline
 
-- We will acknowledge receipt within **48 hours**.
-- We aim to provide a fix or mitigation within **7 days** for critical issues.
-- We will credit reporters in the release notes (unless you prefer to remain anonymous).
+- We monitor incoming reports continuously and will acknowledge receipt as quickly as possible.
+- We will credit reporters in the release notes once the issue has been fixed (unless you prefer to remain anonymous).
 
 ## Scope
 
