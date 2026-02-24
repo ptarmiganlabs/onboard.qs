@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.1.1...onboard-qs-v1.2.0) (2026-02-24)
+
+
+### Features
+
+* add better customisation of tour dialogs visual appearance ([b69750b](https://github.com/ptarmiganlabs/onboard.qs/commit/b69750b0ccec0dc7cdea97e419a0adfcf288ab69))
+* enhance widget functionality with responsive sizing and about modal ([f878025](https://github.com/ptarmiganlabs/onboard.qs/commit/f87802569608c6faef7219d92fed0c2f4bbab84b))
+* update extension icon and add preview image in meta.json ([9a69d21](https://github.com/ptarmiganlabs/onboard.qs/commit/9a69d21f8ecfc86914693d4211dc069f07ca8895))
+
 ## [1.1.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.1.0...onboard-qs-v1.1.1) (2026-02-24)
 
 
