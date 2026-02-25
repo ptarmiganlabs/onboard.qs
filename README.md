@@ -7,6 +7,11 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 
 ---
 
+## Documentation & Resources
+
+- Release blog post with overview and demo: [https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/](https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/)
+
+
 ## Features
 
 - **Visual tour builder** — full-screen modal editor with three-panel layout (tours / steps / details). No need to leave the Sense app to configure tours.
