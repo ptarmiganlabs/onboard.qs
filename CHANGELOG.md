@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.1...onboard-qs-v1.2.2) (2026-02-25)
+
+
+### Documentation
+
+* add developer UX screenshot for onboarding ([4a767e0](https://github.com/ptarmiganlabs/onboard.qs/commit/4a767e0763c901e3557d5c7faf659683de4736c1))
+* add documentation link for project release blog post and demo ([d3d4705](https://github.com/ptarmiganlabs/onboard.qs/commit/d3d47051ef8f5a0a5f53fe7d3de245e44cd04760))
+* add screenshot of tour import dialog ([0769441](https://github.com/ptarmiganlabs/onboard.qs/commit/07694412348b75ba36ae4aa2c1ee2840447bf5c2))
+* added screenshots and demo videos ([afacabf](https://github.com/ptarmiganlabs/onboard.qs/commit/afacabf3fdb9007a2c22f2eefa8baa0926dc0746))
+
 ## [1.2.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.0...onboard-qs-v1.2.1) (2026-02-24)
 
 
