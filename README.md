@@ -1,16 +1,15 @@
 # Onboard.qs
 
-Interactive onboarding tours for Qlik Sense apps, powered by a Qlik Sense extension.  
-Works with both Qlik Sense Cloud and Qlik Sense Enterprise on Windows (client-managed).
+Interactive onboarding tours for Qlik Sense apps — no coding required.  
+Works with both **Qlik Sense Cloud** and **Qlik Sense Enterprise on Windows** (client-managed).
 
-Drop this extension onto any Qlik Sense sheet to create guided, step-by-step walkthroughs that highlight objects, explain visualisations, and onboard new users — no coding required.
+Drop this extension onto any Qlik Sense sheet to create guided, step-by-step walkthroughs that highlight objects, explain visualisations, and help new users find their way around your apps.
+
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_enduser_1.gif" alt="Onboard.qs tour in action" width="700" />
+</p>
 
 ---
-
-## Documentation & Resources
-
-- Release blog post with overview and demo: [https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/](https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/)
-
 
 ## Features
 
@@ -18,46 +17,50 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Multiple tours per sheet** — define intro tours, advanced walkthroughs, or feature announcements, each with independent settings.
 - **Sheet object targeting** — select any object on the current sheet from a dropdown. The extension resolves the correct DOM element at runtime.
 - **Custom CSS selector targeting** — target any DOM element (toolbar buttons, header items, other extensions) with a raw CSS selector.
-- **Markdown descriptions** — step descriptions support Markdown: **bold**, _italic_, [links](url), ![images](url), lists, blockquotes, inline code, and more. Converted to HTML at render time with a built-in mini parser (~112 lines, zero dependencies).
-- **Auto-start with show-once** — tours can launch automatically when the sheet loads and remember (via `localStorage`) whether the user has already seen them.
-- **Theme presets & color pickers** — choose from four built-in presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually with native Qlik color pickers. Font sizes, border radii, font weight, and font family are all configurable.
+- **Markdown descriptions** — step descriptions support Markdown: **bold**, _italic_, [links](url), ![images](url), lists, blockquotes, inline code, and more.
+- **Auto-start with show-once** — tours can launch automatically when the sheet loads and remember whether the user has already seen them.
+- **Theme presets & color pickers** — choose from four built-in presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually. Font sizes, border radii, font weight, and font family are all configurable.
 - **Configurable appearance** — button label, style (primary/secondary/minimal/outlined/pill), horizontal & vertical alignment, progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
-- **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes: Replace Matching, Replace All, or Add to Existing. Great for sharing tours across apps or backing up configurations.
-- **Platform abstraction** — selector resolution and DOM helpers are isolated behind a platform layer. Both Qlik Cloud and client-managed (Qlik Sense Enterprise on Windows) are fully supported.
+- **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes. Great for sharing tours across apps or backing up configurations.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
-- **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is driver.js (~5 KB gzip).
+- **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is [driver.js](https://driverjs.com/) (~5 KB gzip).
+
+| | |
+|---|---|
+| <img src="docs/screenshots/onboard-qs_developer-ux_5.png" alt="Tour editor" width="400" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_4.png" alt="Tour step highlighting an object" width="400" /> |
+| *Tour editor — build tours without leaving the app* | *A tour step highlighting a sheet object* |
 
 ---
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- Node.js ≥ 18.10 and npm
-- **Qlik Cloud**, or
+- **Qlik Sense Cloud**, or
 - **Qlik Sense Enterprise on Windows** (client-managed) — February 2020 or later
 
-### Install & Build
+### Download
 
-```bash
-git clone https://github.com/ptarmiganlabs/onboard.qs.git
-cd onboard.qs
-npm install
-npm run pack:prod          # → onboard-qs.zip (production build)
-```
+1. Go to [**Releases**](https://github.com/ptarmiganlabs/onboard.qs/releases) and download the latest release ZIP file (e.g. `onboard-qs-v1.3.0.zip`).
+2. Extract the downloaded ZIP file. Inside you will find:
+   - `readme.txt` — brief release notes
+   - `LICENSE` — the MIT license
+   - **`onboard-qs.zip`** — **this is the actual extension file** that you upload to Qlik Sense
 
-### Deploy to Qlik Sense
+> **Note:** The downloaded file is an outer ZIP that wraps the deployable extension ZIP. You need to extract the outer ZIP first, then use the inner `onboard-qs.zip` for installation.
+
+### Install in Qlik Sense
 
 **Qlik Cloud:**
 
 1. Open the **Management Console** → Extensions.
-2. Click **Add**, upload `onboard-qs.zip`.
+2. Click **Add**, upload `onboard-qs.zip` (the inner ZIP from the release package).
 3. Open any app, enter edit mode, and drag **Onboard.qs** from the custom objects panel onto a sheet.
 
 **Client-managed (QSEoW):**
 
 1. Open the **Qlik Management Console (QMC)** → Extensions.
-2. Click **Import**, select `onboard-qs.zip`.
+2. Click **Import**, select `onboard-qs.zip` (the inner ZIP from the release package).
 3. Open any app in the Sense hub, enter edit mode, and drag the **Onboard.qs** extension from the custom objects panel onto a sheet.
 
 ### Create Your First Tour
@@ -70,19 +73,14 @@ npm run pack:prod          # → onboard-qs.zip (production build)
 
 ---
 
-## Build Commands
+## Platform Support
 
-| Command             | Description                                                   |
-| ------------------- | ------------------------------------------------------------- |
-| `npm run pack:dev`  | Development build → `onboard-qs.zip` (with logging)           |
-| `npm run pack:prod` | Production build → `onboard-qs.zip` (minified, no debug logs) |
-| `npm run build`     | Build only (no zip)                                           |
-| `npm run lint`      | ESLint check                                                  |
-| `npm run lint:fix`  | ESLint auto-fix                                               |
-| `npm run format`    | Format all files with Prettier                                |
-| `npm run format:check` | Check formatting without modifying files                   |
-| `npm run start`     | nebula serve (local dev mode)                                 |
-| `npm run cloc`      | Count lines of code                                           |
+| Platform                                          | Status    |
+| ------------------------------------------------- | --------- |
+| Qlik Sense Cloud                                  | Supported |
+| Qlik Sense Enterprise on Windows (client-managed) | Supported |
+
+Platform detection is automatic — the extension identifies the environment and adapts accordingly.
 
 ---
 
@@ -164,7 +162,9 @@ The following per-tour properties are configured in both the **property panel** 
 | Stage border radius  | Integer | `5`                   | Border radius of the highlight cutout (px)                        |
 | Next button text     | String  | `Next`                | Label for the “Next” navigation button (expression-enabled)       |
 | Previous button text | String  | `Previous`            | Label for the “Previous” navigation button (expression-enabled)   |
-| Done button text     | String  | `Done`                | Label for the final step’s navigation button (expression-enabled) |---
+| Done button text     | String  | `Done`                | Label for the final step's navigation button (expression-enabled) |
+
+---
 
 ## Markdown & HTML in Step Descriptions
 
@@ -465,154 +465,19 @@ To find the right selector: right-click the element in the browser → **Inspect
 
 ---
 
-## Project Structure
+## Documentation & Resources
 
-```text
-onboard.qs/
-├── package.json              # Project manifest, scripts, dependencies
-├── nebula.config.cjs         # nebula.js / Rollup build configuration
-├── eslint.config.js          # ESLint flat config
-├── scripts/
-│   ├── post-build.mjs        # Token replacement (version, build type)
-│   └── zip-extension.mjs     # Zip builder for Sense deployment
-└── src/
-    ├── index.js              # Supernova entry point (hooks, lifecycle)
-    ├── ext.js                # Property panel definition
-    ├── object-properties.js  # Default object properties
-    ├── data.js               # Data targets (empty — no data binding)
-    ├── meta.json             # Extension metadata (name, icon, type)
-    ├── style.css             # All CSS: widget, editor, driver.js theme
-    ├── platform/
-    │   ├── index.js          # Platform detection + selector helper
-    │   ├── selectors.js      # Versioned CSS selector registry
-    │   ├── client-managed.js # Client-managed Sense DOM helpers
-    │   └── cloud.js          # Qlik Cloud adapter
-    ├── tour/
-    │   ├── tour-runner.js    # driver.js integration: build steps, run/highlight/destroy
-    │   ├── tour-storage.js   # localStorage "show once" tracking
-    │   └── tour-io.js        # Tour import/export (JSON serialization, merge modes)
-    ├── theme/
-    │   ├── resolve.js        # Theme resolver (preset + overrides → CSS vars)
-    │   └── presets.js        # Built-in theme presets (4 presets)
-    ├── ui/
-    │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
-    │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
-    └── util/
-        ├── logger.js         # Build-type-aware console logger
-        ├── markdown.js       # Mini Markdown-to-HTML converter
-        └── uuid.js           # UUID v4 generator
-```
+- [Release blog post](https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/) — overview and demo of Onboard.qs
+- [CHANGELOG](CHANGELOG.md) — version history and release notes
 
----
+### For Developers
 
-## Platform Support
+If you want to build the extension from source, contribute, or understand the internals, see the [Development Guide](docs/DEVELOPMENT.md). It covers:
 
-| Platform                                          | Status    |
-| ------------------------------------------------- | --------- |
-| Qlik Sense Enterprise on Windows (client-managed) | Supported |
-| Qlik Cloud                                        | Supported |
-
-Platform detection is **automatic** — the extension checks `window.location.href` at startup to determine whether it is running on Qlik Cloud or client-managed Qlik Sense:
-
-```mermaid
-flowchart TD
-    A[Extension loaded] --> B{URL contains<br/>qlikcloud.com<br/>or .qlik.com/sense?}
-    B -- Yes --> C[Platform = cloud]
-    B -- No --> D[Platform = client-managed]
-    C --> E[Use Cloud adapter]
-    D --> F[Fetch Sense version from<br/>product-info.js]
-    F --> G[Use Client-managed adapter]
-    E --> H[Unified adapter interface]
-    G --> H
-```
-
-Both platforms share an identical adapter interface:
-
-| Function | Description |
-| --- | --- |
-| `getCurrentSheetId()` | Get the active sheet ID (URL parsing + API fallbacks) |
-| `getSheetObjects(app)` | List objects on the current sheet via Engine API |
-| `getObjectSelector(objectId)` | Get the CSS selector for a Qlik object |
-| `isEditMode(options)` | Check if in edit mode |
-| `injectCSS(css, id)` | Inject a `<style>` element into the page |
-
-The client-managed adapter additionally detects the running Sense version and maps it to a "code path" for version-specific CSS selector overrides. See [docs/PLATFORM-DETECTION.md](docs/PLATFORM-DETECTION.md) for full details.
-
----
-
-## How It Works
-
-1. **Edit mode**: The extension renders an "Open Tour Editor" placeholder. Clicking it opens a full-screen modal with three panels — tour list, step list, and detail editor. Alternatively, use the Qlik property panel on the right.
-
-2. **Analysis mode**: The extension renders a start button (or auto-starts). When triggered, it builds a driver.js configuration from the saved tour steps, resolving sheet objects to live DOM elements via CSS class selectors (`.qv-object-{objectId}`), and runs the tour.
-
-3. **Show-once**: When a tour completes or is dismissed, a localStorage key (`onboard-qs:{appId}:{sheetId}:{tourId}:v{version}`) is written. Auto-start checks this key and skips if present.
-
-4. **Markdown**: Step descriptions are converted from Markdown to HTML by a built-in mini parser ([src/util/markdown.js](src/util/markdown.js)) before being passed to driver.js popovers.
-
-### Architecture Overview
-
-The following diagram shows how the major components interact:
-
-```mermaid
-flowchart TD
-    subgraph "Qlik Sense Host"
-        QS[Qlik Sense Web Client]
-        EA[Enigma App API]
-    end
-
-    subgraph "Onboard.qs Extension"
-        EP[index.js<br/>Entry Point]
-
-        subgraph "Platform Layer"
-            PI[Platform Detection]
-            CM[Client-Managed Adapter]
-            CL[Cloud Adapter]
-        end
-
-        subgraph "Tour Engine"
-            TR[Tour Runner<br/>driver.js]
-            TS[Tour Storage<br/>localStorage]
-            TI[Tour Import/Export<br/>JSON files]
-        end
-
-        subgraph "UI Layer"
-            WR[Widget Renderer<br/>Analysis Mode]
-            TE[Tour Editor<br/>Edit Mode]
-        end
-
-        subgraph "Theme Layer"
-            TH[Theme Resolver]
-            TP[Theme Presets]
-        end
-    end
-
-    QS --> EP
-    EP --> PI
-    PI --> CM
-    PI --> CL
-    CM --> EA
-    CL --> EA
-    EP --> WR
-    EP --> TE
-    TE --> TI
-    WR --> TR
-    TR --> TS
-    EP --> TH
-    TH --> TP
-```
-
-For a detailed architecture breakdown, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
----
-
-## Dependencies
-
-| Package                                   | Purpose                                          | Size       |
-| ----------------------------------------- | ------------------------------------------------ | ---------- |
-| [driver.js](https://driverjs.com/) ^1.3.1 | Tour engine (highlighting, popovers, animations) | ~5 KB gzip |
-
-All other dependencies are dev-only (build tooling).
+- Building from source (prerequisites, npm scripts)
+- Project structure and architecture
+- Platform detection internals
+- Links to detailed design docs
 
 ---
 
@@ -624,4 +489,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Author
 
-[Ptarmigan Labs](https://ptarmiganlabs.com)
+Ptarmigan Labs - [ptarmiganlabs.com](https://ptarmiganlabs.com)
