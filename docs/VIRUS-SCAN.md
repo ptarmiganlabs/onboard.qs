@@ -1,6 +1,6 @@
 # VirusTotal Scanning
 
-This document describes how release artifacts for **onboard.qs** are scanned for malware using [VirusTotal](https://www.virustotal.com/).
+This document describes how release artifacts for **Onboard.qs** are scanned for malware using [VirusTotal](https://www.virustotal.com/).
 
 ## Why two scans?
 
