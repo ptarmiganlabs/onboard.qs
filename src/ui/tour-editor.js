@@ -196,14 +196,52 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                     destroyTour(currentHighlight);
                     currentHighlight = null;
                 }
+
+                // Hide editor overlay so the preview is visible
+                overlay.style.display = 'none';
                 currentHighlight = highlightStep(step, platformType);
-                // Auto-dismiss after 3 seconds
-                setTimeout(() => {
+
+                /**
+                 * Restore the editor overlay and clean up the preview.
+                 */
+                const restoreEditor = () => {
+                    clearTimeout(autoTimer);
+                    document.removeEventListener('keydown', dismissOnKey);
+                    document.removeEventListener('click', dismissOnClick);
                     if (currentHighlight) {
                         destroyTour(currentHighlight);
                         currentHighlight = null;
                     }
-                }, 3000);
+                    overlay.style.display = '';
+                };
+
+                // Auto-dismiss after 5 seconds
+                const autoTimer = setTimeout(restoreEditor, 5000);
+
+                /**
+                 * Dismiss preview when the Escape key is pressed.
+                 *
+                 * @param {KeyboardEvent} e - The keyboard event.
+                 */
+                const dismissOnKey = (e) => {
+                    if (e.key === 'Escape') {
+                        restoreEditor();
+                    }
+                };
+
+                /**
+                 * Dismiss preview on any mouse click.
+                 */
+                const dismissOnClick = () => {
+                    restoreEditor();
+                };
+
+                // Use setTimeout(0) so the current click event doesn't
+                // immediately trigger the dismiss listener
+                setTimeout(() => {
+                    document.addEventListener('keydown', dismissOnKey);
+                    document.addEventListener('click', dismissOnClick);
+                }, 0);
             });
         }
     }

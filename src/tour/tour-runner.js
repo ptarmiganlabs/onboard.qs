@@ -52,6 +52,10 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                     if (size === 'custom') {
                         const w = step.customDialogWidth || 500;
                         const h = step.customDialogHeight || 350;
+                        /**
+                         *
+                         * @param popover
+                         */
                         popoverConfig.onPopoverRender = (popover) => {
                             if (popover?.wrapper) {
                                 popover.wrapper.style.width = `${w}px`;
@@ -177,6 +181,10 @@ export function highlightStep(step, platformType, codePath) {
         if (size === 'custom') {
             const w = step.customDialogWidth || 500;
             const h = step.customDialogHeight || 350;
+            /**
+             *
+             * @param popover
+             */
             driverConfig.onPopoverRender = (popover) => {
                 if (popover?.wrapper) {
                     popover.wrapper.style.width = `${w}px`;
