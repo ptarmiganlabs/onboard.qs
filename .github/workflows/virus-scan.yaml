@@ -56,16 +56,33 @@ jobs:
           files: |
             .zip$
 
-      # Scan inner extension zip via VirusTotal
+      # Scan inner extension zip via VirusTotal API directly
+      # Note: The ghaction-virustotal action forces release-asset mode when triggered
+      # by a release event, so we use the VirusTotal API directly for local files.
       - name: VirusTotal Scan - inner extension zip
         id: scan_inner
-        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
-        with:
-          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
-          request_rate: 4
-          update_release_body: false
-          files: |
-            ./extracted/onboard-qs.zip
+        if: hashFiles('extracted/onboard-qs.zip') != ''
+        env:
+          VT_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+        run: |
+          echo "Uploading extracted/onboard-qs.zip to VirusTotal..."
+          RESPONSE=$(curl -s --request POST \
+            --url https://www.virustotal.com/api/v3/files \
+            --header "x-apikey: ${VT_API_KEY}" \
+            --form "file=@extracted/onboard-qs.zip")
+
+          # Extract the analysis ID from the response
+          ANALYSIS_ID=$(echo "$RESPONSE" | jq -r '.data.id // empty')
+          if [ -z "$ANALYSIS_ID" ]; then
+            echo "::warning::Failed to upload inner zip to VirusTotal"
+            echo "$RESPONSE" | jq .
+            echo "inner_analysis_url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          ANALYSIS_URL="https://www.virustotal.com/gui/file-analysis/${ANALYSIS_ID}/detection"
+          echo "Inner zip analysis: ${ANALYSIS_URL}"
+          echo "inner_analysis_url=${ANALYSIS_URL}" >> "$GITHUB_OUTPUT"
 
       # Combine scan results into a single table and append to release body
       - name: Update release body with combined VirusTotal results
@@ -73,7 +90,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Parse analysis output: "filename=url,filename2=url2"
+            // Parse analysis output from ghaction-virustotal: "filename=url,filename2=url2"
             function parseAnalysis(raw) {
               if (!raw || raw.trim() === '') return [];
               return raw.split(',').map(entry => {
@@ -88,12 +105,14 @@ jobs:
             }
 
             const outerRaw = `${{ steps.scan_outer.outputs.analysis }}`;
-            const innerRaw = `${{ steps.scan_inner.outputs.analysis }}`;
+            const innerUrl = `${{ steps.scan_inner.outputs.inner_analysis_url }}`;
 
-            const results = [
-              ...parseAnalysis(outerRaw),
-              ...parseAnalysis(innerRaw)
-            ];
+            const results = [...parseAnalysis(outerRaw)];
+
+            // Add inner zip result from direct API call
+            if (innerUrl && innerUrl.trim() !== '') {
+              results.push({ name: 'onboard-qs.zip', url: innerUrl.trim() });
+            }
 
             if (results.length === 0) {
               core.warning('No VirusTotal analysis results to report');
