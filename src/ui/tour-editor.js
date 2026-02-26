@@ -13,6 +13,7 @@ import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io
  */
 
 let currentHighlight = null;
+let activePreviewCleanup = null;
 
 /**
  * Open the tour editor modal.
@@ -192,18 +193,66 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
             previewBtn.addEventListener('click', () => {
                 if (selectedTourIndex < 0 || selectedStepIndex < 0) return;
                 const step = tours[selectedTourIndex].steps[selectedStepIndex];
+
+                // Clean up any previous preview before starting a new one
+                if (activePreviewCleanup) {
+                    activePreviewCleanup();
+                }
                 if (currentHighlight) {
                     destroyTour(currentHighlight);
                     currentHighlight = null;
                 }
+
+                // Hide editor overlay so the preview is visible
+                overlay.style.display = 'none';
                 currentHighlight = highlightStep(step, platformType);
-                // Auto-dismiss after 3 seconds
-                setTimeout(() => {
+
+                let autoTimer = null;
+
+                /**
+                 * Dismiss preview when the Escape key is pressed.
+                 *
+                 * @param {KeyboardEvent} e - The keyboard event.
+                 */
+                const dismissOnKey = (e) => {
+                    if (e.key === 'Escape') {
+                        restoreEditor();
+                    }
+                };
+
+                /**
+                 * Dismiss preview on any mouse click.
+                 */
+                const dismissOnClick = () => {
+                    restoreEditor();
+                };
+
+                /**
+                 * Restore the editor overlay and clean up the preview.
+                 */
+                function restoreEditor() {
+                    clearTimeout(autoTimer);
+                    document.removeEventListener('keydown', dismissOnKey);
+                    document.removeEventListener('click', dismissOnClick);
+                    activePreviewCleanup = null;
                     if (currentHighlight) {
                         destroyTour(currentHighlight);
                         currentHighlight = null;
                     }
-                }, 3000);
+                    overlay.style.display = '';
+                }
+
+                activePreviewCleanup = restoreEditor;
+
+                // Auto-dismiss after 5 seconds
+                autoTimer = setTimeout(restoreEditor, 5000);
+
+                // Use setTimeout(0) so the current click event doesn't
+                // immediately trigger the dismiss listener
+                setTimeout(() => {
+                    document.addEventListener('keydown', dismissOnKey);
+                    document.addEventListener('click', dismissOnClick);
+                }, 0);
             });
         }
     }
@@ -477,6 +526,9 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
      * Close the editor modal and clean up resources.
      */
     function closeEditor() {
+        if (activePreviewCleanup) {
+            activePreviewCleanup();
+        }
         if (currentHighlight) {
             destroyTour(currentHighlight);
             currentHighlight = null;
