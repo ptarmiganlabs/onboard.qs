@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.2...onboard-qs-v1.3.0) (2026-02-26)
+
+
+### Features
+
+* add Description column to VirusTotal results table ([ff7e571](https://github.com/ptarmiganlabs/onboard.qs/commit/ff7e5713332fc2aa865a3fbfc0d5628315f8534d))
+* scan inner onboard-qs.zip with VirusTotal and combine results ([50046bc](https://github.com/ptarmiganlabs/onboard.qs/commit/50046bcfcc44ef1d5380db6bf0ea7916d9fcbbdb))
+
+
+### Bug Fixes
+
+* use VirusTotal API directly for inner zip scan ([06222a3](https://github.com/ptarmiganlabs/onboard.qs/commit/06222a315ec6ce7387e91ef52975f940643a0d41))
+
+
+### Documentation
+
+* update VIRUS-SCAN.md to reflect direct API approach for inner zip ([7be2946](https://github.com/ptarmiganlabs/onboard.qs/commit/7be294626e5b9d832f0444cbd9725e648801ecaf))
+
 ## [1.2.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.1...onboard-qs-v1.2.2) (2026-02-25)
 
 
