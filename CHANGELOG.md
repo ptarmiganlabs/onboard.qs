@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.3.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.3.0...onboard-qs-v1.3.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* Hide tour editor dialog during step preview ([32d03f6](https://github.com/ptarmiganlabs/onboard.qs/commit/32d03f625b287953a4061093437bd2a64dd382c8)), closes [#34](https://github.com/ptarmiganlabs/onboard.qs/issues/34)
+* remove driver.js text-shadow causing fuzzy button text in step dialogs ([6c6e073](https://github.com/ptarmiganlabs/onboard.qs/commit/6c6e073b2d8441d5f8b769d558e00c7ac411b782))
+
+
+### Miscellaneous
+
+* **deps:** bump basic-ftp from 5.1.0 to 5.2.0 ([74a4d3c](https://github.com/ptarmiganlabs/onboard.qs/commit/74a4d3c8e17d4df7660b3c27355cd3ae83f3425a))
+
+
+### Documentation
+
+* add RTL language support investigation document ([eb83a5e](https://github.com/ptarmiganlabs/onboard.qs/commit/eb83a5e2408b5731e8f92e18b5cabee0c6321dcd))
+* RTL language support investigation ([1c5a021](https://github.com/ptarmiganlabs/onboard.qs/commit/1c5a021c5fd9fc5415e699287c0d272f007ec73e))
+* update README for clarity and add Development Guide ([c5570d8](https://github.com/ptarmiganlabs/onboard.qs/commit/c5570d8b954620b2716ee67b29a7db689002e89e))
+
 ## [1.3.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.2.2...onboard-qs-v1.3.0) (2026-02-26)
 
 
