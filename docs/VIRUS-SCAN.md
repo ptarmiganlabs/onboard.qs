@@ -22,9 +22,9 @@ The virus scan workflow (`.github/workflows/virus-scan.yaml`) is triggered autom
 
 1. **Download release assets** — All `.zip` assets attached to the release are downloaded.
 2. **Extract inner zip** — The outer `onboard-qs-v{VERSION}.zip` is unzipped to retrieve the inner `onboard-qs.zip`.
-3. **Scan outer zip** — The release asset (`onboard-qs-v{VERSION}.zip`) is submitted to VirusTotal for analysis.
-4. **Scan inner zip** — The extracted `onboard-qs.zip` is submitted to VirusTotal as a local file.
-5. **Update release notes** — Both scan results are combined into a single Markdown table and appended to the GitHub release body.
+3. **Scan outer zip** — The release asset (`onboard-qs-v{VERSION}.zip`) is submitted to VirusTotal for analysis using the [`crazy-max/ghaction-virustotal`](https://github.com/crazy-max/ghaction-virustotal) GitHub Action.
+4. **Scan inner zip** — The extracted `onboard-qs.zip` is submitted to VirusTotal using a direct API call (`curl` with the VirusTotal v3 API). This is necessary because the GitHub Action forces release-asset scanning mode when triggered by a release event, and cannot scan local files in that context.
+5. **Update release notes** — Both scan results are combined into a single Markdown table and appended to the GitHub release body using `actions/github-script`.
 
 ### Result format
 
