@@ -813,6 +813,7 @@
     border-radius: var(--oqs-popover-border-radius, 4px);
     font-size: calc(var(--oqs-popover-font-size, 13px) - 1px);
     padding: 6px 14px;
+    text-shadow: none;
 }
 
 .onboard-qs-popover .driver-popover-next-btn {
