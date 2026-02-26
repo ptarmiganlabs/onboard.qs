@@ -107,11 +107,18 @@ jobs:
             const outerRaw = `${{ steps.scan_outer.outputs.analysis }}`;
             const innerUrl = `${{ steps.scan_inner.outputs.inner_analysis_url }}`;
 
-            const results = [...parseAnalysis(outerRaw)];
+            const results = parseAnalysis(outerRaw).map(r => ({
+              ...r,
+              description: 'Release download from GitHub'
+            }));
 
             // Add inner zip result from direct API call
             if (innerUrl && innerUrl.trim() !== '') {
-              results.push({ name: 'onboard-qs.zip', url: innerUrl.trim() });
+              results.push({
+                name: 'onboard-qs.zip',
+                url: innerUrl.trim(),
+                description: 'Qlik Sense extension (inside the release zip)'
+              });
             }
 
             if (results.length === 0) {
@@ -122,10 +129,10 @@ jobs:
             // Build markdown table
             let table = '\n\n---\n\n';
             table += '## VirusTotal scan results\n\n';
-            table += '| File | VirusTotal Analysis URL |\n';
-            table += '|------|------------------------|\n';
+            table += '| File | Description | VirusTotal Analysis URL |\n';
+            table += '|------|-------------|------------------------|\n';
             for (const r of results) {
-              table += `| ${r.name} | [View analysis](${r.url}) |\n`;
+              table += `| ${r.name} | ${r.description} | [View analysis](${r.url}) |\n`;
             }
 
             // Get current release and append results

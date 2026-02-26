@@ -33,10 +33,10 @@ After scanning, the release body will contain a section like:
 ```markdown
 ## VirusTotal scan results
 
-| File | VirusTotal Analysis URL |
-|------|------------------------|
-| onboard-qs-v1.2.3.zip | [View analysis](https://www.virustotal.com/gui/...) |
-| onboard-qs.zip | [View analysis](https://www.virustotal.com/gui/...) |
+| File | Description | VirusTotal Analysis URL |
+|------|-------------|------------------------|
+| onboard-qs-v1.2.3.zip | Release download from GitHub | [View analysis](https://www.virustotal.com/gui/...) |
+| onboard-qs.zip | Qlik Sense extension (inside the release zip) | [View analysis](https://www.virustotal.com/gui/...) |
 ```
 
 Each link points to the full VirusTotal analysis report for that file.
