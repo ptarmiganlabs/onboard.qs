@@ -14,11 +14,115 @@ jobs:
       github.repository_owner == 'ptarmiganlabs'
 
     steps:
-      - name: VirusTotal Scan
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Download all zip assets from the release
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern '*.zip' \
+            --dir release-assets
+
+      # Extract the inner onboard-qs.zip from the outer release zip
+      - name: Extract inner extension zip
+        run: |
+          mkdir -p extracted
+          OUTER_ZIP=$(ls release-assets/onboard-qs-v*.zip 2>/dev/null | head -1)
+          if [ -z "$OUTER_ZIP" ]; then
+            echo "::warning::No outer release zip found matching onboard-qs-v*.zip"
+            exit 0
+          fi
+          echo "Extracting inner zip from: $OUTER_ZIP"
+          unzip -o "$OUTER_ZIP" "onboard-qs.zip" -d extracted/
+          if [ ! -f "extracted/onboard-qs.zip" ]; then
+            echo "::warning::Inner onboard-qs.zip not found in $OUTER_ZIP"
+            exit 0
+          fi
+          echo "Inner zip extracted successfully"
+          ls -la extracted/
+
+      # Scan release assets (outer zip) via VirusTotal
+      - name: VirusTotal Scan - release assets
+        id: scan_outer
         uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
         with:
           vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
           request_rate: 4
-          update_release_body: true
+          update_release_body: false
           files: |
             .zip$
+
+      # Scan inner extension zip via VirusTotal
+      - name: VirusTotal Scan - inner extension zip
+        id: scan_inner
+        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          request_rate: 4
+          update_release_body: false
+          files: |
+            ./extracted/onboard-qs.zip
+
+      # Combine scan results into a single table and append to release body
+      - name: Update release body with combined VirusTotal results
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Parse analysis output: "filename=url,filename2=url2"
+            function parseAnalysis(raw) {
+              if (!raw || raw.trim() === '') return [];
+              return raw.split(',').map(entry => {
+                const eqIdx = entry.indexOf('=');
+                if (eqIdx === -1) return null;
+                const file = entry.substring(0, eqIdx).trim();
+                const url = entry.substring(eqIdx + 1).trim();
+                // Extract just the filename from path
+                const name = file.split('/').pop();
+                return { name, url };
+              }).filter(Boolean);
+            }
+
+            const outerRaw = `${{ steps.scan_outer.outputs.analysis }}`;
+            const innerRaw = `${{ steps.scan_inner.outputs.analysis }}`;
+
+            const results = [
+              ...parseAnalysis(outerRaw),
+              ...parseAnalysis(innerRaw)
+            ];
+
+            if (results.length === 0) {
+              core.warning('No VirusTotal analysis results to report');
+              return;
+            }
+
+            // Build markdown table
+            let table = '\n\n---\n\n';
+            table += '## VirusTotal scan results\n\n';
+            table += '| File | VirusTotal Analysis URL |\n';
+            table += '|------|------------------------|\n';
+            for (const r of results) {
+              table += `| ${r.name} | [View analysis](${r.url}) |\n`;
+            }
+
+            // Get current release and append results
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+            });
+
+            const updatedBody = (release.body || '') + table;
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              body: updatedBody,
+            });
+
+            core.info(`Appended VirusTotal results for ${results.length} file(s) to release body`);
