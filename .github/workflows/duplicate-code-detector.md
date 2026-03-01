@@ -10,7 +10,7 @@ permissions:
   pull-requests: read
 engine: copilot
 tools:
-  serena: ["go"]
+  serena: ["javascript"]
 safe-outputs:
   create-issue:
     expires: 2d
