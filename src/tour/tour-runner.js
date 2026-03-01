@@ -10,6 +10,22 @@ import { markTourSeen } from './tour-storage';
  */
 
 /**
+ * Resolve the CSS selector for a step that targets a DOM element.
+ * Uses a custom CSS selector when provided, otherwise derives it from
+ * the Qlik object ID via the platform selector registry.
+ *
+ * @param {object} step - Step configuration.
+ * @param {string} platformType - 'client-managed' or 'cloud'.
+ * @param {string} [codePath] - Code-path name for selector lookup.
+ * @returns {string} CSS selector string.
+ */
+function resolveCssSelector(step, platformType, codePath) {
+    return step.selectorType === 'css' && step.customCssSelector
+        ? step.customCssSelector
+        : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+}
+
+/**
  * Build driver.js steps from a tour configuration.
  *
  * @param {object} tourConfig - A single tour from the layout's tours array.
@@ -63,10 +79,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                     return { popover: popoverConfig };
                 }
 
-                const cssSelector =
-                    step.selectorType === 'css' && step.customCssSelector
-                        ? step.customCssSelector
-                        : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+                const cssSelector = resolveCssSelector(step, platformType, codePath);
 
                 return {
                     // Use a function for lazy evaluation — the Qlik object DOM
@@ -198,10 +211,7 @@ export function highlightStep(step, platformType, codePath) {
     if (!step.targetObjectId && !(step.selectorType === 'css' && step.customCssSelector))
         return null;
 
-    const cssSelector =
-        step.selectorType === 'css' && step.customCssSelector
-            ? step.customCssSelector
-            : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+    const cssSelector = resolveCssSelector(step, platformType, codePath);
     const element = document.querySelector(cssSelector);
 
     if (!element) {

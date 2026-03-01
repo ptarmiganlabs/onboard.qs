@@ -132,6 +132,23 @@ export function resolveCodePath(version) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Object types to exclude from the sheet objects list.
+ *
+ * @type {string[]}
+ */
+const EXCLUDE_TYPES = [
+    'sheet',
+    'story',
+    'appprops',
+    'loadmodel',
+    'dimension',
+    'measure',
+    'masterobject',
+    'qix-system-dimension',
+    'onboard-qs',
+];
+
+/**
  * Get the current sheet ID from URL, Qlik API, or DOM.
  *
  * @returns {string|null} The sheet ID or null.
@@ -185,18 +202,6 @@ export function getCurrentSheetId() {
  * @returns {Promise<Array<{id: string, title: string, type: string}>>} Sheet objects.
  */
 export async function getSheetObjects(app) {
-    const excludeTypes = [
-        'sheet',
-        'story',
-        'appprops',
-        'loadmodel',
-        'dimension',
-        'measure',
-        'masterobject',
-        'qix-system-dimension',
-        'onboard-qs',
-    ];
-
     try {
         let infos = await app.getAllInfos();
         const sheetId = getCurrentSheetId();
@@ -222,7 +227,7 @@ export async function getSheetObjects(app) {
         }
 
         const objects = infos
-            .filter((info) => !excludeTypes.includes(info.qType) && !info.qType.includes('system'))
+            .filter((info) => !EXCLUDE_TYPES.includes(info.qType) && !info.qType.includes('system'))
             .map((info) => ({
                 id: info.qId,
                 title: info.qTitle || info.qId,
