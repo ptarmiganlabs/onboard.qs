@@ -11,6 +11,12 @@ permissions:
   issues: read
   pull-requests: read
 
+network:
+  allowed:
+    - defaults
+    - node
+    - dart
+
 tracker-id: code-simplifier
 
 imports:
