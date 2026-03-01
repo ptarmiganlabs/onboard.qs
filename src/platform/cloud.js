@@ -66,7 +66,20 @@ export async function getSheetObjects(app) {
                 const sheetObj = await app.getObject(sheetId);
                 const sheetLayout = await sheetObj.getLayout();
                 let sheetObjectIds = (sheetLayout.cells || []).map((c) => c.name);
-
+                // Add children of objects (e.g. layout containers)
+                for (const id of [...sheetObjectIds]) {
+                    try {
+                        const objHandle = await app.getObject(id);
+                        const layout = await objHandle.getLayout();
+                        if (layout.qChildList?.qItems) {
+                            layout.qChildList.qItems.forEach((item) => {
+                                sheetObjectIds.push(item.qInfo.qId);
+                            });
+                        }
+                    } catch (e) {
+                        logger.warn(`Cloud: could not get layout for object ${id}:`, e);
+                    }
+                }
                 if (sheetLayout.qChildList?.qItems) {
                     const childIds = sheetLayout.qChildList.qItems.map((item) => item.qInfo.qId);
                     sheetObjectIds = [...new Set([...sheetObjectIds, ...childIds])];

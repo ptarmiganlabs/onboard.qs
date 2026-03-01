@@ -6,11 +6,20 @@ import { PRESET_LABELS, PRESETS, leanGreenPreset } from './theme/presets';
  * Color property keys that use the color-picker component.
  */
 const COLOR_KEYS = [
-    'buttonBgColor', 'buttonTextColor', 'buttonHoverBgColor', 'buttonBorderColor',
-    'popoverBgColor', 'popoverTextColor', 'popoverTitleColor',
-    'popoverButtonBgColor', 'popoverButtonTextColor', 'popoverButtonHoverBgColor',
+    'buttonBgColor',
+    'buttonTextColor',
+    'buttonHoverBgColor',
+    'buttonBorderColor',
+    'popoverBgColor',
+    'popoverTextColor',
+    'popoverTitleColor',
+    'popoverButtonBgColor',
+    'popoverButtonTextColor',
+    'popoverButtonHoverBgColor',
     'progressBarColor',
-    'menuBgColor', 'menuTextColor', 'menuHoverBgColor',
+    'menuBgColor',
+    'menuTextColor',
+    'menuHoverBgColor',
 ];
 
 /**
@@ -32,7 +41,7 @@ function toPickerObj(hex) {
  *
  * @param {object} data - Property data from the property panel.
  * @param {string} key - Theme property key (e.g. 'buttonBgColor').
- * @returns {*} The preset default value.
+ * @returns {string|number|null} The preset default value.
  */
 function presetVal(data, key) {
     const presetName = data.theme?.preset || 'leanGreen';
@@ -131,6 +140,22 @@ export default function ext(_galaxy) {
                     const sheetObj = await app.getObject(sheetId);
                     const sheetLayout = await sheetObj.getLayout();
                     let sheetObjectIds = (sheetLayout.cells || []).map((c) => c.name);
+
+                    // Add children of objects (e.g. layout containers)
+                    for (const id of [...sheetObjectIds]) {
+                        try {
+                            const obj = await app.getObject(id);
+                            const layout = await obj.getLayout();
+                            if (layout.qChildList?.qItems) {
+                                layout.qChildList.qItems.forEach((item) => {
+                                    sheetObjectIds.push(item.qInfo.qId);
+                                });
+                            }
+                        } catch (e) {
+                            logger.warn(`Could not get layout for object ${id}:`, e);
+                        }
+                    }
+
                     if (sheetLayout.qChildList?.qItems) {
                         const childIds = sheetLayout.qChildList.qItems.map(
                             (item) => item.qInfo.qId
@@ -376,7 +401,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Hover background', 'buttonHoverBgColor'),
+                            label: (data) =>
+                                themeLabel(data, 'Hover background', 'buttonHoverBgColor'),
                             defaultValue: toPickerObj(leanGreenPreset.buttonHoverBgColor),
                         },
                         buttonBorderColor: {
@@ -421,7 +447,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Border radius (px)', 'buttonBorderRadius'),
+                            label: (data) =>
+                                themeLabel(data, 'Border radius (px)', 'buttonBorderRadius'),
                             defaultValue: '',
                             expression: 'optional',
                             /**
@@ -507,7 +534,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Button background', 'popoverButtonBgColor'),
+                            label: (data) =>
+                                themeLabel(data, 'Button background', 'popoverButtonBgColor'),
                             defaultValue: toPickerObj(leanGreenPreset.popoverButtonBgColor),
                         },
                         popoverButtonTextColor: {
@@ -520,7 +548,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Button text color', 'popoverButtonTextColor'),
+                            label: (data) =>
+                                themeLabel(data, 'Button text color', 'popoverButtonTextColor'),
                             defaultValue: toPickerObj(leanGreenPreset.popoverButtonTextColor),
                         },
                         popoverButtonHoverBgColor: {
@@ -533,7 +562,12 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Button hover background', 'popoverButtonHoverBgColor'),
+                            label: (data) =>
+                                themeLabel(
+                                    data,
+                                    'Button hover background',
+                                    'popoverButtonHoverBgColor'
+                                ),
                             defaultValue: toPickerObj(leanGreenPreset.popoverButtonHoverBgColor),
                         },
                         popoverFontSize: {
@@ -565,7 +599,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Border radius (px)', 'popoverBorderRadius'),
+                            label: (data) =>
+                                themeLabel(data, 'Border radius (px)', 'popoverBorderRadius'),
                             defaultValue: '',
                             expression: 'optional',
                             /**
@@ -586,7 +621,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Progress bar color', 'progressBarColor'),
+                            label: (data) =>
+                                themeLabel(data, 'Progress bar color', 'progressBarColor'),
                             defaultValue: toPickerObj(leanGreenPreset.progressBarColor),
                         },
 
@@ -631,7 +667,8 @@ export default function ext(_galaxy) {
                              * @param {object} data - Property data.
                              * @returns {string} Label text.
                              */
-                            label: (data) => themeLabel(data, 'Item hover background', 'menuHoverBgColor'),
+                            label: (data) =>
+                                themeLabel(data, 'Item hover background', 'menuHoverBgColor'),
                             defaultValue: toPickerObj(leanGreenPreset.menuHoverBgColor),
                         },
                     },
@@ -908,15 +945,23 @@ export default function ext(_galaxy) {
                                             component: 'dropdown',
                                             defaultValue: 'medium',
                                             options: [
-                                                { value: 'dynamic', label: 'Dynamic (fit content)' },
+                                                {
+                                                    value: 'dynamic',
+                                                    label: 'Dynamic (fit content)',
+                                                },
                                                 { value: 'small', label: 'Small (320 × 220)' },
                                                 { value: 'medium', label: 'Medium (480 × 320)' },
                                                 { value: 'large', label: 'Large (640 × 420)' },
-                                                { value: 'x-large', label: 'Extra large (800 × 520)' },
+                                                {
+                                                    value: 'x-large',
+                                                    label: 'Extra large (800 × 520)',
+                                                },
                                                 { value: 'custom', label: 'Custom…' },
                                             ],
                                             /**
                                              * Determine visibility of this property panel item.
+                                             *
+                                             * Returns true if the dialog size should be shown (selectorType is 'none').
                                              *
                                              * @param {object} data - Current property data row.
                                              * @returns {boolean} True if item should be shown.
@@ -929,6 +974,10 @@ export default function ext(_galaxy) {
                                             label: 'Custom width (px)',
                                             defaultValue: 500,
                                             /**
+                                             * Determine visibility of this property panel item.
+                                             *
+                                             * Returns true if custom width should be shown.
+                                             *
                                              * @param {object} data - Current property data row.
                                              * @returns {boolean} True if item should be shown.
                                              */
@@ -942,6 +991,10 @@ export default function ext(_galaxy) {
                                             label: 'Custom height (px)',
                                             defaultValue: 350,
                                             /**
+                                             * Determine visibility of this property panel item.
+                                             *
+                                             * Returns true if custom height should be shown.
+                                             *
                                              * @param {object} data - Current property data row.
                                              * @returns {boolean} True if item should be shown.
                                              */
