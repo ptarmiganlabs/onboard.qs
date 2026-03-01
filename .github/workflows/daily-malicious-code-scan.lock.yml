@@ -30,13 +30,10 @@
 #     - shared/mood.md
 #     - shared/reporting.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b5a724942811750308baadb9e92aced05b711a799148f88dfa61673097d0228f","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"47b5242f0917af63d35c672ef8ccaff758c0872531e6d38afc742ecb9b3478ec","compiler_version":"v0.51.2"}
 
 name: "Daily Malicious Code Scan Agent"
 "on":
-  schedule:
-  - cron: "45 8 * * *"
-    # Friendly format: daily (scattered)
   workflow_dispatch:
 
 permissions: {}
@@ -245,8 +242,6 @@ jobs:
       actions: read
       contents: read
       security-events: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
