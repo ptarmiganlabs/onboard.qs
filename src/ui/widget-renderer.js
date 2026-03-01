@@ -317,8 +317,14 @@ export function openAboutModal(version) {
         document.removeEventListener('keydown', onKey);
         overlay.remove();
     };
-    /** @param {KeyboardEvent} e */
-    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    /**
+     * Handle keyboard events; closes the modal on Escape key press.
+     *
+     * @param {KeyboardEvent} e - The keyboard event.
+     */
+    const onKey = (e) => {
+        if (e.key === 'Escape') close();
+    };
     document.addEventListener('keydown', onKey);
     overlay.querySelector('.onboard-qs-about-close-btn').addEventListener('click', close);
     overlay.addEventListener('click', (e) => {

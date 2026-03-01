@@ -20,20 +20,20 @@ flowchart LR
 
 ## npm scripts
 
-| Script | Purpose |
-|---|---|
-| `npm run build` | Development build (unminified, sourcemaps off) |
-| `npm run build:dist` | Production build (minified) |
-| `npm run pack:dev` | Full pipeline: build → sense → post-build → zip (development) |
-| `npm run pack:prod` | Full pipeline: build → sense → post-build → zip (production) |
-| `npm run start` | Start nebula dev server for local development |
-| `npm run lint` | Run ESLint on `src/` and `scripts/` |
-| `npm run lint:fix` | Run ESLint with auto-fix |
-| `npm run format` | Format all files with Prettier |
-| `npm run format:check` | Check formatting without modifying files |
-| `npm run version:major` | Bump major version (no git tag) |
-| `npm run version:minor` | Bump minor version (no git tag) |
-| `npm run version:patch` | Bump patch version (no git tag) |
+| Script                  | Purpose                                                       |
+| ----------------------- | ------------------------------------------------------------- |
+| `npm run build`         | Development build (unminified, sourcemaps off)                |
+| `npm run build:dist`    | Production build (minified)                                   |
+| `npm run pack:dev`      | Full pipeline: build → sense → post-build → zip (development) |
+| `npm run pack:prod`     | Full pipeline: build → sense → post-build → zip (production)  |
+| `npm run start`         | Start nebula dev server for local development                 |
+| `npm run lint`          | Run ESLint on `src/` and `scripts/`                           |
+| `npm run lint:fix`      | Run ESLint with auto-fix                                      |
+| `npm run format`        | Format all files with Prettier                                |
+| `npm run format:check`  | Check formatting without modifying files                      |
+| `npm run version:major` | Bump major version (no git tag)                               |
+| `npm run version:minor` | Bump minor version (no git tag)                               |
+| `npm run version:patch` | Bump patch version (no git tag)                               |
 
 ## Build configuration
 
@@ -49,6 +49,7 @@ flowchart TD
 ```
 
 These compile-time constants control:
+
 - **`__BUILD_TYPE__`** — Used by `logger.js` to suppress `debug()` output in production builds.
 - **`__PACKAGE_VERSION__`** — Displayed in the property panel header.
 
@@ -120,21 +121,21 @@ flowchart TD
 
 ### Runtime
 
-| Package | Purpose |
-|---|---|
+| Package     | Purpose             |
+| ----------- | ------------------- |
 | `driver.js` | Tour overlay engine |
 
 ### Build-time
 
-| Package | Purpose |
-|---|---|
-| `@nebula.js/cli-build` | Rollup-based build |
-| `@nebula.js/cli-sense` | Generate `.qext` metadata |
-| `@rollup/plugin-replace` | Compile-time constants |
-| `cross-env` | Cross-platform env vars |
-| `archiver` | Zip creation |
-| `eslint` + plugins | Linting |
-| `prettier` | Code formatting |
+| Package                  | Purpose                   |
+| ------------------------ | ------------------------- |
+| `@nebula.js/cli-build`   | Rollup-based build        |
+| `@nebula.js/cli-sense`   | Generate `.qext` metadata |
+| `@rollup/plugin-replace` | Compile-time constants    |
+| `cross-env`              | Cross-platform env vars   |
+| `archiver`               | Zip creation              |
+| `eslint` + plugins       | Linting                   |
+| `prettier`               | Code formatting           |
 
 ## Logging in builds
 

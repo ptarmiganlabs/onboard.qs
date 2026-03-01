@@ -2,37 +2,37 @@
 name: Code Simplifier
 description: Analyzes recently modified code and creates pull requests with simplifications that improve clarity, consistency, and maintainability while preserving functionality
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 #   schedule: weekly on sunday
 # skip-if-match: 'is:pr is:open in:title "[code-simplifier]"'
 
 permissions:
-  contents: read
-  issues: read
-  pull-requests: read
+    contents: read
+    issues: read
+    pull-requests: read
 
 network:
-  allowed:
-    - defaults
-    - node
-    - dart
+    allowed:
+        - defaults
+        - node
+        - dart
 
 tracker-id: code-simplifier
 
 imports:
-  - shared/mood.md
-  - shared/reporting.md
+    - shared/mood.md
+    - shared/reporting.md
 
 safe-outputs:
-  create-pull-request:
-    title-prefix: "[code-simplifier] "
-    labels: [refactoring, code-quality, automation]
-    reviewers: [copilot]
-    expires: 1d
+    create-pull-request:
+        title-prefix: '[code-simplifier] '
+        labels: [refactoring, code-quality, automation]
+        reviewers: [copilot]
+        expires: 1d
 
 tools:
-  github:
-    toolsets: [default]
+    github:
+        toolsets: [default]
 
 timeout-minutes: 30
 strict: true
@@ -72,6 +72,7 @@ git log --since="24 hours ago" --pretty=format:"%H %s" --no-merges
 ```
 
 Use GitHub tools to:
+
 - Search for pull requests merged in the last 24 hours: `repo:${{ github.repository }} is:pr is:merged merged:>=${YESTERDAY}`
 - Get details of merged PRs to understand what files were changed
 - List commits from the last 24 hours to identify modified files
@@ -79,6 +80,7 @@ Use GitHub tools to:
 ### 1.2 Extract Changed Files
 
 For each merged PR or recent commit:
+
 - Use `pull_request_read` with `method: get_files` to list changed files
 - Use `get_commit` to see file changes in recent commits
 - Focus on source code files (`.go`, `.js`, `.ts`, `.tsx`, `.cjs`, `.py`, `.cs`, etc.)
@@ -109,6 +111,7 @@ Before simplifying, review the project's coding standards from relevant document
 **Key Standards to Apply:**
 
 For **JavaScript/TypeScript** projects:
+
 - Use ES modules with proper import sorting and extensions
 - Prefer `function` keyword over arrow functions for top-level functions
 - Use explicit return type annotations for top-level functions
@@ -117,6 +120,7 @@ For **JavaScript/TypeScript** projects:
 - Maintain consistent naming conventions
 
 For **Go** projects:
+
 - Use `any` instead of `interface{}`
 - Follow console formatting for CLI output
 - Use semantic type aliases for domain concepts
@@ -124,12 +128,14 @@ For **Go** projects:
 - Use table-driven tests with descriptive names
 
 For **Python** projects:
+
 - Follow PEP 8 style guide
 - Use type hints for function signatures
 - Prefer explicit over implicit code
 - Use list/dict comprehensions where they improve clarity (not complexity)
 
 For **.NET/C#** projects:
+
 - Follow Microsoft C# coding conventions
 - Use `var` only when the type is obvious from the right side
 - Use file-scoped namespaces (`namespace X;`) where supported
@@ -142,11 +148,13 @@ For **.NET/C#** projects:
 Apply these refinements to the recently modified code:
 
 #### 1. Preserve Functionality
+
 - **NEVER** change what the code does - only how it does it
 - All original features, outputs, and behaviors must remain intact
 - Run tests before and after to ensure no behavioral changes
 
 #### 2. Enhance Clarity
+
 - Reduce unnecessary complexity and nesting
 - Eliminate redundant code and abstractions
 - Improve readability through clear variable and function names
@@ -156,13 +164,16 @@ Apply these refinements to the recently modified code:
 - Choose clarity over brevity - explicit code is often better than compact code
 
 #### 3. Apply Project Standards
+
 - Use project-specific conventions and patterns
 - Follow established naming conventions
 - Apply consistent formatting
 - Use appropriate language features (modern syntax where beneficial)
 
 #### 4. Maintain Balance
+
 Avoid over-simplification that could:
+
 - Reduce code clarity or maintainability
 - Create overly clever solutions that are hard to understand
 - Combine too many concerns into single functions or components
@@ -176,17 +187,17 @@ For each changed file:
 
 1. **Read the file contents** using the edit or view tool
 2. **Identify refactoring opportunities**:
-   - Long functions that could be split
-   - Duplicate code patterns
-   - Complex conditionals that could be simplified
-   - Unclear variable names
-   - Missing or excessive comments
-   - Non-standard patterns
+    - Long functions that could be split
+    - Duplicate code patterns
+    - Complex conditionals that could be simplified
+    - Unclear variable names
+    - Missing or excessive comments
+    - Non-standard patterns
 3. **Design the simplification**:
-   - What specific changes will improve clarity?
-   - How can complexity be reduced?
-   - What patterns should be applied?
-   - Will this maintain all functionality?
+    - What specific changes will improve clarity?
+    - How can complexity be reduced?
+    - What patterns should be applied?
+    - Will this maintain all functionality?
 
 ### 2.4 Apply Simplifications
 
@@ -200,6 +211,7 @@ Use the **edit** tool to modify files:
 ```
 
 **Guidelines for edits:**
+
 - Make surgical, targeted changes
 - One logical improvement per edit (but batch multiple edits in a single response)
 - Preserve all original behavior
@@ -227,6 +239,7 @@ dotnet test
 ```
 
 If tests fail:
+
 - Review the failures carefully
 - Revert changes that broke functionality
 - Adjust simplifications to preserve behavior
@@ -276,6 +289,7 @@ dotnet build
 ### 4.1 Determine If PR Is Needed
 
 Only create a PR if:
+
 - ✅ You made actual code simplifications
 - ✅ All tests pass
 - ✅ Linting is clean
@@ -306,22 +320,23 @@ This PR simplifies recently modified code to improve clarity, consistency, and m
 ### Improvements Made
 
 1. **Reduced Complexity**
-   - Simplified nested conditionals in `file1.go`
-   - Extracted helper function for repeated logic
+    - Simplified nested conditionals in `file1.go`
+    - Extracted helper function for repeated logic
 
 2. **Enhanced Clarity**
-   - Renamed variables for better readability
-   - Removed redundant comments
-   - Applied consistent naming conventions
+    - Renamed variables for better readability
+    - Removed redundant comments
+    - Applied consistent naming conventions
 
 3. **Applied Project Standards**
-   - Used `function` keyword instead of arrow functions
-   - Added explicit type annotations
-   - Followed established patterns
+    - Used `function` keyword instead of arrow functions
+    - Added explicit type annotations
+    - Followed established patterns
 
 ### Changes Based On
 
 Recent changes from:
+
 - #[PR_NUMBER] - [PR title]
 - Commit [SHORT_SHA] - [Commit message]
 
@@ -335,6 +350,7 @@ Recent changes from:
 ### Review Focus
 
 Please verify:
+
 - Functionality is preserved
 - Simplifications improve code quality
 - Changes align with project conventions
@@ -342,7 +358,7 @@ Please verify:
 
 ---
 
-*Automated by Code Simplifier Agent - analyzing code from the last 24 hours*
+_Automated by Code Simplifier Agent - analyzing code from the last 24 hours_
 ```
 
 ### 4.3 Use Safe Outputs
@@ -357,19 +373,23 @@ Create the pull request using the safe-outputs configuration:
 ## Important Guidelines
 
 ### Scope Control
+
 - **Focus on recent changes**: Only refine code modified in the last 24 hours
 - **Don't over-refactor**: Avoid touching unrelated code
 - **Preserve interfaces**: Don't change public APIs or exported functions
 - **Incremental improvements**: Make targeted, surgical changes
 
 ### Quality Standards
+
 - **Test first**: Always run tests after simplifications
 - **Preserve behavior**: Functionality must remain identical
 - **Follow conventions**: Apply project-specific patterns consistently
 - **Clear over clever**: Prioritize readability and maintainability
 
 ### Exit Conditions
+
 Exit gracefully without creating a PR if:
+
 - No code was changed in the last 24 hours
 - No simplifications are beneficial
 - Tests fail after changes
@@ -377,7 +397,9 @@ Exit gracefully without creating a PR if:
 - Changes are too risky or complex
 
 ### Success Metrics
+
 A successful simplification:
+
 - ✅ Improves code clarity without changing behavior
 - ✅ Passes all tests and linting
 - ✅ Applies project-specific conventions
@@ -390,16 +412,18 @@ A successful simplification:
 Your output MUST either:
 
 1. **If no changes in last 24 hours**:
-   ```
-   ✅ No code changes detected in the last 24 hours.
-   Code simplifier has nothing to process today.
-   ```
+
+    ```
+    ✅ No code changes detected in the last 24 hours.
+    Code simplifier has nothing to process today.
+    ```
 
 2. **If no simplifications beneficial**:
-   ```
-   ✅ Code analyzed from last 24 hours.
-   No simplifications needed - code already meets quality standards.
-   ```
+
+    ```
+    ✅ Code analyzed from last 24 hours.
+    No simplifications needed - code already meets quality standards.
+    ```
 
 3. **If simplifications made**: Create a PR with the changes using safe-outputs
 

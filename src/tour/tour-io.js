@@ -159,9 +159,7 @@ export function mergeTours(existingTours, importedTours, mode) {
             // Replace tours with same tourName, keep the rest
             const result = [...existingTours];
             for (const imported of importedTours) {
-                const existingIdx = result.findIndex(
-                    (t) => t.tourName === imported.tourName
-                );
+                const existingIdx = result.findIndex((t) => t.tourName === imported.tourName);
                 if (existingIdx >= 0) {
                     result[existingIdx] = {
                         ...imported,

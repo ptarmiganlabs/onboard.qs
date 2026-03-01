@@ -2,43 +2,43 @@
 name: Daily File Diet
 description: Analyzes the largest Go source file daily and creates an issue to refactor it into smaller files if it exceeds the healthy size threshold
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 #   schedule:
 #     - cron: "0 13 * * 1-5"  # Weekdays at 1 PM UTC
 #   skip-if-match: 'is:issue is:open in:title "[file-diet]"'
 
 permissions:
-  contents: read
-  issues: read
-  pull-requests: read
+    contents: read
+    issues: read
+    pull-requests: read
 
 tracker-id: daily-file-diet
 engine: copilot
 
 imports:
-  - shared/mood.md
-  - shared/reporting.md
-  - shared/safe-output-app.md
+    - shared/mood.md
+    - shared/reporting.md
+    - shared/safe-output-app.md
 
 safe-outputs:
-  create-issue:
-    expires: 2d
-    title-prefix: "[file-diet] "
-    labels: [refactoring, code-health, automated-analysis, cookie]
-    max: 1
+    create-issue:
+        expires: 2d
+        title-prefix: '[file-diet] '
+        labels: [refactoring, code-health, automated-analysis, cookie]
+        max: 1
 
 tools:
-  serena: ["javascript"]
-  github:
-    toolsets: [default]
-  edit:
-  bash:
-    - "find pkg -name '*.js' ! -name '*_test.js' -type f -exec wc -l {} \\; | sort -rn"
-    - "wc -l pkg/**/*.js"
-    - "cat pkg/**/*.js"
-    - "head -n * pkg/**/*.js"
-    - "grep -r 'function ' pkg --include='*.js'"
-    - "find pkg/ -maxdepth 1 -ls"
+    serena: ['javascript']
+    github:
+        toolsets: [default]
+    edit:
+    bash:
+        - "find pkg -name '*.js' ! -name '*_test.js' -type f -exec wc -l {} \\; | sort -rn"
+        - 'wc -l pkg/**/*.js'
+        - 'cat pkg/**/*.js'
+        - 'head -n * pkg/**/*.js'
+        - "grep -r 'function ' pkg --include='*.js'"
+        - 'find pkg/ -maxdepth 1 -ls'
 
 timeout-minutes: 20
 strict: true
@@ -72,6 +72,7 @@ find pkg -name '*.go' ! -name '*_test.go' -type f -exec wc -l {} \; | sort -rn |
 ```
 
 Extract:
+
 - **File path**: Full path to the largest file
 - **Line count**: Number of lines in the file
 
@@ -89,16 +90,16 @@ Use the Serena MCP server to perform semantic analysis on the large file:
 
 1. **Read the file contents**
 2. **Identify logical boundaries** - Look for:
-   - Distinct functional domains (e.g., validation, compilation, rendering)
-   - Groups of related functions
-   - Duplicate or similar logic patterns
-   - Areas with high complexity or coupling
+    - Distinct functional domains (e.g., validation, compilation, rendering)
+    - Groups of related functions
+    - Duplicate or similar logic patterns
+    - Areas with high complexity or coupling
 
 3. **Suggest file splits** - Recommend:
-   - New file names based on functional areas
-   - Which functions/types should move to each file
-   - Shared utilities that could be extracted
-   - Interfaces or abstractions to reduce coupling
+    - New file names based on functional areas
+    - Which functions/types should move to each file
+    - Shared utilities that could be extracted
+    - Interfaces or abstractions to reduce coupling
 
 ### 4. Check Test Coverage
 
@@ -115,6 +116,7 @@ fi
 ```
 
 Calculate:
+
 - **Test-to-source ratio**: If test file exists, compute (test LOC / source LOC)
 - **Missing tests**: Identify areas needing additional test coverage
 
@@ -131,10 +133,10 @@ If refactoring is needed (file ≥ 800 lines), create an issue with this structu
 2. **Progressive Disclosure**: Wrap detailed file analysis, code snippets, and lengthy explanations in `<details><summary><b>Section Name</b></summary>` tags to improve readability and reduce overwhelm. This keeps the most important information immediately visible while allowing readers to expand sections as needed.
 
 3. **Issue Structure**: Follow this pattern for optimal clarity:
-   - **Brief summary** of the file size issue (always visible)
-   - **Key metrics** (LOC, complexity, test coverage) (always visible)
-   - **Detailed file structure analysis** (in `<details>` tags)
-   - **Refactoring suggestions** (always visible)
+    - **Brief summary** of the file size issue (always visible)
+    - **Key metrics** (LOC, complexity, test coverage) (always visible)
+    - **Detailed file structure analysis** (in `<details>` tags)
+    - **Refactoring suggestions** (always visible)
 
 These guidelines build trust through clarity, exceed expectations with helpful context, create delight through progressive disclosure, and maintain consistency with other reporting workflows.
 
@@ -158,6 +160,7 @@ The file `[FILE_PATH]` has grown to [LINE_COUNT] lines, making it difficult to m
 #### Detailed Breakdown
 
 [Provide detailed semantic analysis from Serena here:
+
 - Function count and distribution
 - Complexity hotspots
 - Duplicate or similar code patterns
@@ -173,28 +176,30 @@ The file `[FILE_PATH]` has grown to [LINE_COUNT] lines, making it difficult to m
 Based on semantic analysis, split the file into the following modules:
 
 1. **`[new_file_1].go`**
-   - Functions: [list]
-   - Responsibility: [description]
-   - Estimated LOC: [count]
+    - Functions: [list]
+    - Responsibility: [description]
+    - Estimated LOC: [count]
 
 2. **`[new_file_2].go`**
-   - Functions: [list]
-   - Responsibility: [description]
-   - Estimated LOC: [count]
+    - Functions: [list]
+    - Responsibility: [description]
+    - Estimated LOC: [count]
 
 3. **`[new_file_3].go`**
-   - Functions: [list]
-   - Responsibility: [description]
-   - Estimated LOC: [count]
+    - Functions: [list]
+    - Responsibility: [description]
+    - Estimated LOC: [count]
 
 #### Shared Utilities
 
 Extract common functionality into:
+
 - **`[utility_file].go`**: [description]
 
 #### Interface Abstractions
 
 Consider introducing interfaces to reduce coupling:
+
 - [Interface suggestions]
 
 <details>
@@ -203,16 +208,16 @@ Consider introducing interfaces to reduce coupling:
 Add comprehensive tests for each new file:
 
 1. **`[new_file_1]_test.go`**
-   - Test cases: [list key scenarios]
-   - Target coverage: >80%
+    - Test cases: [list key scenarios]
+    - Target coverage: >80%
 
 2. **`[new_file_2]_test.go`**
-   - Test cases: [list key scenarios]
-   - Target coverage: >80%
+    - Test cases: [list key scenarios]
+    - Target coverage: >80%
 
 3. **`[new_file_3]_test.go`**
-   - Test cases: [list key scenarios]
-   - Target coverage: >80%
+    - Test cases: [list key scenarios]
+    - Target coverage: >80%
 
 </details>
 
@@ -257,10 +262,11 @@ Add comprehensive tests for each new file:
 Your output MUST either:
 
 1. **If largest file < 800 lines**: Output a simple status message
-   ```
-   ✅ All files are healthy! Largest file: [FILE_PATH] ([LINE_COUNT] lines)
-   No refactoring needed today.
-   ```
+
+    ```
+    ✅ All files are healthy! Largest file: [FILE_PATH] ([LINE_COUNT] lines)
+    No refactoring needed today.
+    ```
 
 2. **If largest file ≥ 800 lines**: Create an issue with the detailed description above
 
@@ -276,11 +282,13 @@ Your output MUST either:
 ## Serena Configuration
 
 The Serena MCP server is configured for this workspace with:
+
 - **Context**: codex
 - **Project**: ${{ github.workspace }}
 - **Memory**: `/tmp/gh-aw/cache-memory/serena/`
 
 Use Serena to:
+
 - Analyze semantic relationships between functions
 - Identify duplicate or similar code patterns
 - Suggest logical module boundaries

@@ -6,11 +6,11 @@ This document describes how release artifacts for **Onboard.qs** are scanned for
 
 Each GitHub release publishes a single zip file (`onboard-qs-v{VERSION}.zip`) as a release asset. This outer zip contains:
 
-| File | Description |
-|------|-------------|
+| File             | Description                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------ |
 | `onboard-qs.zip` | The Qlik Sense extension — uploaded directly to Qlik Sense (Cloud or client-managed) |
-| `readme.txt` | Release notes with version info |
-| `LICENSE` | License file |
+| `readme.txt`     | Release notes with version info                                                      |
+| `LICENSE`        | License file                                                                         |
 
 VirusTotal does not guarantee recursive scanning of archives. To ensure both the distribution package **and** the actual extension zip are individually scanned, the workflow submits both files separately to VirusTotal.
 
@@ -33,24 +33,24 @@ After scanning, the release body will contain a section like:
 ```markdown
 ## VirusTotal scan results
 
-| File | Description | VirusTotal Analysis URL |
-|------|-------------|------------------------|
-| onboard-qs-v1.2.3.zip | Release download from GitHub | [View analysis](https://www.virustotal.com/gui/...) |
-| onboard-qs.zip | Qlik Sense extension (inside the release zip) | [View analysis](https://www.virustotal.com/gui/...) |
+| File                  | Description                                   | VirusTotal Analysis URL                             |
+| --------------------- | --------------------------------------------- | --------------------------------------------------- |
+| onboard-qs-v1.2.3.zip | Release download from GitHub                  | [View analysis](https://www.virustotal.com/gui/...) |
+| onboard-qs.zip        | Qlik Sense extension (inside the release zip) | [View analysis](https://www.virustotal.com/gui/...) |
 ```
 
 Each link points to the full VirusTotal analysis report for that file.
 
 ## Configuration
 
-| Item | Details |
-|------|---------|
-| **Workflow file** | `.github/workflows/virus-scan.yaml` |
-| **GitHub Action** | [`crazy-max/ghaction-virustotal`](https://github.com/crazy-max/ghaction-virustotal) v4.2.0 |
-| **API key secret** | `VIRUSTOTAL_API_KEY` (configured in repository secrets) |
-| **Rate limit** | 4 requests/minute (standard free API tier) |
-| **Trigger** | `release: published` event |
-| **Required permission** | `contents: write` (to update the release body) |
+| Item                    | Details                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| **Workflow file**       | `.github/workflows/virus-scan.yaml`                                                        |
+| **GitHub Action**       | [`crazy-max/ghaction-virustotal`](https://github.com/crazy-max/ghaction-virustotal) v4.2.0 |
+| **API key secret**      | `VIRUSTOTAL_API_KEY` (configured in repository secrets)                                    |
+| **Rate limit**          | 4 requests/minute (standard free API tier)                                                 |
+| **Trigger**             | `release: published` event                                                                 |
+| **Required permission** | `contents: write` (to update the release body)                                             |
 
 ## Notes
 

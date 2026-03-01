@@ -1,33 +1,33 @@
 ---
 description: Daily analysis of secret usage patterns across all compiled lock.yml workflow files
 on:
-  # schedule: daily
-  workflow_dispatch:
+    # schedule: daily
+    workflow_dispatch:
 permissions:
-  contents: read
-  issues: read
-  pull-requests: read
-  discussions: read
+    contents: read
+    issues: read
+    pull-requests: read
+    discussions: read
 engine: copilot
 strict: true
 tracker-id: daily-secrets-analysis
 tools:
-  github:
-    toolsets: [default, discussions]
-  bash: true
+    github:
+        toolsets: [default, discussions]
+    bash: true
 safe-outputs:
-  create-discussion:
-    expires: 3d
-    category: "audits"
-    title-prefix: "[daily secrets] "
-    max: 1
-    close-older-discussions: true
-  close-discussion:
-    max: 10
+    create-discussion:
+        expires: 3d
+        category: 'audits'
+        title-prefix: '[daily secrets] '
+        max: 1
+        close-older-discussions: true
+    close-discussion:
+        max: 10
 timeout-minutes: 20
 imports:
-  - shared/mood.md
-  - shared/reporting.md
+    - shared/mood.md
+    - shared/reporting.md
 source: github/gh-aw/.github/workflows/daily-secrets-analysis.md@852cb06ad52958b402ed982b69957ffc57ca0619
 ---
 
@@ -40,6 +40,7 @@ You are an expert security analyst that monitors and reports on secret usage pat
 ## Mission
 
 Generate a daily report analyzing secret usage in all `.lock.yml` files in the repository:
+
 1. Scan all 125+ compiled workflow files
 2. Analyze secret references (`secrets.*` and `github.token`)
 3. Track changes in secret usage patterns
@@ -201,23 +202,28 @@ echo "Stats saved for tomorrow's comparison"
 **CRITICAL**: Follow these formatting guidelines to create well-structured, readable reports:
 
 ### 1. Header Levels
+
 **Use h3 (###) or lower for all headers in your report to maintain proper document hierarchy.**
 
 The issue or discussion title serves as h1, so all content headers should start at h3:
+
 - Use `###` for main sections (e.g., "### Executive Summary", "### Key Metrics")
 - Use `####` for subsections (e.g., "#### Detailed Analysis", "#### Recommendations")
 - Never use `##` (h2) or `#` (h1) in the report body
 
 ### 2. Progressive Disclosure
+
 **Wrap long sections in `<details><summary><b>Section Name</b></summary>` tags to improve readability and reduce scrolling.**
 
 Use collapsible sections for:
+
 - Detailed analysis and verbose data
 - Per-item breakdowns when there are many items
 - Complete logs, traces, or raw data
 - Secondary information and extra context
 
 Example:
+
 ```markdown
 <details>
 <summary><b>View Detailed Analysis</b></summary>
@@ -239,6 +245,7 @@ Your report should follow this structure for optimal readability:
 ### Design Principles
 
 Create reports that:
+
 - **Build trust through clarity**: Most important info immediately visible
 - **Exceed expectations**: Add helpful context, trends, comparisons
 - **Create delight**: Use progressive disclosure to reduce overwhelm
@@ -267,11 +274,11 @@ Use the following template for the discussion post:
 
 ## 🔑 Top 10 Secrets by Usage
 
-| Rank | Secret Name | Occurrences | Type |
-|------|-------------|-------------|------|
-| 1 | GITHUB_TOKEN | [count] | GitHub Token |
-| 2 | GH_AW_GITHUB_TOKEN | [count] | GitHub Token |
-| ... | ... | ... | ... |
+| Rank | Secret Name        | Occurrences | Type         |
+| ---- | ------------------ | ----------- | ------------ |
+| 1    | GITHUB_TOKEN       | [count]     | GitHub Token |
+| 2    | GH_AW_GITHUB_TOKEN | [count]     | GitHub Token |
+| ...  | ...                | ...         | ...          |
 
 ## 🛡️ Security Posture
 
@@ -279,7 +286,7 @@ Use the following template for the discussion post:
 
 ✅ **Redaction System**: [REDACTION_COUNT]/[TOTAL_WORKFLOWS] workflows have redaction steps  
 ✅ **Token Cascades**: [CASCADE_COUNT] instances of fallback chains  
-✅ **Permission Blocks**: [PERMISSION_BLOCKS] explicit permission definitions  
+✅ **Permission Blocks**: [PERMISSION_BLOCKS] explicit permission definitions
 
 ### Security Checks
 
@@ -311,6 +318,7 @@ Use the following template for the discussion post:
 ## 📖 Reference Documentation
 
 For detailed information about secret usage patterns, see:
+
 - Specification: [`scratchpad/secrets-yml.md`](https://github.com/github/gh-aw/blob/main/scratchpad/secrets-yml.md)
 - Redaction System: `actions/setup/js/redact_secrets.cjs`
 
@@ -324,10 +332,10 @@ For detailed information about secret usage patterns, see:
 
 1. **Create the discussion** with the report using `create_discussion` safe output
 2. The discussion will automatically:
-   - Have title prefix "[daily secrets]"
-   - Be posted in "audits" category
-   - Expire after 3 days
-   - Replace any existing daily secrets discussion (max: 1)
+    - Have title prefix "[daily secrets]"
+    - Be posted in "audits" category
+    - Expire after 3 days
+    - Replace any existing daily secrets discussion (max: 1)
 3. **Close older discussions** older than 3 days using `close_discussion` safe output
 
 ## Success Criteria

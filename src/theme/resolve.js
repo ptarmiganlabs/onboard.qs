@@ -15,11 +15,20 @@ import { PRESETS, defaultPreset } from './presets';
  * compatibility with the Qlik color-picker component.
  */
 const COLOR_PICKER_KEYS = new Set([
-    'buttonBgColor', 'buttonTextColor', 'buttonHoverBgColor', 'buttonBorderColor',
-    'popoverBgColor', 'popoverTextColor', 'popoverTitleColor',
-    'popoverButtonBgColor', 'popoverButtonTextColor', 'popoverButtonHoverBgColor',
+    'buttonBgColor',
+    'buttonTextColor',
+    'buttonHoverBgColor',
+    'buttonBorderColor',
+    'popoverBgColor',
+    'popoverTextColor',
+    'popoverTitleColor',
+    'popoverButtonBgColor',
+    'popoverButtonTextColor',
+    'popoverButtonHoverBgColor',
     'progressBarColor',
-    'menuBgColor', 'menuTextColor', 'menuHoverBgColor',
+    'menuBgColor',
+    'menuTextColor',
+    'menuHoverBgColor',
 ]);
 
 /**
@@ -87,7 +96,9 @@ export function resolveTheme(layout) {
             // Color-picker values now include '#' prefix. Normalise in case
             // older persisted objects still lack it.
             value = raw.color
-                ? (raw.color.startsWith('#') ? raw.color : `#${raw.color}`)
+                ? raw.color.startsWith('#')
+                    ? raw.color
+                    : `#${raw.color}`
                 : preset[key];
         } else if (raw != null && raw !== '') {
             value = raw;
