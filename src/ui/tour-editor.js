@@ -416,7 +416,9 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
             });
         }
 
-        const overlayOpacityInput = overlay.querySelector('.onboard-qs-editor__tour-overlay-opacity');
+        const overlayOpacityInput = overlay.querySelector(
+            '.onboard-qs-editor__tour-overlay-opacity'
+        );
         if (overlayOpacityInput) {
             overlayOpacityInput.addEventListener('input', (e) => {
                 tour.overlayOpacity = parseInt(e.target.value, 10) || 0;
@@ -577,8 +579,8 @@ function buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepInd
             <div class="onboard-qs-editor__header">
                 <h2 class="onboard-qs-editor__header-title">Onboard.qs — Tour Editor</h2>
                 <div class="onboard-qs-editor__header-actions">
-                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__export" title="Export tours to JSON file">&#128229; Export</button>
-                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__import" title="Import tours from JSON file">&#128228; Import</button>
+                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__export" title="Export tours to JSON file">&#128228; Export</button>
+                    <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-btn--small onboard-qs-editor__import" title="Import tours from JSON file">&#128194; Import</button>
                     <button class="onboard-qs-btn onboard-qs-btn--primary onboard-qs-editor__save">Save</button>
                     <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-editor__cancel">Cancel</button>
                 </div>
@@ -988,7 +990,9 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
     dialog.addEventListener('keydown', (e) => e.stopPropagation());
 
     dialog.querySelector('.onboard-qs-import-dialog__confirm')?.addEventListener('click', () => {
-        const mode = dialog.querySelector('input[name="oqs-import-mode"]:checked')?.value || 'replaceMatching';
+        const mode =
+            dialog.querySelector('input[name="oqs-import-mode"]:checked')?.value ||
+            'replaceMatching';
         const importTheme = dialog.querySelector('.oqs-import-theme-check')?.checked ?? false;
 
         const mergedTours = mergeTours(existingTours, importData.tours, mode);

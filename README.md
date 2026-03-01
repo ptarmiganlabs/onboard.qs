@@ -25,10 +25,10 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
 - **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is [driver.js](https://driverjs.com/) (~5 KB gzip).
 
-| | |
-|---|---|
+|                                                                                            |                                                                                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | <img src="docs/screenshots/onboard-qs_developer-ux_5.png" alt="Tour editor" width="400" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_4.png" alt="Tour step highlighting an object" width="400" /> |
-| *Tour editor — build tours without leaving the app* | *A tour step highlighting a sheet object* |
+| _Tour editor — build tours without leaving the app_                                        | _A tour step highlighting a sheet object_                                                                     |
 
 ---
 
@@ -43,9 +43,9 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 
 1. Go to [**Releases**](https://github.com/ptarmiganlabs/onboard.qs/releases) and download the latest release ZIP file (e.g. `onboard-qs-v1.3.0.zip`).
 2. Extract the downloaded ZIP file. Inside you will find:
-   - `readme.txt` — brief release notes
-   - `LICENSE` — the MIT license
-   - **`onboard-qs.zip`** — **this is the actual extension file** that you upload to Qlik Sense
+    - `readme.txt` — brief release notes
+    - `LICENSE` — the MIT license
+    - **`onboard-qs.zip`** — **this is the actual extension file** that you upload to Qlik Sense
 
 > **Note:** The downloaded file is an outer ZIP that wraps the deployable extension ZIP. You need to extract the outer ZIP first, then use the inner `onboard-qs.zip` for installation.
 
@@ -88,13 +88,13 @@ Platform detection is automatic — the extension identifies the environment and
 
 ### Widget Appearance
 
-| Property          | Type     | Default      | Description                                                |
-| ----------------- | -------- | ------------ | ---------------------------------------------------------- |
-| Show start button      | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                             |
-| Button text            | String   | `Start Tour` | Label on the start button (expression-enabled)                             |
-| Button style           | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                      |
-| Horizontal alignment   | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                  |
-| Vertical alignment     | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                  |
+| Property             | Type     | Default      | Description                                           |
+| -------------------- | -------- | ------------ | ----------------------------------------------------- |
+| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode        |
+| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)        |
+| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill` |
+| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                             |
+| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                             |
 
 ### Tour Settings
 
@@ -109,18 +109,18 @@ Platform detection is automatic — the extension identifies the environment and
 
 ### Theme & Styling
 
-| Property              | Type         | Default            | Description                                                                 |
-| --------------------- | ------------ | ------------------ | --------------------------------------------------------------------------- |
-| Theme preset          | Dropdown     | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold`       |
-| Font family           | String       | (from preset)      | CSS font-family value (expression-enabled)                                  |
-| Button colors         | Color pickers | (from preset)     | Background, text, hover background, border color                           |
-| Button font size      | String (px)  | (from preset)      | Font size in pixels                                                         |
-| Button border radius  | String (px)  | (from preset)      | Border radius in pixels                                                     |
-| Button font weight    | Dropdown     | (from preset)      | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`             |
-| Popover colors        | Color pickers | (from preset)     | Background, text, title, button bg/text/hover, progress bar               |
-| Popover font size     | String (px)  | (from preset)      | Font size in pixels                                                         |
-| Popover border radius | String (px)  | (from preset)      | Border radius in pixels                                                     |
-| Menu colors           | Color pickers | (from preset)     | Background, text, hover background for the multi-tour dropdown menu        |
+| Property              | Type          | Default                  | Description                                                             |
+| --------------------- | ------------- | ------------------------ | ----------------------------------------------------------------------- |
+| Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold` |
+| Font family           | String        | (from preset)            | CSS font-family value (expression-enabled)                              |
+| Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                        |
+| Button font size      | String (px)   | (from preset)            | Font size in pixels                                                     |
+| Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Button font weight    | Dropdown      | (from preset)            | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`          |
+| Popover colors        | Color pickers | (from preset)            | Background, text, title, button bg/text/hover, progress bar             |
+| Popover font size     | String (px)   | (from preset)            | Font size in pixels                                                     |
+| Popover border radius | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu     |
 
 All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
 
@@ -139,14 +139,14 @@ All color properties use the native Qlik color-picker component. When you switch
 
 ### Standalone Dialog Size (when Target type = Standalone Dialog)
 
-| Size         | Dimensions         |
-| ------------ | ------------------ |
-| Dynamic      | Fit content        |
-| Small        | 320 × 220 px       |
-| Medium       | 480 × 320 px (default) |
-| Large        | 640 × 420 px       |
-| Extra Large  | 800 × 520 px       |
-| Custom       | User-specified width × height |
+| Size        | Dimensions                    |
+| ----------- | ----------------------------- |
+| Dynamic     | Fit content                   |
+| Small       | 320 × 220 px                  |
+| Medium      | 480 × 320 px (default)        |
+| Large       | 640 × 420 px                  |
+| Extra Large | 800 × 520 px                  |
+| Custom      | User-specified width × height |
 
 When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
 
@@ -154,15 +154,15 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay and navigation buttons (expression support for button text is only available in the property panel):
 
-| Property             | Type    | Default               | Description                                                       |
-| -------------------- | ------- | --------------------- | ----------------------------------------------------------------- |
+| Property             | Type    | Default              | Description                                                       |
+| -------------------- | ------- | -------------------- | ----------------------------------------------------------------- |
 | Overlay color        | String  | `rgba(0, 0, 0, 0.6)` | Background color behind the highlighted area                      |
-| Overlay opacity      | Integer | `60`                  | Opacity percentage (0–100)                                        |
-| Stage padding        | Integer | `8`                   | Padding around the highlighted element (px)                       |
-| Stage border radius  | Integer | `5`                   | Border radius of the highlight cutout (px)                        |
-| Next button text     | String  | `Next`                | Label for the “Next” navigation button (expression-enabled)       |
-| Previous button text | String  | `Previous`            | Label for the “Previous” navigation button (expression-enabled)   |
-| Done button text     | String  | `Done`                | Label for the final step's navigation button (expression-enabled) |
+| Overlay opacity      | Integer | `60`                 | Opacity percentage (0–100)                                        |
+| Stage padding        | Integer | `8`                  | Padding around the highlighted element (px)                       |
+| Stage border radius  | Integer | `5`                  | Border radius of the highlight cutout (px)                        |
+| Next button text     | String  | `Next`               | Label for the “Next” navigation button (expression-enabled)       |
+| Previous button text | String  | `Previous`           | Label for the “Previous” navigation button (expression-enabled)   |
+| Done button text     | String  | `Done`               | Label for the final step's navigation button (expression-enabled) |
 
 ---
 
@@ -410,11 +410,11 @@ sequenceDiagram
 
 ### Merge Modes
 
-| Mode              | Behaviour                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| Replace Matching  | Replace tours whose name matches an imported tour; keep all other existing tours; append new ones       |
-| Replace All       | Delete all existing tours and replace with the imported set                                             |
-| Add to Existing   | Append all imported tours as new entries (duplicates are allowed)                                       |
+| Mode             | Behaviour                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Replace Matching | Replace tours whose name matches an imported tour; keep all other existing tours; append new ones |
+| Replace All      | Delete all existing tours and replace with the imported set                                       |
+| Add to Existing  | Append all imported tours as new entries (duplicates are allowed)                                 |
 
 During import, an optional **Import theme settings** toggle lets you also overwrite the current theme/widget configuration with the values from the import file.
 

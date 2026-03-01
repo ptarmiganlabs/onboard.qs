@@ -91,11 +91,11 @@ classDiagram
 
 Each step targets a DOM element using one of three selector strategies:
 
-| `selectorType` | Behavior |
-|---|---|
+| `selectorType`       | Behavior                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
 | `'object'` (default) | Uses `targetObjectId` → resolved via `getObjectSelectorSync()` to a `.qv-object-{id}` CSS selector |
-| `'css'` | Uses `customCssSelector` directly — any valid CSS selector |
-| `'none'` | No element — driver.js shows a centered modal dialog |
+| `'css'`              | Uses `customCssSelector` directly — any valid CSS selector                                         |
+| `'none'`             | No element — driver.js shows a centered modal dialog                                               |
 
 ## Tour execution flow
 
@@ -167,12 +167,12 @@ Tour completion is tracked in `localStorage` under keys with the format:
 onboard-qs:{appId}:{sheetId}:{tourId}:v{tourVersion}
 ```
 
-| Function | Purpose |
-|---|---|
-| `hasSeenTour(appId, sheetId, tourId, version)` | Check if a key exists |
-| `markTourSeen(appId, sheetId, tourId, version)` | Write key with timestamp JSON |
-| `resetTourSeen(appId, sheetId, tourId, version)` | Remove a single key |
-| `clearAllTourData()` | Remove all `onboard-qs:*` keys |
+| Function                                         | Purpose                        |
+| ------------------------------------------------ | ------------------------------ |
+| `hasSeenTour(appId, sheetId, tourId, version)`   | Check if a key exists          |
+| `markTourSeen(appId, sheetId, tourId, version)`  | Write key with timestamp JSON  |
+| `resetTourSeen(appId, sheetId, tourId, version)` | Remove a single key            |
+| `clearAllTourData()`                             | Remove all `onboard-qs:*` keys |
 
 The version dimension allows re-showing a tour when the developer bumps `tourVersion`.
 
@@ -181,7 +181,7 @@ The version dimension allows re-showing a tour when the developer bumps `tourVer
 driver.js supports both static elements and lazy-evaluated functions. The extension uses **lazy evaluation** — each step's `element` is a function:
 
 ```javascript
-element: () => document.querySelector(cssSelector)
+element: () => document.querySelector(cssSelector);
 ```
 
 This is critical because:
@@ -229,13 +229,13 @@ The tour editor includes **Export** and **Import** buttons (in the editor header
 
 `exportToursAndTheme(layout)` serializes the following to a JSON file:
 
-| Field | Content |
-|---|---|
-| `version` | Schema version (currently `1`) |
-| `exportedAt` | ISO 8601 timestamp |
-| `tours` | Complete tours array (all tours, steps, and settings) |
-| `theme` | Theme configuration (preset, overrides) |
-| `widget` | Widget settings (button text, style, alignment) |
+| Field        | Content                                               |
+| ------------ | ----------------------------------------------------- |
+| `version`    | Schema version (currently `1`)                        |
+| `exportedAt` | ISO 8601 timestamp                                    |
+| `tours`      | Complete tours array (all tours, steps, and settings) |
+| `theme`      | Theme configuration (preset, overrides)               |
+| `widget`     | Widget settings (button text, style, alignment)       |
 
 The file is downloaded as `onboard-qs-tours.json` via a temporary `<a>` element.
 
@@ -268,14 +268,14 @@ flowchart TD
 
 When a step targets no element (`selectorType: 'none'`), the dialog size can be configured:
 
-| Size | CSS class | Dimensions |
-|---|---|---|
-| Dynamic | `onboard-qs-dialog-dynamic` | Fit content |
-| Small | `onboard-qs-dialog-small` | 320 × 220 px |
-| Medium (default) | `onboard-qs-dialog-medium` | 480 × 320 px |
-| Large | `onboard-qs-dialog-large` | 640 × 420 px |
-| Extra Large | `onboard-qs-dialog-x-large` | 800 × 520 px |
-| Custom | `onboard-qs-dialog-custom` | User-specified via `customDialogWidth` / `customDialogHeight` |
+| Size             | CSS class                   | Dimensions                                                    |
+| ---------------- | --------------------------- | ------------------------------------------------------------- |
+| Dynamic          | `onboard-qs-dialog-dynamic` | Fit content                                                   |
+| Small            | `onboard-qs-dialog-small`   | 320 × 220 px                                                  |
+| Medium (default) | `onboard-qs-dialog-medium`  | 480 × 320 px                                                  |
+| Large            | `onboard-qs-dialog-large`   | 640 × 420 px                                                  |
+| Extra Large      | `onboard-qs-dialog-x-large` | 800 × 520 px                                                  |
+| Custom           | `onboard-qs-dialog-custom`  | User-specified via `customDialogWidth` / `customDialogHeight` |
 
 Custom dimensions are applied via `onPopoverRender` as inline styles on the popover wrapper.
 
@@ -283,20 +283,20 @@ Custom dimensions are applied via `onPopoverRender` as inline styles on the popo
 
 Step descriptions support a subset of Markdown, converted to HTML by `util/markdown.js`:
 
-| Syntax | Rendered as |
-|---|---|
-| `**bold**` | **bold** |
-| `*italic*` | *italic* |
-| `[text](url)` | hyperlink |
-| `![alt](url)` | image |
-| `` `code` `` | inline code |
-| `### Heading` | h3–h6 |
-| `> quote` | blockquote |
-| `---` | horizontal rule |
-| `- item` / `* item` | unordered list |
-| `1. item` | ordered list |
-| double newline | paragraph break |
-| single newline | `<br>` |
+| Syntax              | Rendered as     |
+| ------------------- | --------------- |
+| `**bold**`          | **bold**        |
+| `*italic*`          | _italic_        |
+| `[text](url)`       | hyperlink       |
+| `![alt](url)`       | image           |
+| `` `code` ``        | inline code     |
+| `### Heading`       | h3–h6           |
+| `> quote`           | blockquote      |
+| `---`               | horizontal rule |
+| `- item` / `* item` | unordered list  |
+| `1. item`           | ordered list    |
+| double newline      | paragraph break |
+| single newline      | `<br>`          |
 
 The converter is intentionally minimal (~112 lines) to keep the bundle small.
 
@@ -306,28 +306,28 @@ The extension configures driver.js with the following settings. Some are configu
 
 ### Configurable per tour
 
-| Setting | Default | Configured in | Notes |
-|---|---|---|---|
-| `showProgress` | `true` | Property panel | "1 of 5" progress text |
-| `allowKeyboardControl` | `true` | Property panel | Arrow-key / Escape navigation |
-| `overlayColor` | `rgba(0,0,0,0.6)` | Property panel + Tour editor | Semi-transparent backdrop |
-| `overlayOpacity` | `60` (%) | Property panel + Tour editor | Opacity percentage (0–100) |
-| `stagePadding` | `8` | Property panel + Tour editor | Padding around highlighted element (px) |
-| `stageRadius` | `5` | Property panel + Tour editor | Border radius of the highlight cutout (px) |
-| `nextBtnText` | `'Next'` | Property panel + Tour editor | Label for the Next button (expression-enabled in property panel) |
-| `prevBtnText` | `'Previous'` | Property panel + Tour editor | Label for the Previous button (expression-enabled in property panel) |
-| `doneBtnText` | `'Done'` | Property panel + Tour editor | Label for the final step's button (expression-enabled in property panel) |
+| Setting                | Default           | Configured in                | Notes                                                                    |
+| ---------------------- | ----------------- | ---------------------------- | ------------------------------------------------------------------------ |
+| `showProgress`         | `true`            | Property panel               | "1 of 5" progress text                                                   |
+| `allowKeyboardControl` | `true`            | Property panel               | Arrow-key / Escape navigation                                            |
+| `overlayColor`         | `rgba(0,0,0,0.6)` | Property panel + Tour editor | Semi-transparent backdrop                                                |
+| `overlayOpacity`       | `60` (%)          | Property panel + Tour editor | Opacity percentage (0–100)                                               |
+| `stagePadding`         | `8`               | Property panel + Tour editor | Padding around highlighted element (px)                                  |
+| `stageRadius`          | `5`               | Property panel + Tour editor | Border radius of the highlight cutout (px)                               |
+| `nextBtnText`          | `'Next'`          | Property panel + Tour editor | Label for the Next button (expression-enabled in property panel)         |
+| `prevBtnText`          | `'Previous'`      | Property panel + Tour editor | Label for the Previous button (expression-enabled in property panel)     |
+| `doneBtnText`          | `'Done'`          | Property panel + Tour editor | Label for the final step's button (expression-enabled in property panel) |
 
 ### Fixed (not user-configurable)
 
-| Setting | Value | Notes |
-|---|---|---|
-| `animate` | `true` | Smooth transitions between steps |
-| `smoothScroll` | `true` | Scrolls to off-screen elements |
-| `allowClose` | `true` | User can always dismiss the tour |
-| `popoverClass` | `'onboard-qs-popover'` | Custom CSS class for Qlik Sense styling |
-| `progressText` | `'{{current}} of {{total}}'` | Progress text template |
-| `showButtons` | `['next', 'previous', 'close']` | All navigation buttons shown |
+| Setting        | Value                           | Notes                                   |
+| -------------- | ------------------------------- | --------------------------------------- |
+| `animate`      | `true`                          | Smooth transitions between steps        |
+| `smoothScroll` | `true`                          | Scrolls to off-screen elements          |
+| `allowClose`   | `true`                          | User can always dismiss the tour        |
+| `popoverClass` | `'onboard-qs-popover'`          | Custom CSS class for Qlik Sense styling |
+| `progressText` | `'{{current}} of {{total}}'`    | Progress text template                  |
+| `showButtons`  | `['next', 'previous', 'close']` | All navigation buttons shown            |
 
 ### CSS theming
 
@@ -342,6 +342,10 @@ Four built-in presets are available: **Default**, **The Lean Green Machine**, **
 Cloud-specific z-index overrides ensure the overlay renders above the Cloud MUI toolbar:
 
 ```css
-.driver-active .driver-overlay  { z-index: 99999 !important; }
-.driver-active .driver-popover  { z-index: 100000 !important; }
+.driver-active .driver-overlay {
+    z-index: 99999 !important;
+}
+.driver-active .driver-popover {
+    z-index: 100000 !important;
+}
 ```

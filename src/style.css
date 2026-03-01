@@ -10,18 +10,42 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+    font-family: var(
+        --oqs-font-family,
+        'QlikView Sans',
+        'Segoe UI',
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif
+    );
     box-sizing: border-box;
 }
 
 /* --- Button alignment modifiers --- */
 
-.onboard-qs-widget--h-left   { justify-content: flex-start; padding-left: 8px; }
-.onboard-qs-widget--h-center { justify-content: center; }
-.onboard-qs-widget--h-right  { justify-content: flex-end; padding-right: 8px; }
-.onboard-qs-widget--v-top    { align-items: flex-start; padding-top: 8px; }
-.onboard-qs-widget--v-center { align-items: center; }
-.onboard-qs-widget--v-bottom { align-items: flex-end; padding-bottom: 8px; }
+.onboard-qs-widget--h-left {
+    justify-content: flex-start;
+    padding-left: 8px;
+}
+.onboard-qs-widget--h-center {
+    justify-content: center;
+}
+.onboard-qs-widget--h-right {
+    justify-content: flex-end;
+    padding-right: 8px;
+}
+.onboard-qs-widget--v-top {
+    align-items: flex-start;
+    padding-top: 8px;
+}
+.onboard-qs-widget--v-center {
+    align-items: center;
+}
+.onboard-qs-widget--v-bottom {
+    align-items: flex-end;
+    padding-bottom: 8px;
+}
 
 .onboard-qs-widget--empty {
     background: #f8f9fa;
@@ -140,7 +164,15 @@
     border-radius: var(--oqs-btn-border-radius, 4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px 0;
-    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+    font-family: var(
+        --oqs-font-family,
+        'QlikView Sans',
+        'Segoe UI',
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif
+    );
 }
 
 .onboard-qs-floating-menu__item {
@@ -212,31 +244,31 @@
  */
 
 /* sm tier */
-.onboard-qs-widget--edit[data-size="sm"] .onboard-qs-widget__stats {
+.onboard-qs-widget--edit[data-size='sm'] .onboard-qs-widget__stats {
     display: none;
 }
-.onboard-qs-widget--edit[data-size="sm"] .onboard-qs-widget__edit-info {
+.onboard-qs-widget--edit[data-size='sm'] .onboard-qs-widget__edit-info {
     padding: 6px;
 }
 
 /* xs tier */
-.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__icon {
+.onboard-qs-widget--edit[data-size='xs'] .onboard-qs-widget__icon {
     display: none;
 }
-.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__stats {
+.onboard-qs-widget--edit[data-size='xs'] .onboard-qs-widget__stats {
     display: none;
 }
-.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__edit-info {
+.onboard-qs-widget--edit[data-size='xs'] .onboard-qs-widget__edit-info {
     flex-direction: row;
     gap: 6px;
     padding: 4px 8px;
     text-align: left;
 }
-.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-widget__title {
+.onboard-qs-widget--edit[data-size='xs'] .onboard-qs-widget__title {
     font-size: 12px;
     white-space: nowrap;
 }
-.onboard-qs-widget--edit[data-size="xs"] .onboard-qs-btn {
+.onboard-qs-widget--edit[data-size='xs'] .onboard-qs-btn {
     padding: 3px 8px;
     font-size: 11px;
     white-space: nowrap;
@@ -244,7 +276,7 @@
 }
 
 /* xs + narrow: stack vertically again */
-.onboard-qs-widget--edit[data-size="xs"][data-narrow="true"] .onboard-qs-widget__edit-info {
+.onboard-qs-widget--edit[data-size='xs'][data-narrow='true'] .onboard-qs-widget__edit-info {
     flex-direction: column;
     text-align: center;
 }
@@ -273,8 +305,14 @@
 }
 
 @keyframes oqs-about-fade-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .onboard-qs-about-modal__header {
@@ -322,7 +360,9 @@
     border-radius: 6px;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s, background 0.15s;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
 }
 
 .onboard-qs-about-modal__links a:hover {
@@ -691,7 +731,9 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.15s, visibility 0.15s;
+    transition:
+        opacity 0.15s,
+        visibility 0.15s;
     z-index: 10000;
 }
 
@@ -706,7 +748,9 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.15s, visibility 0.15s;
+    transition:
+        opacity 0.15s,
+        visibility 0.15s;
     z-index: 10000;
 }
 
@@ -747,7 +791,15 @@
    ======================================================================== */
 
 .onboard-qs-popover {
-    font-family: var(--oqs-font-family, 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+    font-family: var(
+        --oqs-font-family,
+        'QlikView Sans',
+        'Segoe UI',
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif
+    );
     max-width: 380px;
     background: var(--oqs-popover-bg, #fff);
     border-radius: var(--oqs-popover-border-radius, 4px);

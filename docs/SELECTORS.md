@@ -58,28 +58,28 @@ The merge strategy means overrides only need to specify the selectors that **cha
 
 ### Client-managed — `default`
 
-| Selector | Value | Usage |
-|---|---|---|
-| `objectById(id)` | `.qv-object-${id}` | Tour step targeting |
-| `allObjects` | `.qv-object` | Enumerate all objects |
-| `sheetContainer` | `.qv-sheet, .qv-panel-sheet, .qv-panel-content` | Sheet container detection |
-| `sheetTitle` | `.sheet-title-container, .qs-sheet-title` | Sheet title area |
-| `toolbar` | `.qv-toolbar-container, .qs-toolbar` | Qlik toolbar |
-| `gridCell` | `.qv-gridcell` | Grid cells wrapping objects |
+| Selector         | Value                                           | Usage                       |
+| ---------------- | ----------------------------------------------- | --------------------------- |
+| `objectById(id)` | `.qv-object-${id}`                              | Tour step targeting         |
+| `allObjects`     | `.qv-object`                                    | Enumerate all objects       |
+| `sheetContainer` | `.qv-sheet, .qv-panel-sheet, .qv-panel-content` | Sheet container detection   |
+| `sheetTitle`     | `.sheet-title-container, .qs-sheet-title`       | Sheet title area            |
+| `toolbar`        | `.qv-toolbar-container, .qs-toolbar`            | Qlik toolbar                |
+| `gridCell`       | `.qv-gridcell`                                  | Grid cells wrapping objects |
 
 ### Cloud — `default`
 
-| Selector | Value | Usage |
-|---|---|---|
-| `objectById(id)` | `.qv-object-${id}` | Tour step targeting |
-| `allObjects` | `.qv-object` | Enumerate all objects |
-| `sheetContainer` | `.qvt-sheet.qv-panel-sheet` | Sheet container |
-| `sheetTitle` | `.sheet-title-container` | Sheet title |
-| `toolbar` | `[data-testid="top-bar-root"]` | Cloud MUI top bar |
-| `subToolbar` | `[data-testid="qs-sub-toolbar"]` | Selections bar |
-| `editButton` | `[data-testid="toolbar-edit-button"]` | Edit mode button |
-| `analysisContent` | `[data-testid="sense-analysis-content"]` | Main content area |
-| `gridCell` | `.qv-gridcell` | Grid cells |
+| Selector          | Value                                    | Usage                 |
+| ----------------- | ---------------------------------------- | --------------------- |
+| `objectById(id)`  | `.qv-object-${id}`                       | Tour step targeting   |
+| `allObjects`      | `.qv-object`                             | Enumerate all objects |
+| `sheetContainer`  | `.qvt-sheet.qv-panel-sheet`              | Sheet container       |
+| `sheetTitle`      | `.sheet-title-container`                 | Sheet title           |
+| `toolbar`         | `[data-testid="top-bar-root"]`           | Cloud MUI top bar     |
+| `subToolbar`      | `[data-testid="qs-sub-toolbar"]`         | Selections bar        |
+| `editButton`      | `[data-testid="toolbar-edit-button"]`    | Edit mode button      |
+| `analysisContent` | `[data-testid="sense-analysis-content"]` | Main content area     |
+| `gridCell`        | `.qv-gridcell`                           | Grid cells            |
 
 > **Key finding (Feb 2026):** Cloud visualization objects use the same `.qv-object-{id}` class pattern as client-managed. The `data-testid` attribute exists only on toolbar/chrome elements, NOT on visualization objects.
 
@@ -127,9 +127,7 @@ future: {
 
 ```javascript
 // In client-managed.js, in the versionRanges array:
-const versionRanges = [
-    { minVersion: '15.0.0', maxVersion: '99.999.999', codePath: 'future' },
-];
+const versionRanges = [{ minVersion: '15.0.0', maxVersion: '99.999.999', codePath: 'future' }];
 ```
 
 ### 3. That's it

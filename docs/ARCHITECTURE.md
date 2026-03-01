@@ -75,26 +75,26 @@ graph TD
 
 ## Module responsibilities
 
-| Module | Responsibility |
-|---|---|
-| `index.js` | Nebula/Stardust supernova entry point. Hooks into Qlik lifecycle (`useLayout`, `useApp`, etc.), detects platform once, delegates rendering. |
-| `platform/index.js` | Detects whether running on Cloud or client-managed (URL-based). Resolves the correct adapter and Sense version. |
-| `platform/client-managed.js` | Client-managed Qlik Sense adapter: sheet ID detection (URL → Qlik API → DOM), Engine API sheet objects, Sense version detection, version-range-to-code-path mapping. |
-| `platform/cloud.js` | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently. |
-| `platform/selectors.js` | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions. |
-| `theme/resolve.js` | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`. |
-| `theme/presets.js` | Built-in theme presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values. |
-| `tour/tour-runner.js` | Transforms tour config into driver.js steps, launches tours, handles highlight preview. |
-| `tour/tour-storage.js` | localStorage-based tracking of "has user seen this tour version". |
-| `tour/tour-io.js` | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing). |
-| `ui/widget-renderer.js` | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic. |
-| `ui/tour-editor.js` | Full-screen modal editor for creating/editing tours and steps in edit mode. |
-| `ext.js` | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor). |
-| `object-properties.js` | Default QAE properties for new extension instances. |
-| `util/logger.js` | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`. |
-| `util/markdown.js` | Minimal Markdown-to-HTML converter (~112 lines) for tour step descriptions. |
-| `util/uuid.js` | UUID v4 generator for tour/step IDs. |
-| `style.css` | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes. |
+| Module                       | Responsibility                                                                                                                                                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.js`                   | Nebula/Stardust supernova entry point. Hooks into Qlik lifecycle (`useLayout`, `useApp`, etc.), detects platform once, delegates rendering.                                                                                                  |
+| `platform/index.js`          | Detects whether running on Cloud or client-managed (URL-based). Resolves the correct adapter and Sense version.                                                                                                                              |
+| `platform/client-managed.js` | Client-managed Qlik Sense adapter: sheet ID detection (URL → Qlik API → DOM), Engine API sheet objects, Sense version detection, version-range-to-code-path mapping.                                                                         |
+| `platform/cloud.js`          | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently.                                                                                                                   |
+| `platform/selectors.js`      | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions.                                                                                                                                              |
+| `theme/resolve.js`           | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`. |
+| `theme/presets.js`           | Built-in theme presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values.                                                                                              |
+| `tour/tour-runner.js`        | Transforms tour config into driver.js steps, launches tours, handles highlight preview.                                                                                                                                                      |
+| `tour/tour-storage.js`       | localStorage-based tracking of "has user seen this tour version".                                                                                                                                                                            |
+| `tour/tour-io.js`            | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing).                                                                         |
+| `ui/widget-renderer.js`      | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic.                                                                                                                                                    |
+| `ui/tour-editor.js`          | Full-screen modal editor for creating/editing tours and steps in edit mode.                                                                                                                                                                  |
+| `ext.js`                     | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                  |
+| `object-properties.js`       | Default QAE properties for new extension instances.                                                                                                                                                                                          |
+| `util/logger.js`             | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`.                                                                                                                                           |
+| `util/markdown.js`           | Minimal Markdown-to-HTML converter (~112 lines) for tour step descriptions.                                                                                                                                                                  |
+| `util/uuid.js`               | UUID v4 generator for tour/step IDs.                                                                                                                                                                                                         |
+| `style.css`                  | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes.                                                                                                                                                            |
 
 ## Data flow: analysis mode
 

@@ -142,18 +142,18 @@ Convert all physical directional properties to logical equivalents:
 
 **Identified instances in `style.css`**:
 
-| Line(s)   | Current property                         | Required change                                        |
-| --------- | ---------------------------------------- | ------------------------------------------------------ |
-| ~19–21    | `padding-left` / `padding-right`         | `padding-inline-start` / `padding-inline-end`          |
-| ~152      | `text-align: left`                       | `text-align: start`                                    |
-| ~301      | `margin-left: auto`                      | `margin-inline-start: auto`                            |
-| ~348      | `text-align: right`                      | `text-align: end`                                      |
-| ~416, 421 | `border-right` / `border-left`           | `border-inline-end` / `border-inline-start`            |
-| ~488, 546 | `border-left` (selection indicator)      | `border-inline-start`                                  |
-| ~666      | `margin-left: 4px`                       | `margin-inline-start: 4px`                             |
+| Line(s)   | Current property                         | Required change                                                                                        |
+| --------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| ~19–21    | `padding-left` / `padding-right`         | `padding-inline-start` / `padding-inline-end`                                                          |
+| ~152      | `text-align: left`                       | `text-align: start`                                                                                    |
+| ~301      | `margin-left: auto`                      | `margin-inline-start: auto`                                                                            |
+| ~348      | `text-align: right`                      | `text-align: end`                                                                                      |
+| ~416, 421 | `border-right` / `border-left`           | `border-inline-end` / `border-inline-start`                                                            |
+| ~488, 546 | `border-left` (selection indicator)      | `border-inline-start`                                                                                  |
+| ~666      | `margin-left: 4px`                       | `margin-inline-start: 4px`                                                                             |
 | ~678, 702 | `left: 50%; transform: translateX(-50%)` | `inset-inline-start: 50%` (keep `translateX(-50%)` — the transform is direction-neutral for centering) |
-| ~886      | `padding-left: 20px` (blockquote)        | `padding-inline-start: 20px`                           |
-| ~892      | `border-left: 3px solid` (blockquote)    | `border-inline-start: 3px solid`                       |
+| ~886      | `padding-left: 20px` (blockquote)        | `padding-inline-start: 20px`                                                                           |
+| ~892      | `border-left: 3px solid` (blockquote)    | `border-inline-start: 3px solid`                                                                       |
 
 **Estimated scope**: ~20–30 property changes in one file.
 
