@@ -29,13 +29,10 @@
 #   Imports:
 #     - shared/mood.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"333f10453f05fd84274dcffa8ae24ad44fe3882862f9bd7209cb04ec3e62ed83","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"97591f1ec8786bc07cd874dc49a890ddb0f44bb49865e77bde4429200508c3b3","compiler_version":"v0.51.2"}
 
 name: "Duplicate Code Detector"
 "on":
-  schedule:
-  - cron: "13 18 * * *"
-    # Friendly format: daily (scattered)
   workflow_dispatch:
 
 permissions: {}
@@ -247,8 +244,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
