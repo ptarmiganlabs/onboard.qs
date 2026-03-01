@@ -139,19 +139,19 @@ Create separate issues for each distinct duplication pattern found (maximum 3 pa
 
 - Standard boilerplate code (imports, exports, etc.)
 - Test setup/teardown code (acceptable duplication in tests)
-- **JavaScript files except .cjs** (files matching: `*.js`, `*.mjs`, `*.jsx`, `*.ts`, `*.tsx`)
 - **All test files** (files matching: `*_test.go`, `*.test.js`, `*.test.cjs`, `*.spec.js`, `*.spec.cjs`, `*.test.ts`, `*.spec.ts`, `*_test.py`, `test_*.py`, or in `test/`, `tests/`, `__tests__/`, `spec/` directories)
 - **All workflow files** (files under `.github/workflows/*`)
+- Files in `node_modules`, `onboard-qs-ext` and `dist` directories
 - Configuration files with similar structure
 - Language-specific patterns (constructors, getters/setters)
 - Small code snippets (<5 lines) unless highly repetitive
 
 ### Analysis Depth
 
-- **File Type Restriction**: ONLY analyze .go and .cjs files - ignore all other file types
-- **Primary Focus**: All .go and .cjs files changed in the current push (excluding test files and workflow files)
-- **Secondary Analysis**: Check for duplication with existing .go and .cjs codebase (excluding test files and workflow files)
-- **Cross-Reference**: Look for patterns across .go and .cjs files in the repository
+- **File Type Restriction**: ONLY analyze .js and .cjs files - ignore all other file types
+- **Primary Focus**: All .js and .cjs files changed in the current push (excluding test files and workflow files)
+- **Secondary Analysis**: Check for duplication with existing .js and .cjs codebase (excluding test files and workflow files)
+- **Cross-Reference**: Look for patterns across .js and .cjs files in the repository
 - **Historical Context**: Consider if duplication is new or existing
 
 ## Issue Template
