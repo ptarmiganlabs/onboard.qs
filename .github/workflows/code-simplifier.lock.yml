@@ -30,13 +30,12 @@
 #     - shared/mood.md
 #     - shared/reporting.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e7c7142421ce46ac515b1b8c2f1428cabdfe9b869ed0daed10290e9ea32f9de8","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"76f6e46d6c4811308c60a5c0aa3d94129fe1d9b136f555874ea65989afac896e","compiler_version":"v0.51.2"}
 
 name: "Code Simplifier"
 "on":
   schedule:
-  - cron: "43 14 * * *"
-    # Friendly format: daily (scattered)
+  - cron: "0 3 5 * *"
   # skip-if-match: is:pr is:open in:title "[code-simplifier]" # Skip-if-match processed as search check in pre-activation job
   workflow_dispatch:
 
