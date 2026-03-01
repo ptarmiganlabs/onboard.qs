@@ -30,7 +30,7 @@
 #     - shared/mood.md
 #     - shared/reporting.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"47b5242f0917af63d35c672ef8ccaff758c0872531e6d38afc742ecb9b3478ec","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1028d63feeeb30e7a96153d3fa5652aa652a36fae60212ea7fa2a0b1337d2bc3","compiler_version":"v0.51.2"}
 
 name: "Daily Malicious Code Scan Agent"
 "on":

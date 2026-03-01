@@ -30,7 +30,7 @@
 #     - shared/mood.md
 #     - shared/reporting.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3e4103fea6eda1b7ef4f43d219fdc0a57fd10414304425c801f5ac1a89191518","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e191fa39b328fb7795b9b5cee5fe30dbe8e81ac500b793ecbb7c07a766f4cd53","compiler_version":"v0.51.2"}
 
 name: "Code Simplifier"
 "on":

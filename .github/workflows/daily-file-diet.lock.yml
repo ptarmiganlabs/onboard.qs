@@ -31,7 +31,7 @@
 #     - shared/reporting.md
 #     - shared/safe-output-app.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2d4ba531c1d930b663f7636f1555146bbe571708854c5c6e4d2c52f9ef590294","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9f497c556288e84174b37b76346bebd1517bf9a6068277e29cf9e8c799d4f4b4","compiler_version":"v0.51.2"}
 
 name: "Daily File Diet"
 "on":

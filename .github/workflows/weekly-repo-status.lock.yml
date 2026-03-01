@@ -28,7 +28,7 @@
 #
 # Source: githubnext/agentics/workflows/daily-repo-status.md@da02dddebe71d9a937665abdcd1f5214dab852a7
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c2439b781a86aaf56b785b1ac76508d8bf3d2435552446f57ce027789c7a7320","compiler_version":"v0.51.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d7a6c41305d2cd34547d5c2076ca4853a079c66b2f1360dba6045d20e9bd2e37","compiler_version":"v0.51.2"}
 
 name: "Daily Repo Status"
 "on":

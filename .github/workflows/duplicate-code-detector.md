@@ -58,11 +58,10 @@ Activate the project in Serena:
 Identify and analyze modified files:
 
 - Determine files changed in the recent commits
-- **ONLY analyze .go and .cjs files** - exclude all other file types
-- **Exclude JavaScript files except .cjs** from analysis (files matching patterns: `*.js`, `*.mjs`, `*.jsx`, `*.ts`, `*.tsx`)
+- **ONLY analyze .js and .cjs files** - exclude all other file types
+- **Exclude dependencies and release files** in `node_modules`, `onboard-qs-ext` and `dist` directories
 - **Exclude test files** from analysis (files matching patterns: `*_test.go`, `*.test.js`, `*.test.cjs`, `*.spec.js`, `*.spec.cjs`, `*.test.ts`, `*.spec.ts`, `*_test.py`, `test_*.py`, or located in directories named `test`, `tests`, `__tests__`, or `spec`)
 - **Exclude workflow files** from analysis (files under `.github/workflows/*`)
-- Use `get_symbols_overview` to understand file structure
 - Use `read_file` to examine modified file contents
 
 ### 3. Duplicate Detection
