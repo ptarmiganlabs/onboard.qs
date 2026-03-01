@@ -3,9 +3,9 @@ name: Daily File Diet
 description: Analyzes the largest Go source file daily and creates an issue to refactor it into smaller files if it exceeds the healthy size threshold
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 13 * * 1-5"  # Weekdays at 1 PM UTC
-  skip-if-match: 'is:issue is:open in:title "[file-diet]"'
+#   schedule:
+#     - cron: "0 13 * * 1-5"  # Weekdays at 1 PM UTC
+#   skip-if-match: 'is:issue is:open in:title "[file-diet]"'
 
 permissions:
   contents: read
@@ -28,16 +28,16 @@ safe-outputs:
     max: 1
 
 tools:
-  serena: ["go"]
+  serena: ["javascript"]
   github:
     toolsets: [default]
   edit:
   bash:
-    - "find pkg -name '*.go' ! -name '*_test.go' -type f -exec wc -l {} \\; | sort -rn"
-    - "wc -l pkg/**/*.go"
-    - "cat pkg/**/*.go"
-    - "head -n * pkg/**/*.go"
-    - "grep -r 'func ' pkg --include='*.go'"
+    - "find pkg -name '*.js' ! -name '*_test.js' -type f -exec wc -l {} \\; | sort -rn"
+    - "wc -l pkg/**/*.js"
+    - "cat pkg/**/*.js"
+    - "head -n * pkg/**/*.js"
+    - "grep -r 'function ' pkg --include='*.js'"
     - "find pkg/ -maxdepth 1 -ls"
 
 timeout-minutes: 20
