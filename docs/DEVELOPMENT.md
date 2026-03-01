@@ -162,13 +162,13 @@ flowchart TD
 
 Both platforms share an identical adapter interface:
 
-| Function                     | Description                                              |
-| ---------------------------- | -------------------------------------------------------- |
-| `getCurrentSheetId()`        | Get the active sheet ID (URL parsing + API fallbacks)    |
-| `getSheetObjects(app)`       | List objects on the current sheet via Engine API          |
-| `getObjectSelector(objectId)`| Get the CSS selector for a Qlik object                   |
-| `isEditMode(options)`        | Check if in edit mode                                    |
-| `injectCSS(css, id)`        | Inject a `<style>` element into the page                 |
+| Function                      | Description                                           |
+| ----------------------------- | ----------------------------------------------------- |
+| `getCurrentSheetId()`         | Get the active sheet ID (URL parsing + API fallbacks) |
+| `getSheetObjects(app)`        | List objects on the current sheet via Engine API      |
+| `getObjectSelector(objectId)` | Get the CSS selector for a Qlik object                |
+| `isEditMode(options)`         | Check if in edit mode                                 |
+| `injectCSS(css, id)`          | Inject a `<style>` element into the page              |
 
 The client-managed adapter additionally detects the running Sense version and maps it to a "code path" for version-specific CSS selector overrides. See [PLATFORM-DETECTION.md](PLATFORM-DETECTION.md) for full details.
 
@@ -182,15 +182,27 @@ The client-managed adapter additionally detects the running Sense version and ma
 
 All other dependencies are dev-only (build tooling).
 
+## Automated Checks
+
+Pre-commit hooks are configured via Husky to ensure code quality and prevent secrets from being committed:
+
+1. **Code Formatting & Linting**: `lint-staged` automatically formats and lints all changed files.
+2. **Secret Scanning**: Scans for secrets via Gitleaks before your commit succeeds.
+   **Note**: Gitleaks must be installed on your machine.
+    - macOS: `brew install gitleaks`
+    - Other systems: See [Gitleaks Installation](https://github.com/gitleaks/gitleaks#installation).
+
+If you must bypass these checks, you can use `git commit --no-verify`, though this is not recommended.
+
 ---
 
 ## Further Reading
 
-| Document | Description |
-| --- | --- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Component map, data flow, supernova lifecycle, module-by-module breakdown |
-| [BUILD-AND-DEPLOYMENT.md](BUILD-AND-DEPLOYMENT.md) | Build toolchain, npm scripts, post-build processing, deployment |
-| [PLATFORM-DETECTION.md](PLATFORM-DETECTION.md) | Platform detection, version fetching, adapter interface |
-| [SELECTORS.md](SELECTORS.md) | CSS selector registry design, per-platform/version lookup |
-| [TOUR-SYSTEM.md](TOUR-SYSTEM.md) | Tour data model, step resolution, driver.js integration, import/export |
-| [VIRUS-SCAN.md](VIRUS-SCAN.md) | VirusTotal scanning of release artifacts |
+| Document                                           | Description                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------- |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                 | Component map, data flow, supernova lifecycle, module-by-module breakdown |
+| [BUILD-AND-DEPLOYMENT.md](BUILD-AND-DEPLOYMENT.md) | Build toolchain, npm scripts, post-build processing, deployment           |
+| [PLATFORM-DETECTION.md](PLATFORM-DETECTION.md)     | Platform detection, version fetching, adapter interface                   |
+| [SELECTORS.md](SELECTORS.md)                       | CSS selector registry design, per-platform/version lookup                 |
+| [TOUR-SYSTEM.md](TOUR-SYSTEM.md)                   | Tour data model, step resolution, driver.js integration, import/export    |
+| [VIRUS-SCAN.md](VIRUS-SCAN.md)                     | VirusTotal scanning of release artifacts                                  |
