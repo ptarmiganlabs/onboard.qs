@@ -2,9 +2,9 @@
 name: Code Simplifier
 description: Analyzes recently modified code and creates pull requests with simplifications that improve clarity, consistency, and maintainability while preserving functionality
 on:
-  schedule: 
-    - cron: "0 3 5 * *"  # On 5th of every month at 03:00 UTC
-  skip-if-match: 'is:pr is:open in:title "[code-simplifier]"'
+  workflow_dispatch:
+#   schedule: weekly on sunday
+# skip-if-match: 'is:pr is:open in:title "[code-simplifier]"'
 
 permissions:
   contents: read
