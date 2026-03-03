@@ -53,9 +53,9 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@nebula.js/cli": "^6.5.0",
-        "@nebula.js/cli-build": "^6.5.0",
-        "@nebula.js/cli-sense": "^6.5.0",
+        "@nebula.js/cli": "^6.6.0",
+        "@nebula.js/cli-build": "^6.6.0",
+        "@nebula.js/cli-sense": "^6.6.0",
         "@nebula.js/cli-serve": "^6.5.0",
         "@rollup/plugin-replace": "^6.0.2",
         "archiver": "^7.0.1",
@@ -67,7 +67,7 @@
         "eslint-plugin-jsdoc": "^62.7.1",
         "globals": "^17.4.0",
         "husky": "^9.1.7",
-        "lint-staged": "^16.3.1",
+        "lint-staged": "^16.3.2",
         "prettier": "^3.8.1"
     },
     "peerDependencies": {
