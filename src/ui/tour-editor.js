@@ -1094,7 +1094,7 @@ function showExportDialog(parentOverlay, tours, layout) {
             alert('Please select at least one tour to export.');
             return;
         }
-        const includeTheme = dialog.querySelector('.oqs-export-theme-check')?.checked ?? true;
+        const includeTheme = dialog.querySelector('.oqs-export-theme-check')?.checked ?? false;
 
         const exportLayout = {
             tours,
