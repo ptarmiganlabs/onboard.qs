@@ -1046,6 +1046,106 @@
     justify-content: flex-end;
 }
 
+/* --- Export dialog --- */
+
+.onboard-qs-export-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100001;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboard-qs-export-dialog {
+    background: #fff;
+    border-radius: 8px;
+    width: 480px;
+    max-width: 90vw;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.onboard-qs-export-dialog__title {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.onboard-qs-export-dialog__summary {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.onboard-qs-export-dialog__summary p {
+    margin: 0 0 4px 0;
+}
+
+.onboard-qs-export-dialog__select-all {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.onboard-qs-export-dialog__select-all label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.onboard-qs-export-dialog__tour-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.onboard-qs-export-dialog__tour-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.onboard-qs-export-dialog__tour-item small {
+    color: #888;
+    margin-left: 4px;
+}
+
+.onboard-qs-export-dialog__theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.onboard-qs-export-dialog__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
 /* ========================================================================
    Cloud-specific overrides
    ======================================================================== */
