@@ -258,7 +258,10 @@ export default function supernova(galaxy) {
 
                 initRef.current = true;
 
-                // Cleanup: remove event listeners and CSS classes
+                /**
+                 * Cleanup: remove context menu handler and hover menu hiding class
+                 * when the effect re-runs or the component unmounts.
+                 */
                 return () => {
                     if (contextMenuHandler) {
                         element.removeEventListener('contextmenu', contextMenuHandler);

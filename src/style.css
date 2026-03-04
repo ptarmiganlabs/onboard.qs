@@ -1131,6 +1131,4 @@
 .onboard-qs-no-hover-menu .on-demand-holder,
 .onboard-qs-no-hover-menu [class*='ActionsToolbar'] {
     display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
 }
