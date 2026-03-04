@@ -939,11 +939,13 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
     const tourCount = importData.tours.length;
     const tourNames = importData.tours.map((t) => t.tourName).join(', ');
 
+    const previouslyFocused = /** @type {HTMLElement|null} */ (document.activeElement);
+
     const dialog = document.createElement('div');
     dialog.className = 'onboard-qs-import-dialog-overlay';
     dialog.innerHTML = `
-        <div class="onboard-qs-import-dialog">
-            <h3 class="onboard-qs-import-dialog__title">Import Tours</h3>
+        <div class="onboard-qs-import-dialog" role="dialog" aria-modal="true" aria-labelledby="oqs-import-dialog-title">
+            <h3 class="onboard-qs-import-dialog__title" id="oqs-import-dialog-title">Import Tours</h3>
             <div class="onboard-qs-import-dialog__summary">
                 <p>Found <strong>${tourCount}</strong> tour${tourCount !== 1 ? 's' : ''}: ${escapeHtml(tourNames)}</p>
                 ${hasTheme ? '<p>Theme configuration included.</p>' : ''}
@@ -979,9 +981,25 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
 
     parentOverlay.appendChild(dialog);
 
-    // Prevent clicks from propagating to the editor
+    // Focus the first interactive element in the dialog
+    dialog.querySelector('input[name="oqs-import-mode"]')?.focus();
+
+    /**
+     * Removes the dialog and restores focus to the previously focused element.
+     *
+     * @returns {void}
+     */
+    const closeDialog = () => {
+        dialog.remove();
+        previouslyFocused?.focus();
+    };
+
+    // Prevent clicks from propagating to the editor; Escape closes the dialog
     dialog.addEventListener('click', (e) => e.stopPropagation());
-    dialog.addEventListener('keydown', (e) => e.stopPropagation());
+    dialog.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') closeDialog();
+    });
 
     dialog.querySelector('.onboard-qs-import-dialog__confirm')?.addEventListener('click', () => {
         const mode =
@@ -992,12 +1010,12 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
         const mergedTours = mergeTours(existingTours, importData.tours, mode);
         const mergedTheme = importTheme && importData.theme ? importData.theme : null;
 
-        dialog.remove();
+        closeDialog();
         onConfirm(mergedTours, mergedTheme);
     });
 
     dialog.querySelector('.onboard-qs-import-dialog__cancel')?.addEventListener('click', () => {
-        dialog.remove();
+        closeDialog();
     });
 }
 
@@ -1030,11 +1048,13 @@ function showExportDialog(parentOverlay, tours, layout) {
         )
         .join('');
 
+    const previouslyFocused = /** @type {HTMLElement|null} */ (document.activeElement);
+
     const dialog = document.createElement('div');
     dialog.className = 'onboard-qs-export-dialog-overlay';
     dialog.innerHTML = `
-        <div class="onboard-qs-export-dialog">
-            <h3 class="onboard-qs-export-dialog__title">Export Tours</h3>
+        <div class="onboard-qs-export-dialog" role="dialog" aria-modal="true" aria-labelledby="oqs-export-dialog-title">
+            <h3 class="onboard-qs-export-dialog__title" id="oqs-export-dialog-title">Export Tours</h3>
             <div class="onboard-qs-export-dialog__summary">
                 <p>Select the tours to include in the export file.</p>
             </div>
@@ -1064,9 +1084,25 @@ function showExportDialog(parentOverlay, tours, layout) {
 
     parentOverlay.appendChild(dialog);
 
-    // Prevent clicks from propagating to the editor
+    // Focus the first interactive element in the dialog
+    dialog.querySelector('.oqs-export-select-all')?.focus();
+
+    /**
+     * Removes the dialog and restores focus to the previously focused element.
+     *
+     * @returns {void}
+     */
+    const closeDialog = () => {
+        dialog.remove();
+        previouslyFocused?.focus();
+    };
+
+    // Prevent clicks from propagating to the editor; Escape closes the dialog
     dialog.addEventListener('click', (e) => e.stopPropagation());
-    dialog.addEventListener('keydown', (e) => e.stopPropagation());
+    dialog.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') closeDialog();
+    });
 
     // Select-all toggle
     const selectAllBox = dialog.querySelector('.oqs-export-select-all');
@@ -1102,11 +1138,11 @@ function showExportDialog(parentOverlay, tours, layout) {
             widget: layout.widget || {},
         };
         exportToursAndTheme(exportLayout, { tourIds: selectedIds, includeTheme });
-        dialog.remove();
+        closeDialog();
     });
 
     dialog.querySelector('.onboard-qs-export-dialog__cancel')?.addEventListener('click', () => {
-        dialog.remove();
+        closeDialog();
     });
 }
 

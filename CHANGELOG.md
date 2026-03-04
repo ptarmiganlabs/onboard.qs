@@ -2,36 +2,32 @@
 
 ## [1.4.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.3.1...onboard-qs-v1.4.0) (2026-03-01)
 
-
 ### Features
 
-* Include child objects in layout containers ([8085240](https://github.com/ptarmiganlabs/onboard.qs/commit/8085240841d905bcb33def3780a1ff457c38eccb)), closes [#56](https://github.com/ptarmiganlabs/onboard.qs/issues/56)
-
+- Include child objects in layout containers ([8085240](https://github.com/ptarmiganlabs/onboard.qs/commit/8085240841d905bcb33def3780a1ff457c38eccb)), closes [#56](https://github.com/ptarmiganlabs/onboard.qs/issues/56)
 
 ### Bug Fixes
 
-* Add extension preview image ([99c5f37](https://github.com/ptarmiganlabs/onboard.qs/commit/99c5f37611f889584b1953cfc854646eb7727271))
-* use distinct icons for export (📤) and import (📂) buttons in tour editor ([ec3c5ef](https://github.com/ptarmiganlabs/onboard.qs/commit/ec3c5ef051c18c55e759210ca10a4f966e47bc40))
-* use distinct, semantically correct icons for Export and Import buttons in tour editor ([f366c1b](https://github.com/ptarmiganlabs/onboard.qs/commit/f366c1b2e556f6fff938c3082d213f778067aa08))
-
+- Add extension preview image ([99c5f37](https://github.com/ptarmiganlabs/onboard.qs/commit/99c5f37611f889584b1953cfc854646eb7727271))
+- use distinct icons for export (📤) and import (📂) buttons in tour editor ([ec3c5ef](https://github.com/ptarmiganlabs/onboard.qs/commit/ec3c5ef051c18c55e759210ca10a4f966e47bc40))
+- use distinct, semantically correct icons for Export and Import buttons in tour editor ([f366c1b](https://github.com/ptarmiganlabs/onboard.qs/commit/f366c1b2e556f6fff938c3082d213f778067aa08))
 
 ### Miscellaneous
 
-* add husky, lint-staged, and gitleaks to pre-commit ([3c025d3](https://github.com/ptarmiganlabs/onboard.qs/commit/3c025d3707ec69497e2d222afc7a4193c893be46))
-* Add repo status workflow for generating weekly reports ([056d691](https://github.com/ptarmiganlabs/onboard.qs/commit/056d6918c34fc9f8571c6edfe529b742040cd651))
-* Add workflow to scan for malicious code ([60f4b0d](https://github.com/ptarmiganlabs/onboard.qs/commit/60f4b0d41b94d294c1a8dbf70d3dac301e4823cb))
-* Add workflow to scan for secrets ([8dfa854](https://github.com/ptarmiganlabs/onboard.qs/commit/8dfa85456067beb72f4a6ad505de85287be24f10))
-* **deps:** update globals package to version 17.4.0 ([02714dc](https://github.com/ptarmiganlabs/onboard.qs/commit/02714dc3f3166b0d33f92755498cebca8e4ff43f))
-* Update daily-file-diet workflow to support JavaScript files ([75d1acb](https://github.com/ptarmiganlabs/onboard.qs/commit/75d1acb5659454af7a99d2da1fb95fd678b68857))
-* Update duplicate code detector configuration to use JavaScript tool ([a1af28a](https://github.com/ptarmiganlabs/onboard.qs/commit/a1af28a59b483ecce837bfeaeb9d8aa096aa6a71))
-* **workflows:** update code simplifier network permissions to include node and dart ([7216177](https://github.com/ptarmiganlabs/onboard.qs/commit/7216177795485fef33282238768e259bafa650d5))
-* **workflows:** update code simplifier schedule and add agentic maintenance workflow ([1c50529](https://github.com/ptarmiganlabs/onboard.qs/commit/1c505293f83e84d07138405f1413028e135037c8))
-* **workflows:** update daily repo status to weekly schedule and add actions lock ([48f9d06](https://github.com/ptarmiganlabs/onboard.qs/commit/48f9d0670db0a9bc38e501b0cbe29c438553e086))
-
+- add husky, lint-staged, and gitleaks to pre-commit ([3c025d3](https://github.com/ptarmiganlabs/onboard.qs/commit/3c025d3707ec69497e2d222afc7a4193c893be46))
+- Add repo status workflow for generating weekly reports ([056d691](https://github.com/ptarmiganlabs/onboard.qs/commit/056d6918c34fc9f8571c6edfe529b742040cd651))
+- Add workflow to scan for malicious code ([60f4b0d](https://github.com/ptarmiganlabs/onboard.qs/commit/60f4b0d41b94d294c1a8dbf70d3dac301e4823cb))
+- Add workflow to scan for secrets ([8dfa854](https://github.com/ptarmiganlabs/onboard.qs/commit/8dfa85456067beb72f4a6ad505de85287be24f10))
+- **deps:** update globals package to version 17.4.0 ([02714dc](https://github.com/ptarmiganlabs/onboard.qs/commit/02714dc3f3166b0d33f92755498cebca8e4ff43f))
+- Update daily-file-diet workflow to support JavaScript files ([75d1acb](https://github.com/ptarmiganlabs/onboard.qs/commit/75d1acb5659454af7a99d2da1fb95fd678b68857))
+- Update duplicate code detector configuration to use JavaScript tool ([a1af28a](https://github.com/ptarmiganlabs/onboard.qs/commit/a1af28a59b483ecce837bfeaeb9d8aa096aa6a71))
+- **workflows:** update code simplifier network permissions to include node and dart ([7216177](https://github.com/ptarmiganlabs/onboard.qs/commit/7216177795485fef33282238768e259bafa650d5))
+- **workflows:** update code simplifier schedule and add agentic maintenance workflow ([1c50529](https://github.com/ptarmiganlabs/onboard.qs/commit/1c505293f83e84d07138405f1413028e135037c8))
+- **workflows:** update daily repo status to weekly schedule and add actions lock ([48f9d06](https://github.com/ptarmiganlabs/onboard.qs/commit/48f9d0670db0a9bc38e501b0cbe29c438553e086))
 
 ### Documentation
 
-* Add GitHub workflows documentation ([6b4cd9a](https://github.com/ptarmiganlabs/onboard.qs/commit/6b4cd9a4210e9971d194ef67d063cd3cc32fb188))
+- Add GitHub workflows documentation ([6b4cd9a](https://github.com/ptarmiganlabs/onboard.qs/commit/6b4cd9a4210e9971d194ef67d063cd3cc32fb188))
 
 ## [1.3.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.3.0...onboard-qs-v1.3.1) (2026-02-26)
 
