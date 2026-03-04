@@ -227,15 +227,23 @@ The tour editor includes **Export** and **Import** buttons (in the editor header
 
 ### Export
 
-`exportToursAndTheme(layout)` serializes the following to a JSON file:
+Clicking the **Export** button opens a dialog where the user can choose which tours to include and whether to bundle theme/widget settings.
+
+`exportToursAndTheme(layout, options)` serializes the selected tours to a JSON file:
 
 | Field        | Content                                               |
 | ------------ | ----------------------------------------------------- |
 | `version`    | Schema version (currently `1`)                        |
 | `exportedAt` | ISO 8601 timestamp                                    |
-| `tours`      | Complete tours array (all tours, steps, and settings) |
-| `theme`      | Theme configuration (preset, overrides)               |
-| `widget`     | Widget settings (button text, style, alignment)       |
+| `tours`      | Selected tours (or all, if none are deselected)       |
+| `theme`      | Theme configuration (when "Include theme" is checked) |
+| `widget`     | Widget settings (when "Include theme" is checked)     |
+
+The export dialog provides:
+
+- **Per-tour checkboxes** — select individual tours to export
+- **Select all** toggle — quickly check/uncheck every tour
+- **Include theme & widget settings** toggle — optionally omit theme data
 
 The file is downloaded as `onboard-qs-tours.json` via a temporary `<a>` element.
 

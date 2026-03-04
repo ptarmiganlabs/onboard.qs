@@ -965,7 +965,10 @@
    Import Dialog
    ======================================================================== */
 
-.onboard-qs-import-dialog-overlay {
+/* --- Shared import / export dialog base --- */
+
+.onboard-qs-import-dialog-overlay,
+.onboard-qs-export-dialog-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -978,7 +981,8 @@
     justify-content: center;
 }
 
-.onboard-qs-import-dialog {
+.onboard-qs-import-dialog,
+.onboard-qs-export-dialog {
     background: #fff;
     border-radius: 8px;
     width: 480px;
@@ -988,23 +992,55 @@
     font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.onboard-qs-import-dialog__title {
+.onboard-qs-import-dialog__title,
+.onboard-qs-export-dialog__title {
     margin: 0 0 16px 0;
     font-size: 18px;
     font-weight: 600;
     color: #333;
 }
 
-.onboard-qs-import-dialog__summary {
+.onboard-qs-import-dialog__summary,
+.onboard-qs-export-dialog__summary {
     font-size: 13px;
     color: #555;
-    margin-bottom: 16px;
     line-height: 1.5;
 }
 
-.onboard-qs-import-dialog__summary p {
+.onboard-qs-import-dialog__summary {
+    margin-bottom: 16px;
+}
+
+.onboard-qs-export-dialog__summary {
+    margin-bottom: 12px;
+}
+
+.onboard-qs-import-dialog__summary p,
+.onboard-qs-export-dialog__summary p {
     margin: 0 0 4px 0;
 }
+
+.onboard-qs-import-dialog__theme-toggle,
+.onboard-qs-export-dialog__theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.onboard-qs-import-dialog__actions,
+.onboard-qs-export-dialog__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* --- Import-specific --- */
 
 .onboard-qs-import-dialog__options {
     display: flex;
@@ -1028,22 +1064,45 @@
     flex-shrink: 0;
 }
 
-.onboard-qs-import-dialog__theme-toggle {
+/* --- Export-specific --- */
+
+.onboard-qs-export-dialog__select-all {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.onboard-qs-export-dialog__select-all label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.onboard-qs-export-dialog__tour-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.onboard-qs-export-dialog__tour-item {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 13px;
     color: #333;
     cursor: pointer;
-    margin-bottom: 16px;
-    padding-top: 12px;
-    border-top: 1px solid #e8e8e8;
+    line-height: 1.4;
 }
 
-.onboard-qs-import-dialog__actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
+.onboard-qs-export-dialog__tour-item small {
+    color: #888;
+    margin-left: 4px;
 }
 
 /* ========================================================================

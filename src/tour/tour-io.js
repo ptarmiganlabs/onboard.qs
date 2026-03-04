@@ -14,16 +14,30 @@ const EXPORT_VERSION = 1;
 /**
  * Export tours and theme configuration to a downloadable JSON file.
  *
+ * When `tourIds` is provided, only tours whose `tourId` is in the array are
+ * included. When omitted (or empty), all tours are exported.
+ *
  * @param {object} layout - Extension layout (contains tours, theme, widget).
- * @param {string} [filename] - Download filename (defaults to 'onboard-qs-tours.json').
+ * @param {object} [options] - Export options.
+ * @param {string} [options.filename] - Download filename (defaults to 'onboard-qs-tours.json').
+ * @param {string[]} [options.tourIds] - IDs of tours to export. Empty/omitted = all.
+ * @param {boolean} [options.includeTheme] - Whether to include theme/widget settings (default true).
  */
-export function exportToursAndTheme(layout, filename = 'onboard-qs-tours.json') {
+export function exportToursAndTheme(layout, options = {}) {
+    const { filename = 'onboard-qs-tours.json', tourIds, includeTheme = true } = options;
+
+    const allTours = layout.tours || [];
+    const filteredTours =
+        Array.isArray(tourIds) && tourIds.length > 0
+            ? allTours.filter((t) => tourIds.includes(t.tourId))
+            : allTours;
+
     const payload = {
         version: EXPORT_VERSION,
         exportedAt: new Date().toISOString(),
-        tours: layout.tours || [],
-        theme: layout.theme || {},
-        widget: layout.widget || {},
+        tours: filteredTours,
+        theme: includeTheme ? layout.theme || {} : {},
+        widget: includeTheme ? layout.widget || {} : {},
     };
 
     const json = JSON.stringify(payload, null, 2);

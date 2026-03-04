@@ -476,13 +476,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
 
     // Export button
     overlay.querySelector('.onboard-qs-editor__export')?.addEventListener('click', () => {
-        // Build a synthetic layout from the in-memory tours clone + current layout
-        const exportLayout = {
-            tours,
-            theme: layout.theme || {},
-            widget: layout.widget || {},
-        };
-        exportToursAndTheme(exportLayout);
+        showExportDialog(overlay, tours, layout);
     });
 
     // Import button
@@ -945,11 +939,13 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
     const tourCount = importData.tours.length;
     const tourNames = importData.tours.map((t) => t.tourName).join(', ');
 
+    const previouslyFocused = /** @type {HTMLElement|null} */ (document.activeElement);
+
     const dialog = document.createElement('div');
     dialog.className = 'onboard-qs-import-dialog-overlay';
     dialog.innerHTML = `
-        <div class="onboard-qs-import-dialog">
-            <h3 class="onboard-qs-import-dialog__title">Import Tours</h3>
+        <div class="onboard-qs-import-dialog" role="dialog" aria-modal="true" aria-labelledby="oqs-import-dialog-title">
+            <h3 class="onboard-qs-import-dialog__title" id="oqs-import-dialog-title">Import Tours</h3>
             <div class="onboard-qs-import-dialog__summary">
                 <p>Found <strong>${tourCount}</strong> tour${tourCount !== 1 ? 's' : ''}: ${escapeHtml(tourNames)}</p>
                 ${hasTheme ? '<p>Theme configuration included.</p>' : ''}
@@ -985,9 +981,25 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
 
     parentOverlay.appendChild(dialog);
 
-    // Prevent clicks from propagating to the editor
+    // Focus the first interactive element in the dialog
+    dialog.querySelector('input[name="oqs-import-mode"]')?.focus();
+
+    /**
+     * Removes the dialog and restores focus to the previously focused element.
+     *
+     * @returns {void}
+     */
+    const closeDialog = () => {
+        dialog.remove();
+        previouslyFocused?.focus();
+    };
+
+    // Prevent clicks from propagating to the editor; Escape closes the dialog
     dialog.addEventListener('click', (e) => e.stopPropagation());
-    dialog.addEventListener('keydown', (e) => e.stopPropagation());
+    dialog.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') closeDialog();
+    });
 
     dialog.querySelector('.onboard-qs-import-dialog__confirm')?.addEventListener('click', () => {
         const mode =
@@ -998,12 +1010,139 @@ function showImportDialog(parentOverlay, importData, existingTours, layout, onCo
         const mergedTours = mergeTours(existingTours, importData.tours, mode);
         const mergedTheme = importTheme && importData.theme ? importData.theme : null;
 
-        dialog.remove();
+        closeDialog();
         onConfirm(mergedTours, mergedTheme);
     });
 
     dialog.querySelector('.onboard-qs-import-dialog__cancel')?.addEventListener('click', () => {
+        closeDialog();
+    });
+}
+
+/**
+ * Show an export dialog that lets the user select which tours to include.
+ *
+ * @param {HTMLElement} parentOverlay - The editor overlay element.
+ * @param {Array} tours - Current in-memory tours array.
+ * @param {object} layout - Current layout (for theme/widget).
+ */
+function showExportDialog(parentOverlay, tours, layout) {
+    if (tours.length === 0) {
+        alert('No tours to export.');
+        return;
+    }
+
+    const hasTheme =
+        (layout.theme && Object.keys(layout.theme).length > 0) ||
+        (layout.widget && Object.keys(layout.widget).length > 0);
+
+    const tourCheckboxes = tours
+        .map(
+            (tour, i) => `
+        <label class="onboard-qs-export-dialog__tour-item">
+            <input type="checkbox" class="oqs-export-tour-check" data-tour-id="${escapeAttr(tour.tourId)}" checked />
+            <span>${escapeHtml(tour.tourName || `Tour ${i + 1}`)}
+                <small>(${tour.steps?.length || 0} steps)</small>
+            </span>
+        </label>`
+        )
+        .join('');
+
+    const previouslyFocused = /** @type {HTMLElement|null} */ (document.activeElement);
+
+    const dialog = document.createElement('div');
+    dialog.className = 'onboard-qs-export-dialog-overlay';
+    dialog.innerHTML = `
+        <div class="onboard-qs-export-dialog" role="dialog" aria-modal="true" aria-labelledby="oqs-export-dialog-title">
+            <h3 class="onboard-qs-export-dialog__title" id="oqs-export-dialog-title">Export Tours</h3>
+            <div class="onboard-qs-export-dialog__summary">
+                <p>Select the tours to include in the export file.</p>
+            </div>
+            <div class="onboard-qs-export-dialog__select-all">
+                <label>
+                    <input type="checkbox" class="oqs-export-select-all" checked />
+                    <span><strong>Select all</strong></span>
+                </label>
+            </div>
+            <div class="onboard-qs-export-dialog__tour-list">
+                ${tourCheckboxes}
+            </div>
+            ${
+                hasTheme
+                    ? `<label class="onboard-qs-export-dialog__theme-toggle">
+                    <input type="checkbox" class="oqs-export-theme-check" checked />
+                    <span>Include theme &amp; widget settings</span>
+                </label>`
+                    : ''
+            }
+            <div class="onboard-qs-export-dialog__actions">
+                <button class="onboard-qs-btn onboard-qs-btn--primary onboard-qs-export-dialog__confirm">Export</button>
+                <button class="onboard-qs-btn onboard-qs-btn--secondary onboard-qs-export-dialog__cancel">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    parentOverlay.appendChild(dialog);
+
+    // Focus the first interactive element in the dialog
+    dialog.querySelector('.oqs-export-select-all')?.focus();
+
+    /**
+     * Removes the dialog and restores focus to the previously focused element.
+     *
+     * @returns {void}
+     */
+    const closeDialog = () => {
         dialog.remove();
+        previouslyFocused?.focus();
+    };
+
+    // Prevent clicks from propagating to the editor; Escape closes the dialog
+    dialog.addEventListener('click', (e) => e.stopPropagation());
+    dialog.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') closeDialog();
+    });
+
+    // Select-all toggle
+    const selectAllBox = dialog.querySelector('.oqs-export-select-all');
+    const tourBoxes = dialog.querySelectorAll('.oqs-export-tour-check');
+
+    selectAllBox?.addEventListener('change', () => {
+        tourBoxes.forEach((cb) => {
+            cb.checked = selectAllBox.checked;
+        });
+    });
+
+    // Keep select-all in sync when individual boxes change
+    tourBoxes.forEach((cb) => {
+        cb.addEventListener('change', () => {
+            const allChecked = [...tourBoxes].every((c) => c.checked);
+            if (selectAllBox) selectAllBox.checked = allChecked;
+        });
+    });
+
+    dialog.querySelector('.onboard-qs-export-dialog__confirm')?.addEventListener('click', () => {
+        const selectedIds = [...tourBoxes]
+            .filter((cb) => cb.checked)
+            .map((cb) => cb.dataset.tourId);
+        if (selectedIds.length === 0) {
+            alert('Please select at least one tour to export.');
+            return;
+        }
+        const includeTheme = dialog.querySelector('.oqs-export-theme-check')?.checked ?? false;
+
+        const exportLayout = {
+            tours,
+            theme: layout.theme || {},
+            widget: layout.widget || {},
+        };
+        exportToursAndTheme(exportLayout, { tourIds: selectedIds, includeTheme });
+        closeDialog();
+    });
+
+    dialog.querySelector('.onboard-qs-export-dialog__cancel')?.addEventListener('click', () => {
+        closeDialog();
     });
 }
 
