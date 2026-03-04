@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.5.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.4.0...onboard-qs-v1.5.0) (2026-03-04)
+
+
+### Features
+
+* add ARIA dialog semantics and focus management to import/export dialogs ([450f1e8](https://github.com/ptarmiganlabs/onboard.qs/commit/450f1e888eccb86474e9482f3bdee27b1e566f79))
+* add selective tour export dialog with per-tour checkboxes ([97eb4a4](https://github.com/ptarmiganlabs/onboard.qs/commit/97eb4a45ccf96621e42c507f4d0a34cc3c365a55))
+
+
+### Bug Fixes
+
+* default includeTheme to false when theme toggle is not rendered ([d928a55](https://github.com/ptarmiganlabs/onboard.qs/commit/d928a55c63cfbdd4e775ab4a1bfba58f4e90b288))
+* update file type restrictions for duplicate code detection workflow ([bb92265](https://github.com/ptarmiganlabs/onboard.qs/commit/bb92265ca1a68c329f5f1d075039342036481987))
+* update gh-aw-metadata in workflow files ([17ca054](https://github.com/ptarmiganlabs/onboard.qs/commit/17ca054ba94983ae4a81ad68e563401575cd4087))
+
+
+### Miscellaneous
+
+* update dependencies ([e4a75fd](https://github.com/ptarmiganlabs/onboard.qs/commit/e4a75fd2488aa41d903fc4621d3da42477e81d6f))
+
+
+### Refactoring
+
+* consolidate shared import/export dialog CSS via grouped selectors ([76860e5](https://github.com/ptarmiganlabs/onboard.qs/commit/76860e5b6c64b8fdfa8b1df8dcc3358b6e67b50b))
+
 ## [1.4.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.3.1...onboard-qs-v1.4.0) (2026-03-01)
 
 ### Features
