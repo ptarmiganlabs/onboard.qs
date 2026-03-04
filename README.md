@@ -373,7 +373,7 @@ This bar chart shows **quarterly revenue** broken down by sales region.
 
 ## Tour Import & Export
 
-Onboard.qs lets you export all tours — including theme and widget settings — to a JSON file, and import them back into the same or a different Qlik app. This is useful for:
+Onboard.qs lets you selectively export tours — optionally including theme and widget settings — to a JSON file, and import them back into the same or a different Qlik app. This is useful for:
 
 - **Sharing** tour configurations across apps or tenants
 - **Backing up** tours before making major changes
@@ -390,8 +390,10 @@ sequenceDiagram
 
     Note over User,FS: Export
     User->>TE: Click "Export" button
-    TE->>IO: exportToursAndTheme(layout)
-    IO->>IO: Serialize tours + theme + widget to JSON
+    TE->>TE: Show export dialog
+    User->>TE: Select tours & toggle theme
+    TE->>IO: exportToursAndTheme(options)
+    IO->>IO: Serialize selected tours + theme to JSON
     IO->>FS: Trigger browser download<br/>(onboard-qs-tours.json)
 
     Note over User,FS: Import
@@ -408,7 +410,13 @@ sequenceDiagram
     TE->>TE: model.setProperties()
 ```
 
-### Merge Modes
+### Exporting Tours
+
+Clicking the **Export** button in the Tour Editor opens a dialog where you can specific which tours you want to save. Instead of always exporting all tours, you can select only the ones relevant to your needs.
+
+If your dashboard includes customized theme or widget styling, an **Include theme & widget settings** checkbox will appear. This allows you to bundle styling with your tours, making it easier to migrate visual configurations between apps perfectly alongside the content.
+
+### Import Merge Modes
 
 | Mode             | Behaviour                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
