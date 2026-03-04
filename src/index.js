@@ -224,7 +224,49 @@ export default function supernova(galaxy) {
                     codePath: platform.codePath,
                 });
 
+                // --- Context menu & hover menu visibility overrides ---
+                const hideContextMenu = layout.widget?.hideContextMenu === true;
+                const hideHoverMenu = layout.widget?.hideHoverMenu === true;
+
+                // Context menu: prevent right-click context menu when enabled
+                let contextMenuHandler;
+                if (hideContextMenu) {
+                    /**
+                     * Suppress the browser / Qlik Sense right-click context menu.
+                     *
+                     * @param {Event} e - The contextmenu event.
+                     */
+                    contextMenuHandler = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    };
+                    element.addEventListener('contextmenu', contextMenuHandler);
+                }
+
+                // Hover menu: find the Qlik object wrapper and apply hiding class.
+                // Both Cloud and client-managed wrap objects in .qv-object articles.
+                let hoverMenuTarget;
+                if (hideHoverMenu) {
+                    hoverMenuTarget =
+                        element.closest('.qv-object') ||
+                        element.closest('.qv-gridcell') ||
+                        element.parentElement;
+                    if (hoverMenuTarget) {
+                        hoverMenuTarget.classList.add('onboard-qs-no-hover-menu');
+                    }
+                }
+
                 initRef.current = true;
+
+                // Cleanup: remove event listeners and CSS classes
+                return () => {
+                    if (contextMenuHandler) {
+                        element.removeEventListener('contextmenu', contextMenuHandler);
+                    }
+                    if (hoverMenuTarget) {
+                        hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
+                    }
+                };
             }, [element, layout, isEditMode, platform, adapter]);
         },
 

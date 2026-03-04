@@ -305,6 +305,32 @@ export default function ext(_galaxy) {
                              */
                             show: (data) => data.widget?.showButton !== false,
                         },
+                        hideHoverMenu: {
+                            ref: 'widget.hideHoverMenu',
+                            type: 'boolean',
+                            label: 'Hide hover menu',
+                            description:
+                                'Hide the object hover menu (three-dot menu and expand button) that appears when hovering over this extension. Overrides the app-level setting.',
+                            defaultValue: false,
+                            component: 'switch',
+                            options: [
+                                { value: true, label: 'On' },
+                                { value: false, label: 'Off' },
+                            ],
+                        },
+                        hideContextMenu: {
+                            ref: 'widget.hideContextMenu',
+                            type: 'boolean',
+                            label: 'Hide context menu',
+                            description:
+                                'Hide the right-click context menu on this extension object. Overrides the app-level setting.',
+                            defaultValue: false,
+                            component: 'switch',
+                            options: [
+                                { value: true, label: 'On' },
+                                { value: false, label: 'Off' },
+                            ],
+                        },
                     },
                 },
 

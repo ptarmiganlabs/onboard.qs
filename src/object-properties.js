@@ -12,6 +12,8 @@ export default {
         buttonStyle: 'primary',
         horizontalAlign: 'center',
         verticalAlign: 'center',
+        hideHoverMenu: false,
+        hideContextMenu: false,
     },
     theme: {
         preset: 'leanGreen',
