@@ -228,29 +228,113 @@ export default function supernova(galaxy) {
                 const hideContextMenu = layout.widget?.hideContextMenu === true;
                 const hideHoverMenu = layout.widget?.hideHoverMenu === true;
 
-                // Context menu: prevent right-click context menu when enabled
+                // Resolve the outermost Qlik wrapper for this object.
+                // Client-managed: the hover nav (.qv-object-nav) is rendered
+                // inside a detached sibling of .qv-object, both under the same
+                // .qv-gridcell.  We must target .qv-gridcell so CSS descendant
+                // selectors can reach the detached nav.
+                // Cloud: objects also sit inside .qv-gridcell.
+                const qlikWrapper =
+                    element.closest('.qv-gridcell') ||
+                    element.closest('.qv-object') ||
+                    element.parentElement;
+
+                // Context menu: Qlik Sense renders its context menu
+                // (.lui-popover inside .qv-contextmenu) at document-body level
+                // via an AngularJS digest cycle — not directly from the DOM
+                // contextmenu event.  Capture-phase stopPropagation cannot
+                // prevent it.  Instead we use a two-pronged approach:
+                //  1. Prevent the native browser context menu via the event.
+                //  2. Use a MutationObserver to immediately remove any
+                //     .lui-popover / .qv-contextmenu node that Qlik appends
+                //     to the body right after our right-click.
                 let contextMenuHandler;
+                let contextMenuTarget;
+                let contextMenuObserver;
                 if (hideContextMenu) {
+                    contextMenuTarget = qlikWrapper;
+
+                    // Track whether a right-click just happened inside our
+                    // extension so the MutationObserver only acts on our
+                    // object's context menu, not other objects on the sheet.
+                    let recentRightClick = false;
+                    let rightClickTimer;
+
                     /**
-                     * Suppress the browser / Qlik Sense right-click context menu.
+                     * Flag that a right-click originated from this extension
+                     * and suppress the native browser context menu.
                      *
                      * @param {Event} e - The contextmenu event.
                      */
                     contextMenuHandler = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        recentRightClick = true;
+                        clearTimeout(rightClickTimer);
+                        // Reset after a short window — Qlik appends the menu
+                        // synchronously in the same or next digest cycle.
+                        rightClickTimer = setTimeout(() => {
+                            recentRightClick = false;
+                        }, 500);
                     };
-                    element.addEventListener('contextmenu', contextMenuHandler);
+                    contextMenuTarget.addEventListener('contextmenu', contextMenuHandler, true);
+
+                    /**
+                     * MutationObserver that removes Qlik's context-menu popover
+                     * as soon as it is inserted into the DOM, but only when the
+                     * right-click originated from this extension.
+                     *
+                     * Client-managed uses `.lui-popover` inside `.qv-contextmenu`.
+                     * Cloud uses a React overlay with `[data-testid="qmfe-menu"]`
+                     * (role="menu") appended to a portal container near body.
+                     */
+                    contextMenuObserver = new MutationObserver((mutations) => {
+                        if (!recentRightClick) return;
+                        for (const mutation of mutations) {
+                            for (const node of mutation.addedNodes) {
+                                if (node.nodeType !== 1) continue;
+                                // Client-managed context menu
+                                if (
+                                    node.classList?.contains('lui-popover') ||
+                                    node.classList?.contains('qv-contextmenu') ||
+                                    node.querySelector?.('.lui-popover, .qv-contextmenu')
+                                ) {
+                                    node.remove();
+                                    recentRightClick = false;
+                                    return;
+                                }
+                                // Cloud context menu (React portal with data-testid="qmfe-menu")
+                                const cloudMenu =
+                                    node.getAttribute?.('data-testid') === 'qmfe-menu'
+                                        ? node
+                                        : node.querySelector?.('[data-testid="qmfe-menu"]');
+                                if (cloudMenu) {
+                                    // Remove the portal container (parent of the menu),
+                                    // or the menu itself if it is the added node.
+                                    (cloudMenu === node
+                                        ? node
+                                        : cloudMenu.closest('[id]') || cloudMenu
+                                    ).remove();
+                                    recentRightClick = false;
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                    contextMenuObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                    });
                 }
 
-                // Hover menu: find the Qlik object wrapper and apply hiding class.
-                // Both Cloud and client-managed wrap objects in .qv-object articles.
+                // Hover menu: apply a hiding class to the grid-cell wrapper so
+                // the CSS rule `.onboard-qs-no-hover-menu .qv-object-nav`
+                // matches the detached nav that Qlik renders as a sibling of
+                // .qv-object inside .qv-gridcell.
                 let hoverMenuTarget;
                 if (hideHoverMenu) {
-                    hoverMenuTarget =
-                        element.closest('.qv-object') ||
-                        element.closest('.qv-gridcell') ||
-                        element.parentElement;
+                    hoverMenuTarget = qlikWrapper;
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.add('onboard-qs-no-hover-menu');
                     }
@@ -263,8 +347,15 @@ export default function supernova(galaxy) {
                  * when the effect re-runs or the component unmounts.
                  */
                 return () => {
-                    if (contextMenuHandler) {
-                        element.removeEventListener('contextmenu', contextMenuHandler);
+                    if (contextMenuHandler && contextMenuTarget) {
+                        contextMenuTarget.removeEventListener(
+                            'contextmenu',
+                            contextMenuHandler,
+                            true
+                        );
+                    }
+                    if (contextMenuObserver) {
+                        contextMenuObserver.disconnect();
                     }
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
