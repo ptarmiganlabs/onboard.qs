@@ -342,11 +342,11 @@ export default function supernova(galaxy) {
                 return () => {
                     if (contextMenuHandler) {
                         qlikWrapper.removeEventListener('contextmenu', contextMenuHandler, true);
+                        clearTimeout(rightClickTimer);
                     }
                     if (contextMenuObserver) {
                         contextMenuObserver.disconnect();
                     }
-                    clearTimeout(rightClickTimer);
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
                     }
