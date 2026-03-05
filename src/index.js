@@ -32,14 +32,14 @@ import driverCSS from 'driver.js/dist/driver.css';
 /** @type {MutationObserver | null} */
 let sharedObserver = null;
 
-/** @type {Set<function(MutationRecord[]): void>} */
+/** @type {Set<(mutations: MutationRecord[]) => void>} */
 const observerSubscribers = new Set();
 
 /**
  * Subscribe a callback to the shared body MutationObserver.
  * Starts the observer lazily on the first subscriber.
  *
- * @param {function(MutationRecord[]): void} callback - Called with each batch of mutations.
+ * @param {(mutations: MutationRecord[]) => void} callback - Called with each batch of mutations.
  *
  * @returns {function(): void} Unsubscribe function that removes the callback
  *   and disconnects the observer when no subscribers remain.
@@ -50,7 +50,13 @@ function subscribeContextMenuObserver(callback) {
     if (!sharedObserver) {
         sharedObserver = new MutationObserver((mutations) => {
             for (const cb of observerSubscribers) {
-                cb(mutations);
+                try {
+                    cb(mutations);
+                } catch {
+                    // Isolate subscriber failures so one broken callback
+                    // does not prevent the remaining subscribers from
+                    // processing the mutations.
+                }
             }
         });
         sharedObserver.observe(document.body, { childList: true });
