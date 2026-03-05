@@ -234,31 +234,31 @@ export default function supernova(galaxy) {
                 // .qv-gridcell.  We must target .qv-gridcell so CSS descendant
                 // selectors can reach the detached nav.
                 // Cloud: objects also sit inside .qv-gridcell.
+                // Falls back to `element` itself when no Qlik wrapper is found
+                // (e.g. during detach/re-render).
                 const qlikWrapper =
                     element.closest('.qv-gridcell') ||
                     element.closest('.qv-object') ||
-                    element.parentElement;
+                    element.parentElement ||
+                    element;
 
                 // Context menu: Qlik Sense renders its context menu
-                // (.lui-popover inside .qv-contextmenu) at document-body level
-                // via an AngularJS digest cycle — not directly from the DOM
-                // contextmenu event.  Capture-phase stopPropagation cannot
-                // prevent it.  Instead we use a two-pronged approach:
+                // (.qv-contextmenu) at document-body level via an AngularJS
+                // digest cycle — not directly from the DOM contextmenu event.
+                // Capture-phase stopPropagation cannot prevent it.  Instead we
+                // use a two-pronged approach:
                 //  1. Prevent the native browser context menu via the event.
-                //  2. Use a MutationObserver to immediately remove any
-                //     .lui-popover / .qv-contextmenu node that Qlik appends
-                //     to the body right after our right-click.
+                //  2. Use a MutationObserver to immediately remove the
+                //     .qv-contextmenu node that Qlik appends to the body
+                //     right after our right-click.
                 let contextMenuHandler;
-                let contextMenuTarget;
                 let contextMenuObserver;
+                let rightClickTimer;
                 if (hideContextMenu) {
-                    contextMenuTarget = qlikWrapper;
-
                     // Track whether a right-click just happened inside our
                     // extension so the MutationObserver only acts on our
                     // object's context menu, not other objects on the sheet.
                     let recentRightClick = false;
-                    let rightClickTimer;
 
                     /**
                      * Flag that a right-click originated from this extension
@@ -278,14 +278,14 @@ export default function supernova(galaxy) {
                             recentRightClick = false;
                         }, 500);
                     };
-                    contextMenuTarget.addEventListener('contextmenu', contextMenuHandler, true);
+                    qlikWrapper.addEventListener('contextmenu', contextMenuHandler, true);
 
                     /**
                      * MutationObserver that removes Qlik's context-menu popover
                      * as soon as it is inserted into the DOM, but only when the
                      * right-click originated from this extension.
                      *
-                     * Client-managed uses `.lui-popover` inside `.qv-contextmenu`.
+                     * Client-managed uses `.qv-contextmenu` (which wraps `.lui-popover`).
                      * Cloud uses a React overlay with `[data-testid="qmfe-menu"]`
                      * (role="menu") appended to a portal container near body.
                      */
@@ -294,13 +294,13 @@ export default function supernova(galaxy) {
                         for (const mutation of mutations) {
                             for (const node of mutation.addedNodes) {
                                 if (node.nodeType !== 1) continue;
-                                // Client-managed context menu
-                                if (
-                                    node.classList?.contains('lui-popover') ||
-                                    node.classList?.contains('qv-contextmenu') ||
-                                    node.querySelector?.('.lui-popover, .qv-contextmenu')
-                                ) {
-                                    node.remove();
+                                // Client-managed context menu: match only
+                                // .qv-contextmenu nodes (not generic .lui-popover)
+                                const qvContextMenu = node.classList?.contains('qv-contextmenu')
+                                    ? node
+                                    : node.querySelector?.('.qv-contextmenu');
+                                if (qvContextMenu) {
+                                    qvContextMenu.remove();
                                     recentRightClick = false;
                                     return;
                                 }
@@ -310,12 +310,7 @@ export default function supernova(galaxy) {
                                         ? node
                                         : node.querySelector?.('[data-testid="qmfe-menu"]');
                                 if (cloudMenu) {
-                                    // Remove the portal container (parent of the menu),
-                                    // or the menu itself if it is the added node.
-                                    (cloudMenu === node
-                                        ? node
-                                        : cloudMenu.closest('[id]') || cloudMenu
-                                    ).remove();
+                                    cloudMenu.remove();
                                     recentRightClick = false;
                                     return;
                                 }
@@ -324,7 +319,6 @@ export default function supernova(galaxy) {
                     });
                     contextMenuObserver.observe(document.body, {
                         childList: true,
-                        subtree: true,
                     });
                 }
 
@@ -335,28 +329,24 @@ export default function supernova(galaxy) {
                 let hoverMenuTarget;
                 if (hideHoverMenu) {
                     hoverMenuTarget = qlikWrapper;
-                    if (hoverMenuTarget) {
-                        hoverMenuTarget.classList.add('onboard-qs-no-hover-menu');
-                    }
+                    hoverMenuTarget.classList.add('onboard-qs-no-hover-menu');
                 }
 
                 initRef.current = true;
 
                 /**
-                 * Cleanup: remove context menu handler and hover menu hiding class
-                 * when the effect re-runs or the component unmounts.
+                 * Cleanup: remove context menu handler, mutation observer,
+                 * pending timer, and hover menu hiding class when the effect
+                 * re-runs or the component unmounts.
                  */
                 return () => {
-                    if (contextMenuHandler && contextMenuTarget) {
-                        contextMenuTarget.removeEventListener(
-                            'contextmenu',
-                            contextMenuHandler,
-                            true
-                        );
+                    if (contextMenuHandler) {
+                        qlikWrapper.removeEventListener('contextmenu', contextMenuHandler, true);
                     }
                     if (contextMenuObserver) {
                         contextMenuObserver.disconnect();
                     }
+                    clearTimeout(rightClickTimer);
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
                     }
