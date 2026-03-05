@@ -22,6 +22,49 @@ import './style.css';
 // shadow DOM / iframe scoping issues in Qlik Sense
 import driverCSS from 'driver.js/dist/driver.css';
 
+// ── Shared context-menu MutationObserver ──────────────────────────────
+// A single MutationObserver on `document.body` is shared across all
+// extension instances that have `hideContextMenu` enabled.  Each
+// instance registers a callback; the observer starts when the first
+// subscriber is added and stops when the last one is removed.
+// This avoids the cost of N observers when a sheet contains N objects.
+
+/** @type {MutationObserver | null} */
+let sharedObserver = null;
+
+/** @type {Set<function(MutationRecord[]): void>} */
+const observerSubscribers = new Set();
+
+/**
+ * Subscribe a callback to the shared body MutationObserver.
+ * Starts the observer lazily on the first subscriber.
+ *
+ * @param {function(MutationRecord[]): void} callback - Called with each batch of mutations.
+ *
+ * @returns {function(): void} Unsubscribe function that removes the callback
+ *   and disconnects the observer when no subscribers remain.
+ */
+function subscribeContextMenuObserver(callback) {
+    observerSubscribers.add(callback);
+
+    if (!sharedObserver) {
+        sharedObserver = new MutationObserver((mutations) => {
+            for (const cb of observerSubscribers) {
+                cb(mutations);
+            }
+        });
+        sharedObserver.observe(document.body, { childList: true });
+    }
+
+    return () => {
+        observerSubscribers.delete(callback);
+        if (observerSubscribers.size === 0 && sharedObserver) {
+            sharedObserver.disconnect();
+            sharedObserver = null;
+        }
+    };
+}
+
 /**
  * Onboard.qs — Supernova entry point.
  *
@@ -252,11 +295,11 @@ export default function supernova(galaxy) {
                 //     .qv-contextmenu node that Qlik appends to the body
                 //     right after our right-click.
                 let contextMenuHandler;
-                let contextMenuObserver;
+                let unsubscribeObserver;
                 let rightClickTimer;
                 if (hideContextMenu) {
                     // Track whether a right-click just happened inside our
-                    // extension so the MutationObserver only acts on our
+                    // extension so the shared observer only acts on our
                     // object's context menu, not other objects on the sheet.
                     let recentRightClick = false;
 
@@ -281,15 +324,18 @@ export default function supernova(galaxy) {
                     qlikWrapper.addEventListener('contextmenu', contextMenuHandler, true);
 
                     /**
-                     * MutationObserver that removes Qlik's context-menu popover
-                     * as soon as it is inserted into the DOM, but only when the
-                     * right-click originated from this extension.
+                     * Callback registered with the shared body MutationObserver.
+                     * Removes Qlik's context-menu popover as soon as it is
+                     * inserted into the DOM, but only when the right-click
+                     * originated from this extension.
                      *
-                     * Client-managed uses `.qv-contextmenu` (which wraps `.lui-popover`).
+                     * Client-managed uses `.qv-contextmenu` (wraps `.lui-popover`).
                      * Cloud uses a React overlay with `[data-testid="qmfe-menu"]`
                      * (role="menu") appended to a portal container near body.
+                     *
+                     * @param {MutationRecord[]} mutations - Batch of DOM mutations.
                      */
-                    contextMenuObserver = new MutationObserver((mutations) => {
+                    const onBodyMutation = (mutations) => {
                         if (!recentRightClick) return;
                         for (const mutation of mutations) {
                             for (const node of mutation.addedNodes) {
@@ -316,10 +362,8 @@ export default function supernova(galaxy) {
                                 }
                             }
                         }
-                    });
-                    contextMenuObserver.observe(document.body, {
-                        childList: true,
-                    });
+                    };
+                    unsubscribeObserver = subscribeContextMenuObserver(onBodyMutation);
                 }
 
                 // Hover menu: apply a hiding class to the grid-cell wrapper so
@@ -335,17 +379,17 @@ export default function supernova(galaxy) {
                 initRef.current = true;
 
                 /**
-                 * Cleanup: remove context menu handler, mutation observer,
-                 * pending timer, and hover menu hiding class when the effect
-                 * re-runs or the component unmounts.
+                 * Cleanup: remove context menu handler, shared observer
+                 * subscription, pending timer, and hover menu hiding class
+                 * when the effect re-runs or the component unmounts.
                  */
                 return () => {
                     if (contextMenuHandler) {
                         qlikWrapper.removeEventListener('contextmenu', contextMenuHandler, true);
                         clearTimeout(rightClickTimer);
                     }
-                    if (contextMenuObserver) {
-                        contextMenuObserver.disconnect();
+                    if (unsubscribeObserver) {
+                        unsubscribeObserver();
                     }
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
