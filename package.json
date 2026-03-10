@@ -56,7 +56,7 @@
         "@nebula.js/cli": "^6.6.0",
         "@nebula.js/cli-build": "^6.6.0",
         "@nebula.js/cli-sense": "^6.6.0",
-        "@nebula.js/cli-serve": "^6.5.0",
+        "@nebula.js/cli-serve": "^6.6.0",
         "@rollup/plugin-replace": "^6.0.2",
         "archiver": "^7.0.1",
         "cloc": "^2.6.0-cloc",
