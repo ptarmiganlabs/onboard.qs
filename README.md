@@ -465,12 +465,12 @@ A typical onboarding tour mixing standalone and targeted steps:
 
 The **Custom CSS Selector** target type lets you highlight any DOM element on the page, not just Qlik sheet objects. Examples:
 
-| Target                                 | CSS Selector                                                |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Help button (Ptarmigan Labs extension) | `#qs-help-button` or inspect the DOM for the exact selector |
-| Bookmark button                        | `.qs-toolbar .bookmark-button`                              |
-| Sheet title                            | `.sheet-title-container`                                    |
-| Any element by ID                      | `#my-custom-id`                                             |
+| Target                                 | CSS Selector                                               |
+| -------------------------------------- | ---------------------------------------------------------- |
+| Help button (Ptarmigan Labs extension) | `#helpbutton-qs` or inspect the DOM for the exact selector |
+| Bookmark button                        | `.qs-toolbar .bookmark-button`                             |
+| Sheet title                            | `.sheet-title-container`                                   |
+| Any element by ID                      | `#my-custom-id`                                            |
 
 To find the right selector: right-click the element in the browser → **Inspect** → note the class or ID.
 
