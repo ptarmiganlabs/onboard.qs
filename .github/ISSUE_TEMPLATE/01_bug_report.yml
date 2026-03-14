@@ -14,16 +14,32 @@ body:
       description: 'Check the About section in the extension property panel, or look at the .qext file. For example: 0.1.0'
     validations:
       required: true
+  - type: dropdown
+    attributes:
+      label: Which Qlik Sense environment are you using?
+      description: 'Is the bug related to Qlik Sense Client-Managed, Qlik Cloud, or both?'
+      options:
+        - Qlik Cloud
+        - Qlik Sense Enterprise on Windows (Client-Managed)
+        - Both / Not sure
+    validations:
+      required: true
   - type: input
     attributes:
-      label: What Qlik Sense platform are you using?
-      description: 'For example: Qlik Cloud, Qlik Sense Enterprise on Windows February 2024'
+      label: What Qlik Sense version are you using?
+      description: 'For example: 2024 February IR. For Qlik Cloud, enter N/A'
     validations:
       required: true
   - type: input
     attributes:
       label: What browser are you using?
       description: 'For example: Chrome 120, Edge 120, Firefox 121'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What operating system is your browser running on?
+      description: 'For example: Windows 11, macOS Tahoe'
     validations:
       required: true
   - type: textarea
