@@ -34,8 +34,8 @@
 name: Agentic Maintenance
 
 on:
-  # schedule:
-  #   - cron: "37 */2 * * *"  # Every 2 hours (based on minimum expires: 1 days)
+  schedule:
+    - cron: "37 */2 * * *"  # Every 2 hours (based on minimum expires: 1 days)
   workflow_dispatch:
 
 permissions: {}
@@ -50,7 +50,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@902845080df391b1f71845fcd7c303dfc0ac90b3 # v0.57.0
+        uses: github/gh-aw/actions/setup@cccf96100f50705c4291b91a6071c556f72cb3ef # v0.51.2
         with:
           destination: /opt/gh-aw/actions
 
