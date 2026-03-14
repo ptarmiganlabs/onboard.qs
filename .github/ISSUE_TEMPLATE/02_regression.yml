@@ -27,7 +27,8 @@ body:
       options:
         - Qlik Cloud
         - Qlik Sense Enterprise on Windows (Client-Managed)
-        - Both / Not sure
+        - Both
+        - Not sure
     validations:
       required: true
   - type: input
