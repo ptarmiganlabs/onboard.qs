@@ -59,7 +59,11 @@ async function main() {
         console.log(`Post-build: Injected bundle metadata into ${qextPath}`);
     } catch (err) {
         console.error(`Error injecting bundle into ${qextPath}:`, err);
+        process.exit(1);
     }
 }
 
-main().catch(console.error);
+main().catch((err) => {
+    console.error('Post-build script failed:', err);
+    process.exit(1);
+});
