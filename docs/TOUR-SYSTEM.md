@@ -69,6 +69,8 @@ classDiagram
         +string buttonStyle
         +string horizontalAlign
         +string verticalAlign
+        +boolean hideHoverMenu
+        +boolean hideContextMenu
     }
 
     class Theme {

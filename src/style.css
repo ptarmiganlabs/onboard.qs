@@ -1120,3 +1120,15 @@
 .driver-active .driver-popover {
     z-index: 100000 !important;
 }
+
+/* ========================================================================
+   Hover menu override — applied to the Qlik object wrapper via JS when
+   the "Hide hover menu" extension property is enabled.
+   ======================================================================== */
+
+.onboard-qs-no-hover-menu .qv-object-nav,
+.onboard-qs-no-hover-menu .qv-object-actions-toolbar,
+.onboard-qs-no-hover-menu .on-demand-holder,
+.onboard-qs-no-hover-menu [class*='ActionsToolbar'] {
+    display: none !important;
+}

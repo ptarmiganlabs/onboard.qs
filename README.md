@@ -21,6 +21,7 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Auto-start with show-once** — tours can launch automatically when the sheet loads and remember whether the user has already seen them.
 - **Theme presets & color pickers** — choose from four built-in presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually. Font sizes, border radii, font weight, and font family are all configurable.
 - **Configurable appearance** — button label, style (primary/secondary/minimal/outlined/pill), horizontal & vertical alignment, progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
+- **Hide hover & context menus** — per-object toggles to hide the Qlik Sense hover menu (three-dot / expand) and right-click context menu, overriding app-level settings.
 - **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes. Great for sharing tours across apps or backing up configurations.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
 - **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is [driver.js](https://driverjs.com/) (~5 KB gzip).
@@ -88,13 +89,15 @@ Platform detection is automatic — the extension identifies the environment and
 
 ### Widget Appearance
 
-| Property             | Type     | Default      | Description                                           |
-| -------------------- | -------- | ------------ | ----------------------------------------------------- |
-| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode        |
-| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)        |
-| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill` |
-| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                             |
-| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                             |
+| Property             | Type     | Default      | Description                                                                                    |
+| -------------------- | -------- | ------------ | ---------------------------------------------------------------------------------------------- |
+| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                 |
+| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)                                                 |
+| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                          |
+| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                      |
+| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                      |
+| Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting |
+| Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting    |
 
 ### Tour Settings
 
@@ -462,12 +465,12 @@ A typical onboarding tour mixing standalone and targeted steps:
 
 The **Custom CSS Selector** target type lets you highlight any DOM element on the page, not just Qlik sheet objects. Examples:
 
-| Target                                 | CSS Selector                                                |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Help button (Ptarmigan Labs extension) | `#qs-help-button` or inspect the DOM for the exact selector |
-| Bookmark button                        | `.qs-toolbar .bookmark-button`                              |
-| Sheet title                            | `.sheet-title-container`                                    |
-| Any element by ID                      | `#my-custom-id`                                             |
+| Target                                 | CSS Selector                                               |
+| -------------------------------------- | ---------------------------------------------------------- |
+| Help button (Ptarmigan Labs extension) | `#helpbutton-qs` or inspect the DOM for the exact selector |
+| Bookmark button                        | `.qs-toolbar .bookmark-button`                             |
+| Sheet title                            | `.sheet-title-container`                                   |
+| Any element by ID                      | `#my-custom-id`                                            |
 
 To find the right selector: right-click the element in the browser → **Inspect** → note the class or ID.
 

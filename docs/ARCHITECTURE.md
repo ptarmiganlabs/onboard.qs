@@ -94,7 +94,7 @@ graph TD
 | `util/logger.js`             | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`.                                                                                                                                           |
 | `util/markdown.js`           | Minimal Markdown-to-HTML converter (~112 lines) for tour step descriptions.                                                                                                                                                                  |
 | `util/uuid.js`               | UUID v4 generator for tour/step IDs.                                                                                                                                                                                                         |
-| `style.css`                  | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes.                                                                                                                                                            |
+| `style.css`                  | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes, hover menu hiding.                                                                                                                                         |
 
 ## Data flow: analysis mode
 
