@@ -84,6 +84,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                 tours.push({
                     tourId: generateUUID(),
                     tourName: `Tour ${tours.length + 1}`,
+                    showCondition: '',
                     tourVersion: 1,
                     autoStart: false,
                     showOnce: true,
@@ -133,6 +134,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                 if (selectedTourIndex < 0) return;
                 const tour = tours[selectedTourIndex];
                 tour.steps.push({
+                    showCondition: '',
                     selectorType: 'object',
                     targetObjectId: '',
                     customCssSelector: '',
@@ -265,6 +267,14 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
         const step = tours[selectedTourIndex].steps[selectedStepIndex];
         if (!step) return;
 
+        // Show condition input
+        const stepShowCondition = overlay.querySelector('.onboard-qs-editor__step-show-condition');
+        if (stepShowCondition) {
+            stepShowCondition.addEventListener('input', (e) => {
+                step.showCondition = e.target.value;
+            });
+        }
+
         // Selector type toggle
         const selectorTypeSelect = overlay.querySelector('.onboard-qs-editor__step-selector-type');
         if (selectorTypeSelect) {
@@ -377,6 +387,13 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                     if (nameEl)
                         nameEl.textContent = e.target.value || `Tour ${selectedTourIndex + 1}`;
                 }
+            });
+        }
+
+        const showConditionInput = overlay.querySelector('.onboard-qs-editor__tour-show-condition');
+        if (showConditionInput) {
+            showConditionInput.addEventListener('input', (e) => {
+                tour.showCondition = e.target.value;
             });
         }
 
@@ -750,6 +767,12 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-name-input"
                                value="${escapeAttr(tour.tourName || '')}" />
                     </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Show condition ${infoIcon('Controls visibility of this tour. Use 1 to show, 0 to hide. Supports Qlik expressions when set via the property panel. When hidden, all steps of this tour are also hidden.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-show-condition"
+                               value="${escapeAttr(tour.showCondition != null ? String(tour.showCondition) : '')}"
+                               placeholder="1" />
+                    </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-autostart" ${tour.autoStart ? 'checked' : ''} />
                         <span>Auto-start on sheet load ${infoIcon('Automatically launch this tour when the sheet is opened, instead of requiring the user to click.')}</span>
@@ -825,6 +848,12 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
         html += `
                 <div class="onboard-qs-editor__section">
                     <h4>Step ${stepIndex + 1} Details</h4>
+                    <label class="onboard-qs-editor__field">
+                        <span>Show condition ${infoIcon('Controls visibility of this step. Use 1 to show, 0 to hide. Supports Qlik expressions when set via the property panel.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-show-condition"
+                               value="${escapeAttr(step.showCondition != null ? String(step.showCondition) : '')}"
+                               placeholder="1" />
+                    </label>
                     <label class="onboard-qs-editor__field">
                         <span>Target Type ${infoIcon('How the step finds its target: a Qlik object, a CSS selector, or no target (standalone dialog).')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-selector-type">

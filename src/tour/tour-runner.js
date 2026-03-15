@@ -3,6 +3,7 @@ import logger from '../util/logger';
 import { markdownToHtml } from '../util/markdown';
 import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
 import { markTourSeen } from './tour-storage';
+import { isVisible } from '../util/visibility';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
@@ -24,6 +25,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
 
     return (
         tourConfig.steps
+            .filter((step) => isVisible(step.showCondition))
             .filter((step) => {
                 if (step.selectorType === 'none') return true;
                 if (step.selectorType === 'css' && step.customCssSelector) return true;
