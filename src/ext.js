@@ -54,14 +54,10 @@ function presetVal(data, key) {
  *
  * @param {object} data - Property data from the property panel.
  * @param {string} label - Base label text.
- * @param {string} key - Theme property key to look up.
+ * @param {string} _key - Theme property key to look up.
  * @returns {string} Label with preset hint.
  */
-function themeLabel(data, label, key) {
-    const val = presetVal(data, key);
-    if (val != null) {
-        return `${label}  ·  preset: ${val}`;
-    }
+function themeLabel(data, label, _key) {
     return label;
 }
 
@@ -442,7 +438,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(data, 'Hover background', 'buttonHoverBgColor'),
+                                        themeLabel(data, 'Hover bg', 'buttonHoverBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.buttonHoverBgColor),
                                 },
                                 buttonBorderColor: {
@@ -588,11 +584,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(
-                                            data,
-                                            'Button background',
-                                            'popoverButtonBgColor'
-                                        ),
+                                        themeLabel(data, 'Button bg', 'popoverButtonBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.popoverButtonBgColor),
                                 },
                                 popoverButtonTextColor: {
@@ -628,7 +620,7 @@ export default function ext(_galaxy) {
                                     label: (data) =>
                                         themeLabel(
                                             data,
-                                            'Button hover background',
+                                            'Button hex hover',
                                             'popoverButtonHoverBgColor'
                                         ),
                                     defaultValue: toPickerObj(
@@ -752,11 +744,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(
-                                            data,
-                                            'Item hover background',
-                                            'menuHoverBgColor'
-                                        ),
+                                        themeLabel(data, 'Item hover bg', 'menuHoverBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.menuHoverBgColor),
                                 },
                             },
@@ -848,7 +836,7 @@ export default function ext(_galaxy) {
                                                 tourVersion: {
                                                     ref: 'tourVersion',
                                                     type: 'integer',
-                                                    label: 'Tour version (increment to reset "seen" flag)',
+                                                    label: 'Version (increment to reset)',
                                                     description:
                                                         'Incrementing this number clears the per-user "already seen" flag, so the auto-start tour will be shown again.',
                                                     defaultValue: 1,
