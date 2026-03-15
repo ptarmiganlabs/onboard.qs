@@ -89,28 +89,20 @@ Platform detection is automatic — the extension identifies the environment and
 
 ### Widget Appearance
 
-| Property             | Type     | Default      | Description                                                                                    |
-| -------------------- | -------- | ------------ | ---------------------------------------------------------------------------------------------- |
-| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                 |
-| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)                                                 |
-| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                          |
-| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                      |
-| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                      |
-| Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object (expression-enabled)       |
-| Button height (%)    | String   | Auto         | Height of the button as a percentage (1–100) of the extension object (expression-enabled)      |
-| Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting |
-| Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting    |
+| Property             | Type     | Default      | Description                                                                                                                             |
+| -------------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                                                          |
+| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)                                                                                          |
+| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                                                                   |
+| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                                                               |
+| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                                                               |
+| Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing. (expression-enabled)  |
+| Button height (%)    | String   | Auto         | Height of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing. (expression-enabled) |
+| Fill entire widget   | Boolean  | `false`      | Expand the button to cover the entire extension object area edge-to-edge, removing all internal spacing and border radius               |
+| Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting                                          |
+| Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting                                             |
 
-### Tour Settings
-
-| Property       | Type    | Default    | Description                                                                      |
-| -------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
-| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                        |
-| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                       |
-| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`) |
-| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
-| Show progress  | Boolean | `true`     | Display "1 of 5" progress indicator in popovers                                  |
-| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
+> **Note on Button Sizing**: By default, the button sizes itself to its contents. You can use **Button width (%)** and **Button height (%)** to set a relative size within the available space. If you want the button to completely fill the Qlik Sense object area (edge-to-edge), enable **Fill entire widget**. When "Fill" is enabled, the alignment and width/height percentage properties are ignored.
 
 ### Theme & Styling
 
@@ -128,6 +120,17 @@ Platform detection is automatic — the extension identifies the environment and
 | Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu     |
 
 All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
+
+### Tour Settings
+
+| Property       | Type    | Default    | Description                                                                      |
+| -------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
+| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                        |
+| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                       |
+| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`) |
+| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
+| Show progress  | Boolean | `true`     | Display "1 of 5" progress indicator in popovers                                  |
+| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
 
 ### Step Settings
 

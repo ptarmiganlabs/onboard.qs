@@ -14,6 +14,7 @@ export default {
         verticalAlign: 'center',
         buttonWidth: '',
         buttonHeight: '',
+        fillWidget: false,
         hideHoverMenu: false,
         hideContextMenu: false,
     },

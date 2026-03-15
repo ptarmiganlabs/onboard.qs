@@ -67,6 +67,20 @@
     position: absolute;
 }
 
+/* --- Fill entire widget mode --- */
+
+.onboard-qs-widget--fill {
+    padding: 0;
+    margin: 0;
+}
+
+.onboard-qs-widget--fill .onboard-qs-btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 0;
+}
+
 /* --- Button styles --- */
 
 .onboard-qs-btn {

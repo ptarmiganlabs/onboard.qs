@@ -62,13 +62,21 @@ export function renderWidget(element, layout, context) {
     const vAlign = widgetConfig.verticalAlign || 'center';
     const alignClasses = `onboard-qs-widget--h-${hAlign} onboard-qs-widget--v-${vAlign}`;
 
+    // Fill-widget mode: button covers entire extension object, ignoring size/alignment
+    const fillWidget = widgetConfig.fillWidget === true;
+
     // Resolve optional button width/height (percentage of extension object)
-    const btnSizeStyle = buildButtonSizeStyle(widgetConfig);
+    // When fill mode is active, size style is not needed (CSS handles 100%)
+    const btnSizeStyle = fillWidget ? '' : buildButtonSizeStyle(widgetConfig);
+    const fillClass = fillWidget ? ' onboard-qs-widget--fill' : '';
+    const containerClasses = fillWidget
+        ? `onboard-qs-widget${fillClass}`
+        : `onboard-qs-widget ${alignClasses}`;
 
     if (tours.length === 1) {
         // Single tour — simple button
         element.innerHTML = `
-            <div class="onboard-qs-widget ${alignClasses}">
+            <div class="${containerClasses}">
                 <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn"${btnSizeStyle}>
                     ${escapeHtml(buttonText)}
                 </button>
@@ -77,7 +85,7 @@ export function renderWidget(element, layout, context) {
     } else {
         // Multiple tours — button that opens a floating menu
         element.innerHTML = `
-            <div class="onboard-qs-widget ${alignClasses}">
+            <div class="${containerClasses}">
                 <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger"${btnSizeStyle}>
                     ${escapeHtml(buttonText)} &#9662;
                 </button>
