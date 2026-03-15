@@ -785,6 +785,7 @@ export default function ext(_galaxy) {
                                     description:
                                         'A descriptive name for this tour. Shown in the tour launch menu.',
                                     defaultValue: 'New Tour',
+                                    expression: 'optional',
                                 },
                                 tourGroups: {
                                     component: 'expandable-items',
@@ -852,6 +853,7 @@ export default function ext(_galaxy) {
                                                         'Incrementing this number clears the per-user "already seen" flag, so the auto-start tour will be shown again.',
                                                     defaultValue: 1,
                                                     min: 1,
+                                                    expression: 'optional',
                                                 },
                                             },
                                         },
@@ -902,6 +904,7 @@ export default function ext(_galaxy) {
                                                     description:
                                                         'CSS color for the backdrop behind the highlighted element, e.g. rgba(0,0,0,0.6) or #000.',
                                                     defaultValue: 'rgba(0, 0, 0, 0.6)',
+                                                    expression: 'optional',
                                                 },
                                                 overlayOpacity: {
                                                     ref: 'overlayOpacity',
@@ -912,6 +915,7 @@ export default function ext(_galaxy) {
                                                     defaultValue: 60,
                                                     min: 0,
                                                     max: 100,
+                                                    expression: 'optional',
                                                 },
                                                 stagePadding: {
                                                     ref: 'stagePadding',
@@ -921,6 +925,7 @@ export default function ext(_galaxy) {
                                                         'Extra space (in pixels) between the highlighted element and the cutout edge.',
                                                     defaultValue: 8,
                                                     min: 0,
+                                                    expression: 'optional',
                                                 },
                                                 stageRadius: {
                                                     ref: 'stageRadius',
@@ -930,6 +935,7 @@ export default function ext(_galaxy) {
                                                         'Corner rounding (in pixels) of the highlight cutout around the target element.',
                                                     defaultValue: 5,
                                                     min: 0,
+                                                    expression: 'optional',
                                                 },
                                             },
                                         },
@@ -1188,6 +1194,7 @@ export default function ext(_galaxy) {
                                                                             type: 'integer',
                                                                             label: 'Custom width (px)',
                                                                             defaultValue: 500,
+                                                                            expression: 'optional',
                                                                             /**
                                                                              * Determine visibility of this property panel item.
                                                                              *
@@ -1207,6 +1214,7 @@ export default function ext(_galaxy) {
                                                                             type: 'integer',
                                                                             label: 'Custom height (px)',
                                                                             defaultValue: 350,
+                                                                            expression: 'optional',
                                                                             /**
                                                                              * Determine visibility of this property panel item.
                                                                              *
