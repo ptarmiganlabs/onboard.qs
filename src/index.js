@@ -265,6 +265,30 @@ export default function supernova(galaxy) {
                 if (element._onboardCleanup) {
                     element._onboardCleanup();
                 }
+                // Strip Qlik Sense host padding on the visualization
+                // content area so our widget truly fills 100% of the object.
+                element.style.padding = '0';
+                element.style.overflow = 'hidden';
+
+                // When "Fill entire widget" is active, also strip padding,
+                // borders and the title header from Qlik Sense host wrappers
+                // so the button truly covers the entire grid cell area.
+                const fillWidget = layout.widget?.fillWidget === true;
+                const innerObj = element.closest('.qv-inner-object');
+                const articleEl = element.closest('article.qv-object');
+                const headerEl = innerObj?.querySelector(':scope > header.qv-object-header');
+
+                if (fillWidget) {
+                    if (innerObj) innerObj.style.padding = '0';
+                    if (articleEl) articleEl.style.border = 'none';
+                    if (headerEl) headerEl.style.display = 'none';
+                } else {
+                    // Restore defaults when fill is toggled off
+                    if (innerObj) innerObj.style.padding = '';
+                    if (articleEl) articleEl.style.border = '';
+                    if (headerEl) headerEl.style.display = '';
+                }
+
                 renderWidget(element, layout, {
                     appId,
                     sheetId,

@@ -280,7 +280,9 @@ export default function ext(_galaxy) {
                              * @param {object} data - Current property data row.
                              * @returns {boolean} True if item should be shown.
                              */
-                            show: (data) => data.widget?.showButton !== false,
+                            show: (data) =>
+                                data.widget?.showButton !== false &&
+                                data.widget?.fillWidget !== true,
                         },
                         verticalAlign: {
                             ref: 'widget.verticalAlign',
@@ -292,6 +294,66 @@ export default function ext(_galaxy) {
                                 { value: 'top', label: 'Top' },
                                 { value: 'center', label: 'Center' },
                                 { value: 'bottom', label: 'Bottom' },
+                            ],
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
+                            show: (data) =>
+                                data.widget?.showButton !== false &&
+                                data.widget?.fillWidget !== true,
+                        },
+                        buttonWidth: {
+                            ref: 'widget.buttonWidth',
+                            type: 'string',
+                            label: 'Button width (%)',
+                            description:
+                                'Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.',
+                            defaultValue: '',
+                            expression: 'optional',
+                            placeholder: 'Auto',
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
+                            show: (data) =>
+                                data.widget?.showButton !== false &&
+                                data.widget?.fillWidget !== true,
+                        },
+                        buttonHeight: {
+                            ref: 'widget.buttonHeight',
+                            type: 'string',
+                            label: 'Button height (%)',
+                            description:
+                                'Height of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.',
+                            defaultValue: '',
+                            expression: 'optional',
+                            placeholder: 'Auto',
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
+                            show: (data) =>
+                                data.widget?.showButton !== false &&
+                                data.widget?.fillWidget !== true,
+                        },
+                        fillWidget: {
+                            ref: 'widget.fillWidget',
+                            type: 'boolean',
+                            label: 'Fill entire widget',
+                            description:
+                                'Expand the button to cover the entire extension object area, removing all internal spacing and border radius.',
+                            defaultValue: false,
+                            component: 'switch',
+                            options: [
+                                { value: true, label: 'On' },
+                                { value: false, label: 'Off' },
                             ],
                             /**
                              * Determine visibility of this property panel item.

@@ -69,6 +69,9 @@ classDiagram
         +string buttonStyle
         +string horizontalAlign
         +string verticalAlign
+        +string buttonWidth
+        +string buttonHeight
+        +boolean fillWidget
         +boolean hideHoverMenu
         +boolean hideContextMenu
     }

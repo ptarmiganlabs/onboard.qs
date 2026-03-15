@@ -62,11 +62,22 @@ export function renderWidget(element, layout, context) {
     const vAlign = widgetConfig.verticalAlign || 'center';
     const alignClasses = `onboard-qs-widget--h-${hAlign} onboard-qs-widget--v-${vAlign}`;
 
+    // Fill-widget mode: button covers entire extension object, ignoring size/alignment
+    const fillWidget = widgetConfig.fillWidget === true;
+
+    // Resolve optional button width/height (percentage of extension object)
+    // When fill mode is active, size style is not needed (CSS handles 100%)
+    const btnSizeStyle = fillWidget ? '' : buildButtonSizeStyle(widgetConfig);
+    const fillClass = fillWidget ? ' onboard-qs-widget--fill' : '';
+    const containerClasses = fillWidget
+        ? `onboard-qs-widget${fillClass}`
+        : `onboard-qs-widget ${alignClasses}`;
+
     if (tours.length === 1) {
         // Single tour — simple button
         element.innerHTML = `
-            <div class="onboard-qs-widget ${alignClasses}">
-                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn">
+            <div class="${containerClasses}">
+                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn"${btnSizeStyle}>
                     ${escapeHtml(buttonText)}
                 </button>
             </div>
@@ -74,8 +85,8 @@ export function renderWidget(element, layout, context) {
     } else {
         // Multiple tours — button that opens a floating menu
         element.innerHTML = `
-            <div class="onboard-qs-widget ${alignClasses}">
-                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger">
+            <div class="${containerClasses}">
+                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger"${btnSizeStyle}>
                     ${escapeHtml(buttonText)} &#9662;
                 </button>
             </div>
@@ -337,6 +348,32 @@ export function openAboutModal(version) {
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) close();
     });
+}
+
+/**
+ * Build an inline style attribute string for button width/height.
+ *
+ * Parses the widget config's buttonWidth and buttonHeight values,
+ * clamping them to 1–100 and expressing them as percentages of the
+ * extension container. Returns an empty string when both are unset
+ * so the button keeps its default content-based sizing.
+ *
+ * @param {object} widgetConfig - The widget configuration from layout.
+ * @returns {string} A ` style="..."` attribute string, or empty string.
+ */
+function buildButtonSizeStyle(widgetConfig) {
+    const parts = [];
+    const w = Number(widgetConfig.buttonWidth);
+    const h = Number(widgetConfig.buttonHeight);
+
+    if (!Number.isNaN(w) && w > 0) {
+        parts.push(`width: ${Math.min(w, 100)}%`);
+    }
+    if (!Number.isNaN(h) && h > 0) {
+        parts.push(`height: ${Math.min(h, 100)}%`);
+    }
+
+    return parts.length ? ` style="${parts.join(';')}"` : '';
 }
 
 /**
