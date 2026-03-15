@@ -359,10 +359,10 @@ function buildButtonSizeStyle(widgetConfig) {
     const h = Number(widgetConfig.buttonHeight);
 
     if (!Number.isNaN(w) && w > 0) {
-        parts.push(`width:${Math.min(w, 100)}%`);
+        parts.push(`width: ${Math.min(w, 100)}%`);
     }
     if (!Number.isNaN(h) && h > 0) {
-        parts.push(`height:${Math.min(h, 100)}%`);
+        parts.push(`height: ${Math.min(h, 100)}%`);
     }
 
     return parts.length ? ` style="${parts.join(';')}"` : '';
