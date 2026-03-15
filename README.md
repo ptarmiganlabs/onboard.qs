@@ -126,16 +126,18 @@ All color properties use the native Qlik color-picker component. When you switch
 | Property       | Type    | Default    | Description                                                                      |
 | -------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
 | Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                        |
+| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).     |
 | Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                       |
 | Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`) |
 | Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
-| Show progress  | Boolean | `true`     | Display "1 of 5" progress indicator in popovers                                  |
+| Show progress  | Boolean | `true`     | Display "X of Y" progress indicator in popovers                                  |
 | Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
 
 ### Step Settings
 
 | Property            | Type              | Default        | Description                                                                           |
 | ------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
+| Show condition      | String            | —              | Controls visibility of this step. Supports expressions (1 = show, 0 = hide).          |
 | Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`             |
 | Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object) |
 | CSS selector        | String            | —              | Any valid CSS selector (shown when Target type = Custom CSS Selector)                 |
