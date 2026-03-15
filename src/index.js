@@ -8,7 +8,7 @@ import {
     useState,
     useOptions,
 } from '@nebula.js/stardust';
-import ext from './ext';
+import ext from './ext/index';
 import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
