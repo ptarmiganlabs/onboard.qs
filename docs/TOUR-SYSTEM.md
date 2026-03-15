@@ -217,7 +217,7 @@ flowchart TD
 ### Editor workflow
 
 1. **Open** — Deep-clones `layout.tours` to avoid mutating live properties.
-2. **Edit** — User adds/removes tours and steps, configures each step's target object, title, description, popover position.
+2. **Edit** — User adds/removes tours and steps. When a step is selected in the list, the detail panel becomes active, allowing the user to configure the step's target object, title, description, and popover position.
 3. **Preview** — "Preview Step" calls `highlightStep()` which creates a temporary driver.js highlight on the actual Qlik object. Auto-dismisses after 3 seconds.
 4. **Save** — Writes the modified tours back via `model.getProperties()` → mutate → `model.setProperties()`.
 5. **Cancel** — Discards changes, clones are garbage-collected.
