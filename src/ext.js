@@ -54,14 +54,10 @@ function presetVal(data, key) {
  *
  * @param {object} data - Property data from the property panel.
  * @param {string} label - Base label text.
- * @param {string} key - Theme property key to look up.
+ * @param {string} _key - Theme property key to look up.
  * @returns {string} Label with preset hint.
  */
-function themeLabel(data, label, key) {
-    const val = presetVal(data, key);
-    if (val != null) {
-        return `${label}  ·  preset: ${val}`;
-    }
+function themeLabel(data, label, _key) {
     return label;
 }
 
@@ -442,7 +438,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(data, 'Hover background', 'buttonHoverBgColor'),
+                                        themeLabel(data, 'Hover bg', 'buttonHoverBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.buttonHoverBgColor),
                                 },
                                 buttonBorderColor: {
@@ -588,11 +584,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(
-                                            data,
-                                            'Button background',
-                                            'popoverButtonBgColor'
-                                        ),
+                                        themeLabel(data, 'Button bg', 'popoverButtonBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.popoverButtonBgColor),
                                 },
                                 popoverButtonTextColor: {
@@ -628,7 +620,7 @@ export default function ext(_galaxy) {
                                     label: (data) =>
                                         themeLabel(
                                             data,
-                                            'Button hover background',
+                                            'Button hex hover',
                                             'popoverButtonHoverBgColor'
                                         ),
                                     defaultValue: toPickerObj(
@@ -752,11 +744,7 @@ export default function ext(_galaxy) {
                                      * @returns {string} Label text.
                                      */
                                     label: (data) =>
-                                        themeLabel(
-                                            data,
-                                            'Item hover background',
-                                            'menuHoverBgColor'
-                                        ),
+                                        themeLabel(data, 'Item hover bg', 'menuHoverBgColor'),
                                     defaultValue: toPickerObj(leanGreenPreset.menuHoverBgColor),
                                 },
                             },
@@ -785,6 +773,7 @@ export default function ext(_galaxy) {
                                     description:
                                         'A descriptive name for this tour. Shown in the tour launch menu.',
                                     defaultValue: 'New Tour',
+                                    expression: 'optional',
                                 },
                                 tourGroups: {
                                     component: 'expandable-items',
@@ -847,11 +836,12 @@ export default function ext(_galaxy) {
                                                 tourVersion: {
                                                     ref: 'tourVersion',
                                                     type: 'integer',
-                                                    label: 'Tour version (increment to reset "seen" flag)',
+                                                    label: 'Version (increment to reset)',
                                                     description:
                                                         'Incrementing this number clears the per-user "already seen" flag, so the auto-start tour will be shown again.',
                                                     defaultValue: 1,
                                                     min: 1,
+                                                    expression: 'optional',
                                                 },
                                             },
                                         },
@@ -902,6 +892,7 @@ export default function ext(_galaxy) {
                                                     description:
                                                         'CSS color for the backdrop behind the highlighted element, e.g. rgba(0,0,0,0.6) or #000.',
                                                     defaultValue: 'rgba(0, 0, 0, 0.6)',
+                                                    expression: 'optional',
                                                 },
                                                 overlayOpacity: {
                                                     ref: 'overlayOpacity',
@@ -912,6 +903,7 @@ export default function ext(_galaxy) {
                                                     defaultValue: 60,
                                                     min: 0,
                                                     max: 100,
+                                                    expression: 'optional',
                                                 },
                                                 stagePadding: {
                                                     ref: 'stagePadding',
@@ -921,6 +913,7 @@ export default function ext(_galaxy) {
                                                         'Extra space (in pixels) between the highlighted element and the cutout edge.',
                                                     defaultValue: 8,
                                                     min: 0,
+                                                    expression: 'optional',
                                                 },
                                                 stageRadius: {
                                                     ref: 'stageRadius',
@@ -930,6 +923,7 @@ export default function ext(_galaxy) {
                                                         'Corner rounding (in pixels) of the highlight cutout around the target element.',
                                                     defaultValue: 5,
                                                     min: 0,
+                                                    expression: 'optional',
                                                 },
                                             },
                                         },
@@ -1188,6 +1182,7 @@ export default function ext(_galaxy) {
                                                                             type: 'integer',
                                                                             label: 'Custom width (px)',
                                                                             defaultValue: 500,
+                                                                            expression: 'optional',
                                                                             /**
                                                                              * Determine visibility of this property panel item.
                                                                              *
@@ -1207,6 +1202,7 @@ export default function ext(_galaxy) {
                                                                             type: 'integer',
                                                                             label: 'Custom height (px)',
                                                                             defaultValue: 350,
+                                                                            expression: 'optional',
                                                                             /**
                                                                              * Determine visibility of this property panel item.
                                                                              *
