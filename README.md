@@ -87,20 +87,23 @@ Platform detection is automatic — the extension identifies the environment and
 
 ## Configuration Reference
 
+> **💡 Note on Qlik Sense Expressions**
+> Every property of type **String** and **Integer** in the configuration panel fully supports Qlik Sense expressions. To evaluate a title, dimension, text value, or visibility condition dynamically based on app state, user, or other logic, simply start the input with an equals sign (`=`).
+
 ### Widget Appearance
 
-| Property             | Type     | Default      | Description                                                                                                                             |
-| -------------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                                                          |
-| Button text          | String   | `Start Tour` | Label on the start button (expression-enabled)                                                                                          |
-| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                                                                   |
-| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                                                               |
-| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                                                               |
-| Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing. (expression-enabled)  |
-| Button height (%)    | String   | Auto         | Height of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing. (expression-enabled) |
-| Fill entire widget   | Boolean  | `false`      | Expand the button to cover the entire extension object area edge-to-edge, removing all internal spacing and border radius               |
-| Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting                                          |
-| Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting                                             |
+| Property             | Type     | Default      | Description                                                                                                               |
+| -------------------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                                            |
+| Button text          | String   | `Start Tour` | Label on the start button                                                                                                 |
+| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                                                     |
+| Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                                                 |
+| Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                                                 |
+| Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.         |
+| Button height (%)    | String   | Auto         | Height of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.        |
+| Fill entire widget   | Boolean  | `false`      | Expand the button to cover the entire extension object area edge-to-edge, removing all internal spacing and border radius |
+| Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting                            |
+| Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting                               |
 
 > **Note on Button Sizing**: By default, the button sizes itself to its contents. You can use **Button width (%)** and **Button height (%)** to set a relative size within the available space. If you want the button to completely fill the Qlik Sense object area (edge-to-edge), enable **Fill entire widget**. When "Fill" is enabled, the alignment and width/height percentage properties are ignored.
 
@@ -109,7 +112,7 @@ Platform detection is automatic — the extension identifies the environment and
 | Property              | Type          | Default                  | Description                                                             |
 | --------------------- | ------------- | ------------------------ | ----------------------------------------------------------------------- |
 | Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold` |
-| Font family           | String        | (from preset)            | CSS font-family value (expression-enabled)                              |
+| Font family           | String        | (from preset)            | CSS font-family value                                                   |
 | Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                        |
 | Button font size      | String (px)   | (from preset)            | Font size in pixels                                                     |
 | Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                 |
@@ -141,7 +144,7 @@ All color properties use the native Qlik color-picker component. When you switch
 | Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`             |
 | Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object) |
 | CSS selector        | String            | —              | Any valid CSS selector (shown when Target type = Custom CSS Selector)                 |
-| Popover title       | String            | —              | Heading text (expression-enabled)                                                     |
+| Popover title       | String            | —              | Heading text                                                                          |
 | Popover description | String (Markdown) | —              | Body text with Markdown support                                                       |
 | Popover side        | Dropdown          | `Bottom`       | `Top`, `Bottom`, `Left`, `Right`                                                      |
 | Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                              |
@@ -164,15 +167,15 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay and navigation buttons (expression support for button text is only available in the property panel):
 
-| Property             | Type    | Default              | Description                                                       |
-| -------------------- | ------- | -------------------- | ----------------------------------------------------------------- |
-| Overlay color        | String  | `rgba(0, 0, 0, 0.6)` | Background color behind the highlighted area                      |
-| Overlay opacity      | Integer | `60`                 | Opacity percentage (0–100)                                        |
-| Stage padding        | Integer | `8`                  | Padding around the highlighted element (px)                       |
-| Stage border radius  | Integer | `5`                  | Border radius of the highlight cutout (px)                        |
-| Next button text     | String  | `Next`               | Label for the “Next” navigation button (expression-enabled)       |
-| Previous button text | String  | `Previous`           | Label for the “Previous” navigation button (expression-enabled)   |
-| Done button text     | String  | `Done`               | Label for the final step's navigation button (expression-enabled) |
+| Property             | Type    | Default              | Description                                  |
+| -------------------- | ------- | -------------------- | -------------------------------------------- |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)` | Background color behind the highlighted area |
+| Overlay opacity      | Integer | `60`                 | Opacity percentage (0–100)                   |
+| Stage padding        | Integer | `8`                  | Padding around the highlighted element (px)  |
+| Stage border radius  | Integer | `5`                  | Border radius of the highlight cutout (px)   |
+| Next button text     | String  | `Next`               | Label for the “Next” navigation button       |
+| Previous button text | String  | `Previous`           | Label for the “Previous” navigation button   |
+| Done button text     | String  | `Done`               | Label for the final step's navigation button |
 
 ---
 
@@ -450,9 +453,10 @@ Not every tour step needs to point at a specific element. **Standalone Dialog** 
 ### How to Create a Standalone Step
 
 1. In the tour editor, click **+ Add Step**.
-2. Set **Target Type** to **Standalone Dialog (no target)**.
-3. Enter a title and description (Markdown/HTML supported).
-4. The step will appear as a centered modal during the tour.
+2. Select the new step in the step list to reveal its configuration details.
+3. Set **Target Type** to **Standalone Dialog (no target)**.
+4. Enter a title and description (Markdown/HTML supported).
+5. The step will appear as a centered modal during the tour.
 
 ### Example Tour Structure
 
