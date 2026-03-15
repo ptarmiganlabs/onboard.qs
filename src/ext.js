@@ -792,7 +792,7 @@ export default function ext(_galaxy) {
                                     label: 'Show condition',
                                     description:
                                         'Controls visibility of this tour. Use an expression that evaluates to 1 (show) or 0 (hide). When hidden, all steps of this tour are also hidden.',
-                                    defaultValue: '1',
+                                    defaultValue: '',
                                     expression: 'optional',
                                 },
                                 autoStart: {
@@ -945,7 +945,7 @@ export default function ext(_galaxy) {
                                             label: 'Show condition',
                                             description:
                                                 'Controls visibility of this step. Use an expression that evaluates to 1 (show) or 0 (hide).',
-                                            defaultValue: '1',
+                                            defaultValue: '',
                                             expression: 'optional',
                                         },
                                         selectorType: {

@@ -84,7 +84,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                 tours.push({
                     tourId: generateUUID(),
                     tourName: `Tour ${tours.length + 1}`,
-                    showCondition: '1',
+                    showCondition: '',
                     tourVersion: 1,
                     autoStart: false,
                     showOnce: true,
@@ -134,7 +134,7 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
                 if (selectedTourIndex < 0) return;
                 const tour = tours[selectedTourIndex];
                 tour.steps.push({
-                    showCondition: '1',
+                    showCondition: '',
                     selectorType: 'object',
                     targetObjectId: '',
                     customCssSelector: '',
@@ -770,7 +770,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     <label class="onboard-qs-editor__field">
                         <span>Show condition ${infoIcon('Controls visibility of this tour. Use 1 to show, 0 to hide. Supports Qlik expressions when set via the property panel. When hidden, all steps of this tour are also hidden.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-show-condition"
-                               value="${escapeAttr(tour.showCondition != null ? String(tour.showCondition) : '1')}"
+                               value="${escapeAttr(tour.showCondition != null ? String(tour.showCondition) : '')}"
                                placeholder="1" />
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
@@ -851,7 +851,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     <label class="onboard-qs-editor__field">
                         <span>Show condition ${infoIcon('Controls visibility of this step. Use 1 to show, 0 to hide. Supports Qlik expressions when set via the property panel.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-show-condition"
-                               value="${escapeAttr(step.showCondition != null ? String(step.showCondition) : '1')}"
+                               value="${escapeAttr(step.showCondition != null ? String(step.showCondition) : '')}"
                                placeholder="1" />
                     </label>
                     <label class="onboard-qs-editor__field">

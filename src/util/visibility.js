@@ -10,8 +10,8 @@
  * Determine whether a tour or step should be shown based on its showCondition value.
  *
  * Returns true (visible) when the value is undefined, null, or any truthy value
- * except the string '0'. Returns false (hidden) when the value is '0', 0, or
- * an empty string — following Qlik expression conventions.
+ * except the string '0' or 'false'. Returns false (hidden) when the value is '0',
+ * 'false', or 0.
  *
  * @param {string|number|undefined|null} condition - Resolved showCondition value.
  * @returns {boolean} True if the item should be visible.
@@ -19,6 +19,9 @@
 export function isVisible(condition) {
     if (condition === undefined || condition === null) return true;
     if (typeof condition === 'number') return condition !== 0;
-    if (typeof condition === 'string') return condition !== '0' && condition !== '';
+    if (typeof condition === 'string') {
+        const trimmed = condition.trim().toLowerCase();
+        return trimmed !== '0' && trimmed !== 'false';
+    }
     return Boolean(condition);
 }
