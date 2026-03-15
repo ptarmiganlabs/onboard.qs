@@ -2,6 +2,7 @@ import logger from '../util/logger';
 import { runTour } from '../tour/tour-runner';
 import { hasSeenTour } from '../tour/tour-storage';
 import { resolveTheme, applyThemeToElement } from '../theme/resolve';
+import { isVisible } from '../util/visibility';
 
 /**
  * Widget renderer for analysis mode.
@@ -10,23 +11,6 @@ import { resolveTheme, applyThemeToElement } from '../theme/resolve';
  * driver.js tours. Supports multiple tours with a dropdown selector,
  * and auto-start with "show once" gating.
  */
-
-/**
- * Determine whether a tour or step should be shown based on its showCondition value.
- *
- * Returns true (visible) when the value is undefined, null, or any truthy value
- * except the string '0'. Returns false (hidden) when the value is '0', 0, or
- * an empty string — following Qlik expression conventions.
- *
- * @param {string|number|undefined|null} condition - Resolved showCondition value.
- * @returns {boolean} True if the item should be visible.
- */
-function isVisible(condition) {
-    if (condition === undefined || condition === null) return true;
-    if (typeof condition === 'number') return condition !== 0;
-    if (typeof condition === 'string') return condition !== '0' && condition !== '';
-    return Boolean(condition);
-}
 
 /**
  * Render the widget into the extension's DOM element.
