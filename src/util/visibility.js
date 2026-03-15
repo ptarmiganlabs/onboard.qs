@@ -9,9 +9,10 @@
 /**
  * Determine whether a tour or step should be shown based on its showCondition value.
  *
- * Returns true (visible) when the value is undefined, null, or any truthy value
- * except the string '0' or 'false'. Returns false (hidden) when the value is '0',
- * 'false', or 0.
+ * Returns true (visible) when the value is undefined, null, any non-zero number,
+ * or any string that does not trim (case-insensitively) to '0' or 'false'. This
+ * means that empty or whitespace-only strings are treated as visible. Returns
+ * false (hidden) when the value is '0', 'false', or 0.
  *
  * @param {string|number|undefined|null} condition - Resolved showCondition value.
  * @returns {boolean} True if the item should be visible.
