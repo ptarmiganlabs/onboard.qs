@@ -2,46 +2,42 @@
 
 ## [1.6.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.5.0...onboard-qs-v1.6.0) (2026-03-14)
 
-
 ### Features
 
-* add extension properties for hiding hover menu and context menu ([ea80a2c](https://github.com/ptarmiganlabs/onboard.qs/commit/ea80a2c905145566c0e535d6c5411de9c786a771))
-* Add properties for showing/hiding context and hover menus ([a30702d](https://github.com/ptarmiganlabs/onboard.qs/commit/a30702d703777181e3082155acc8a69e0c008826)), closes [#74](https://github.com/ptarmiganlabs/onboard.qs/issues/74)
-* Include a default onboarding tour when extension added to app sheet ([5e902af](https://github.com/ptarmiganlabs/onboard.qs/commit/5e902aff21012cca483f6be7152c936c042b7279))
-* restructure theme and styling sections into subsections in property panel ([469d467](https://github.com/ptarmiganlabs/onboard.qs/commit/469d4672681bc2f56fe23f53ad944cdef3c537d9))
-
+- add extension properties for hiding hover menu and context menu ([ea80a2c](https://github.com/ptarmiganlabs/onboard.qs/commit/ea80a2c905145566c0e535d6c5411de9c786a771))
+- Add properties for showing/hiding context and hover menus ([a30702d](https://github.com/ptarmiganlabs/onboard.qs/commit/a30702d703777181e3082155acc8a69e0c008826)), closes [#74](https://github.com/ptarmiganlabs/onboard.qs/issues/74)
+- Include a default onboarding tour when extension added to app sheet ([5e902af](https://github.com/ptarmiganlabs/onboard.qs/commit/5e902aff21012cca483f6be7152c936c042b7279))
+- restructure theme and styling sections into subsections in property panel ([469d467](https://github.com/ptarmiganlabs/onboard.qs/commit/469d4672681bc2f56fe23f53ad944cdef3c537d9))
 
 ### Bug Fixes
 
-* add try-catch isolation in shared observer and improve JSDoc types ([d5c93d4](https://github.com/ptarmiganlabs/onboard.qs/commit/d5c93d413ce181c1c3a93c51cd994fe2c0622de2))
-* address code review feedback - clean up redundant CSS and add JSDoc ([1bca13a](https://github.com/ptarmiganlabs/onboard.qs/commit/1bca13a3b3e724686a2df604fcf56b9124c8dc65))
-* address review feedback for context menu and hover menu logic ([3763ddc](https://github.com/ptarmiganlabs/onboard.qs/commit/3763ddc205b6f232052f1e7128bef3ac7e0a8a9f))
-* **client-managed:** Get rid of `product-info` warning in browser console ([5d0c160](https://github.com/ptarmiganlabs/onboard.qs/commit/5d0c160a5e918df3e251d94222eb23c92f6922e3))
-* improve error handling in post-build script ([f42177a](https://github.com/ptarmiganlabs/onboard.qs/commit/f42177a9c43a36f27ca0898a77d71a6cce396cfd))
-* Move extension into the ".qs Library" bundle in the Sense editor ([9b50a49](https://github.com/ptarmiganlabs/onboard.qs/commit/9b50a4964010e157e92a5fae76201d55d1403e42))
-* prepend virtual proxy prefix to product-info.js fetch URL ([e53940e](https://github.com/ptarmiganlabs/onboard.qs/commit/e53940ea5be8513522a94da89792099e8714b5c4))
-
+- add try-catch isolation in shared observer and improve JSDoc types ([d5c93d4](https://github.com/ptarmiganlabs/onboard.qs/commit/d5c93d413ce181c1c3a93c51cd994fe2c0622de2))
+- address code review feedback - clean up redundant CSS and add JSDoc ([1bca13a](https://github.com/ptarmiganlabs/onboard.qs/commit/1bca13a3b3e724686a2df604fcf56b9124c8dc65))
+- address review feedback for context menu and hover menu logic ([3763ddc](https://github.com/ptarmiganlabs/onboard.qs/commit/3763ddc205b6f232052f1e7128bef3ac7e0a8a9f))
+- **client-managed:** Get rid of `product-info` warning in browser console ([5d0c160](https://github.com/ptarmiganlabs/onboard.qs/commit/5d0c160a5e918df3e251d94222eb23c92f6922e3))
+- improve error handling in post-build script ([f42177a](https://github.com/ptarmiganlabs/onboard.qs/commit/f42177a9c43a36f27ca0898a77d71a6cce396cfd))
+- Move extension into the ".qs Library" bundle in the Sense editor ([9b50a49](https://github.com/ptarmiganlabs/onboard.qs/commit/9b50a4964010e157e92a5fae76201d55d1403e42))
+- prepend virtual proxy prefix to product-info.js fetch URL ([e53940e](https://github.com/ptarmiganlabs/onboard.qs/commit/e53940ea5be8513522a94da89792099e8714b5c4))
 
 ### Miscellaneous
 
-* **deps:** bump actions/github-script from 7.0.1 to 8.0.0 ([957914e](https://github.com/ptarmiganlabs/onboard.qs/commit/957914e11b2586157c1cf6ab708581bc9bb922b6))
-* **deps:** bump actions/setup-node from 6.2.0 to 6.3.0 ([28e8d0f](https://github.com/ptarmiganlabs/onboard.qs/commit/28e8d0f85b4e20af63edd3e7fdd1b7d6f421569c))
-* **deps:** bump actions/setup-node from 6.2.0 to 6.3.0 ([5567a69](https://github.com/ptarmiganlabs/onboard.qs/commit/5567a69cdb08e13a889d7d7b1f8fbadd0249e1a0))
-* **deps:** bump crazy-max/ghaction-virustotal from 4.2.0 to 5.0.0 ([0994466](https://github.com/ptarmiganlabs/onboard.qs/commit/09944668f4dea724f6367eebec17e7ebf8468346))
-* **deps:** bump crazy-max/ghaction-virustotal from 4.2.0 to 5.0.0 ([b8e24d2](https://github.com/ptarmiganlabs/onboard.qs/commit/b8e24d2a402ab0d8e8c7cd650161bb7f96735cae))
-* **deps:** bump github/codeql-action from 4.32.4 to 4.32.5 ([ac0c0a9](https://github.com/ptarmiganlabs/onboard.qs/commit/ac0c0a92c42bdd340e1e7fc749dfc4e0007f816c))
-* **deps:** bump github/codeql-action from 4.32.5 to 4.32.6 ([325623a](https://github.com/ptarmiganlabs/onboard.qs/commit/325623a8638aef1a58d9fe6c18630053ae21253d))
-* **deps:** bump github/codeql-action from 4.32.5 to 4.32.6 ([0f19faf](https://github.com/ptarmiganlabs/onboard.qs/commit/0f19faf6af6808336176a4510e45ad7e4f416024))
-* **deps:** bump github/gh-aw from 0.51.2 to 0.52.0 ([2f4f448](https://github.com/ptarmiganlabs/onboard.qs/commit/2f4f44891dcfdc28f774b60b247d4e88b50934e1))
-* **deps:** bump github/gh-aw from 0.52.0 to 0.57.0 ([7e55d9d](https://github.com/ptarmiganlabs/onboard.qs/commit/7e55d9db5cb9e231c6a24354a94744f217f3e149))
-* **deps:** bump github/gh-aw from 0.52.0 to 0.57.0 ([744958b](https://github.com/ptarmiganlabs/onboard.qs/commit/744958b2cdb78d5f8933abcfa04ccc05af7e3c7a))
-* update nebula.js and other dependencies to latest versions ([9ff76c8](https://github.com/ptarmiganlabs/onboard.qs/commit/9ff76c89673070c24f4b371aec9a29db84d7404b))
-
+- **deps:** bump actions/github-script from 7.0.1 to 8.0.0 ([957914e](https://github.com/ptarmiganlabs/onboard.qs/commit/957914e11b2586157c1cf6ab708581bc9bb922b6))
+- **deps:** bump actions/setup-node from 6.2.0 to 6.3.0 ([28e8d0f](https://github.com/ptarmiganlabs/onboard.qs/commit/28e8d0f85b4e20af63edd3e7fdd1b7d6f421569c))
+- **deps:** bump actions/setup-node from 6.2.0 to 6.3.0 ([5567a69](https://github.com/ptarmiganlabs/onboard.qs/commit/5567a69cdb08e13a889d7d7b1f8fbadd0249e1a0))
+- **deps:** bump crazy-max/ghaction-virustotal from 4.2.0 to 5.0.0 ([0994466](https://github.com/ptarmiganlabs/onboard.qs/commit/09944668f4dea724f6367eebec17e7ebf8468346))
+- **deps:** bump crazy-max/ghaction-virustotal from 4.2.0 to 5.0.0 ([b8e24d2](https://github.com/ptarmiganlabs/onboard.qs/commit/b8e24d2a402ab0d8e8c7cd650161bb7f96735cae))
+- **deps:** bump github/codeql-action from 4.32.4 to 4.32.5 ([ac0c0a9](https://github.com/ptarmiganlabs/onboard.qs/commit/ac0c0a92c42bdd340e1e7fc749dfc4e0007f816c))
+- **deps:** bump github/codeql-action from 4.32.5 to 4.32.6 ([325623a](https://github.com/ptarmiganlabs/onboard.qs/commit/325623a8638aef1a58d9fe6c18630053ae21253d))
+- **deps:** bump github/codeql-action from 4.32.5 to 4.32.6 ([0f19faf](https://github.com/ptarmiganlabs/onboard.qs/commit/0f19faf6af6808336176a4510e45ad7e4f416024))
+- **deps:** bump github/gh-aw from 0.51.2 to 0.52.0 ([2f4f448](https://github.com/ptarmiganlabs/onboard.qs/commit/2f4f44891dcfdc28f774b60b247d4e88b50934e1))
+- **deps:** bump github/gh-aw from 0.52.0 to 0.57.0 ([7e55d9d](https://github.com/ptarmiganlabs/onboard.qs/commit/7e55d9db5cb9e231c6a24354a94744f217f3e149))
+- **deps:** bump github/gh-aw from 0.52.0 to 0.57.0 ([744958b](https://github.com/ptarmiganlabs/onboard.qs/commit/744958b2cdb78d5f8933abcfa04ccc05af7e3c7a))
+- update nebula.js and other dependencies to latest versions ([9ff76c8](https://github.com/ptarmiganlabs/onboard.qs/commit/9ff76c89673070c24f4b371aec9a29db84d7404b))
 
 ### Refactoring
 
-* scope rightClickTimer cleanup inside contextMenuHandler guard ([2422c06](https://github.com/ptarmiganlabs/onboard.qs/commit/2422c06d51bad329ce79debb81e090fe6f93ee03))
-* share a single MutationObserver across all extension instances ([4dcb116](https://github.com/ptarmiganlabs/onboard.qs/commit/4dcb11659cae176f88cae1e1062b04ac65c060c8))
+- scope rightClickTimer cleanup inside contextMenuHandler guard ([2422c06](https://github.com/ptarmiganlabs/onboard.qs/commit/2422c06d51bad329ce79debb81e090fe6f93ee03))
+- share a single MutationObserver across all extension instances ([4dcb116](https://github.com/ptarmiganlabs/onboard.qs/commit/4dcb11659cae176f88cae1e1062b04ac65c060c8))
 
 ## [1.5.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.4.0...onboard-qs-v1.5.0) (2026-03-04)
 
