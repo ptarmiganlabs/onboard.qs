@@ -48,14 +48,18 @@ export function presetVal(data, key) {
 }
 
 /**
- * Build a label string showing "Label (preset: value)" when no override is set.
+ * Return the display label for a theme property.
  *
- * @param {object} data - Property data from the property panel.
+ * Currently returns the base label unchanged. Accepts a key parameter
+ * so callers are already wired up if a "Label (preset: value)" hint
+ * is added in the future.
+ *
+ * @param {object} _data - Property data from the property panel.
  * @param {string} label - Base label text.
- * @param {string} _key - Theme property key to look up.
- * @returns {string} Label with preset hint.
+ * @param {string} _key - Theme property key (reserved for future use).
+ * @returns {string} Label text.
  */
-export function themeLabel(data, label, _key) {
+export function themeLabel(_data, label, _key) {
     return label;
 }
 

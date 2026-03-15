@@ -274,7 +274,7 @@ export function themeSection() {
                          * @returns {string} Label text.
                          */
                         label: (data) =>
-                            themeLabel(data, 'Button hex hover', 'popoverButtonHoverBgColor'),
+                            themeLabel(data, 'Button hover bg', 'popoverButtonHoverBgColor'),
                         defaultValue: toPickerObj(leanGreenPreset.popoverButtonHoverBgColor),
                     },
                     popoverFontSize: {
