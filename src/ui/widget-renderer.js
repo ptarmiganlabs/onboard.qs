@@ -25,16 +25,22 @@ import { isVisible } from '../util/visibility';
  * @param {string} [context.codePath] - Code-path name for selector lookup.
  */
 export function renderWidget(element, layout, context) {
-    const tours = (layout.tours || []).filter((t) => isVisible(t.showCondition));
+    const allTours = layout.tours || [];
+    const tours = allTours.filter((t) => isVisible(t.showCondition));
     const widgetConfig = layout.widget || {};
 
     // Resolve and apply theme CSS variables to the widget container
     const cssVars = resolveTheme(layout);
 
     if (tours.length === 0) {
+        const hintText =
+            allTours.length === 0
+                ? 'No tours configured. Switch to edit mode to add tours.'
+                : 'No visible tours. All tours are currently hidden by their show conditions.';
+
         element.innerHTML = `
             <div class="onboard-qs-widget onboard-qs-widget--empty">
-                <span class="onboard-qs-widget__hint">No tours configured. Switch to edit mode to add tours.</span>
+                <span class="onboard-qs-widget__hint">${hintText}</span>
             </div>
         `;
         return;
