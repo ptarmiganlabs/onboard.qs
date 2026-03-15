@@ -301,6 +301,40 @@ export default function ext(_galaxy) {
                              */
                             show: (data) => data.widget?.showButton !== false,
                         },
+                        buttonWidth: {
+                            ref: 'widget.buttonWidth',
+                            type: 'string',
+                            label: 'Button width (%)',
+                            description:
+                                'Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.',
+                            defaultValue: '',
+                            expression: 'optional',
+                            placeholder: 'Auto',
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
+                            show: (data) => data.widget?.showButton !== false,
+                        },
+                        buttonHeight: {
+                            ref: 'widget.buttonHeight',
+                            type: 'string',
+                            label: 'Button height (%)',
+                            description:
+                                'Height of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.',
+                            defaultValue: '',
+                            expression: 'optional',
+                            placeholder: 'Auto',
+                            /**
+                             * Determine visibility of this property panel item.
+                             *
+                             * @param {object} data - Current property data row.
+                             * @returns {boolean} True if item should be shown.
+                             */
+                            show: (data) => data.widget?.showButton !== false,
+                        },
                         hideHoverMenu: {
                             ref: 'widget.hideHoverMenu',
                             type: 'boolean',

@@ -12,6 +12,8 @@ export default {
         buttonStyle: 'primary',
         horizontalAlign: 'center',
         verticalAlign: 'center',
+        buttonWidth: '',
+        buttonHeight: '',
         hideHoverMenu: false,
         hideContextMenu: false,
     },

@@ -96,6 +96,8 @@ Platform detection is automatic — the extension identifies the environment and
 | Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                          |
 | Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                      |
 | Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                      |
+| Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object (expression-enabled)       |
+| Button height (%)    | String   | Auto         | Height of the button as a percentage (1–100) of the extension object (expression-enabled)      |
 | Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting |
 | Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting    |
 
