@@ -786,6 +786,15 @@ export default function ext(_galaxy) {
                                         'A descriptive name for this tour. Shown in the tour launch menu.',
                                     defaultValue: 'New Tour',
                                 },
+                                showCondition: {
+                                    ref: 'showCondition',
+                                    type: 'string',
+                                    label: 'Show condition',
+                                    description:
+                                        'Controls visibility of this tour. Use an expression that evaluates to 1 (show) or 0 (hide). When hidden, all steps of this tour are also hidden.',
+                                    defaultValue: '1',
+                                    expression: 'optional',
+                                },
                                 autoStart: {
                                     ref: 'autoStart',
                                     type: 'boolean',
@@ -930,6 +939,15 @@ export default function ext(_galaxy) {
                                     addTranslation: 'Add Step',
                                     itemTitleRef: 'popoverTitle',
                                     items: {
+                                        showCondition: {
+                                            ref: 'showCondition',
+                                            type: 'string',
+                                            label: 'Show condition',
+                                            description:
+                                                'Controls visibility of this step. Use an expression that evaluates to 1 (show) or 0 (hide).',
+                                            defaultValue: '1',
+                                            expression: 'optional',
+                                        },
                                         selectorType: {
                                             ref: 'selectorType',
                                             type: 'string',

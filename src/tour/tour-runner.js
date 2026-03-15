@@ -10,6 +10,23 @@ import { markTourSeen } from './tour-storage';
  */
 
 /**
+ * Determine whether a step should be shown based on its showCondition value.
+ *
+ * Returns true (visible) when the value is undefined, null, or any truthy value
+ * except the string '0'. Returns false (hidden) when the value is '0', 0, or
+ * an empty string — following Qlik expression conventions.
+ *
+ * @param {string|number|undefined|null} condition - Resolved showCondition value.
+ * @returns {boolean} True if the step should be visible.
+ */
+function isStepVisible(condition) {
+    if (condition === undefined || condition === null) return true;
+    if (typeof condition === 'number') return condition !== 0;
+    if (typeof condition === 'string') return condition !== '0' && condition !== '';
+    return Boolean(condition);
+}
+
+/**
  * Build driver.js steps from a tour configuration.
  *
  * @param {object} tourConfig - A single tour from the layout's tours array.
@@ -24,6 +41,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
 
     return (
         tourConfig.steps
+            .filter((step) => isStepVisible(step.showCondition))
             .filter((step) => {
                 if (step.selectorType === 'none') return true;
                 if (step.selectorType === 'css' && step.customCssSelector) return true;

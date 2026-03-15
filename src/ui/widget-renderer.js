@@ -12,6 +12,23 @@ import { resolveTheme, applyThemeToElement } from '../theme/resolve';
  */
 
 /**
+ * Determine whether a tour or step should be shown based on its showCondition value.
+ *
+ * Returns true (visible) when the value is undefined, null, or any truthy value
+ * except the string '0'. Returns false (hidden) when the value is '0', 0, or
+ * an empty string — following Qlik expression conventions.
+ *
+ * @param {string|number|undefined|null} condition - Resolved showCondition value.
+ * @returns {boolean} True if the item should be visible.
+ */
+function isVisible(condition) {
+    if (condition === undefined || condition === null) return true;
+    if (typeof condition === 'number') return condition !== 0;
+    if (typeof condition === 'string') return condition !== '0' && condition !== '';
+    return Boolean(condition);
+}
+
+/**
  * Render the widget into the extension's DOM element.
  *
  * @param {HTMLElement} element - The extension's container element.
@@ -24,7 +41,7 @@ import { resolveTheme, applyThemeToElement } from '../theme/resolve';
  * @param {string} [context.codePath] - Code-path name for selector lookup.
  */
 export function renderWidget(element, layout, context) {
-    const tours = layout.tours || [];
+    const tours = (layout.tours || []).filter((t) => isVisible(t.showCondition));
     const widgetConfig = layout.widget || {};
 
     // Resolve and apply theme CSS variables to the widget container
