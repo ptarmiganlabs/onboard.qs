@@ -783,6 +783,7 @@ export default function ext(_galaxy) {
                                             type: 'items',
                                             label: 'Tour Settings',
                                             items: {
+                                                // Note: This showCondition is for the entire tour, while each step also has its own showCondition for finer-grained control.
                                                 showCondition: {
                                                     ref: 'showCondition',
                                                     type: 'string',
