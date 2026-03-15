@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+- restructure theme and styling sections into subsections in property panel
+
 ## [1.6.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.5.0...onboard-qs-v1.6.0) (2026-03-14)
 
 ### Features
@@ -7,7 +13,6 @@
 - add extension properties for hiding hover menu and context menu ([ea80a2c](https://github.com/ptarmiganlabs/onboard.qs/commit/ea80a2c905145566c0e535d6c5411de9c786a771))
 - Add properties for showing/hiding context and hover menus ([a30702d](https://github.com/ptarmiganlabs/onboard.qs/commit/a30702d703777181e3082155acc8a69e0c008826)), closes [#74](https://github.com/ptarmiganlabs/onboard.qs/issues/74)
 - Include a default onboarding tour when extension added to app sheet ([5e902af](https://github.com/ptarmiganlabs/onboard.qs/commit/5e902aff21012cca483f6be7152c936c042b7279))
-- restructure theme and styling sections into subsections in property panel ([469d467](https://github.com/ptarmiganlabs/onboard.qs/commit/469d4672681bc2f56fe23f53ad944cdef3c537d9))
 
 ### Bug Fixes
 
