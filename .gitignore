@@ -4,6 +4,7 @@ onboard-qs-ext/
 *.zip
 coverage/
 .DS_Store
+bundle-analysis.html
 
 
 # Logs
