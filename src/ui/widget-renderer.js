@@ -287,11 +287,12 @@ export function renderEditPlaceholder(element, layout) {
 }
 
 /**
- * Open a modal "About" dialog with extension info, version, and links.
+ * Open a modal "About" dialog with extension info, version, build date, and links.
  *
  * @param {string} version - Extension version string.
+ * @param {string} buildDate - Human-readable build date string.
  */
-export function openAboutModal(version) {
+export function openAboutModal(version, buildDate) {
     // Remove any existing about modal
     const existing = document.querySelector('.onboard-qs-about-overlay');
     if (existing) existing.remove();
@@ -304,6 +305,7 @@ export function openAboutModal(version) {
                 <span class="onboard-qs-about-modal__icon">&#127891;</span>
                 <span class="onboard-qs-about-modal__title">Onboard.qs</span>
                 <span class="onboard-qs-about-modal__version">v${escapeHtml(version)}</span>
+                <p class="onboard-qs-about-modal__build-date">Built ${escapeHtml(buildDate)}</p>
             </div>
             <p class="onboard-qs-about-modal__tagline">
                 Interactive onboarding tours for Qlik Sense apps.
