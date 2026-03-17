@@ -38,7 +38,7 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 ### Prerequisites
 
 - **Qlik Sense Cloud**, or
-- **Qlik Sense Enterprise on Windows** (client-managed) — February 2020 or later
+- **Qlik Sense Enterprise on Windows** (client-managed) — November 2025 or later. May work on older versions but not tested - your mileage may vary.
 
 ### Download
 
