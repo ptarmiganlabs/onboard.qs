@@ -1,5 +1,9 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const { buildDateString } = require('./build-date.cjs');
 
 /** Bundle metadata injected into the .qext file. */
 const BUNDLE_METADATA = {
@@ -19,8 +23,11 @@ async function main() {
     const pkg = JSON.parse(await readFile('package.json', 'utf-8'));
     const buildType = process.env.BUILD_TYPE || 'development';
     const version = pkg.version;
+    const buildDate = buildDateString();
 
-    console.log(`Post-build: Using BUILD_TYPE=${buildType}, VERSION=${version}`);
+    console.log(
+        `Post-build: Using BUILD_TYPE=${buildType}, VERSION=${version}, BUILD_DATE=${buildDate}`
+    );
 
     const targetDirs = ['dist', 'onboard-qs-ext'];
 
@@ -35,7 +42,8 @@ async function main() {
 
                     const newContent = content
                         .replace(/__BUILD_TYPE__/g, JSON.stringify(buildType))
-                        .replace(/__PACKAGE_VERSION__/g, JSON.stringify(version));
+                        .replace(/__PACKAGE_VERSION__/g, JSON.stringify(version))
+                        .replace(/__BUILD_DATE__/g, JSON.stringify(buildDate));
 
                     if (content !== newContent) {
                         await writeFile(filePath, newContent);

@@ -15,7 +15,7 @@ import { openTourEditor } from './ui/tour-editor';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
-import logger, { PACKAGE_VERSION } from './util/logger';
+import logger, { PACKAGE_VERSION, BUILD_DATE } from './util/logger';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
@@ -220,7 +220,9 @@ export default function supernova(galaxy) {
                     // Attach "About" button handler
                     const aboutBtn = element.querySelector('.onboard-qs-about-btn');
                     if (aboutBtn) {
-                        aboutBtn.addEventListener('click', () => openAboutModal(PACKAGE_VERSION));
+                        aboutBtn.addEventListener('click', () =>
+                            openAboutModal(PACKAGE_VERSION, BUILD_DATE)
+                        );
                     }
 
                     // Attach "Edit Tours" button handler

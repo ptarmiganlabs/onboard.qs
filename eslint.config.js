@@ -28,6 +28,7 @@ export default [
                 ...globals.node,
                 __BUILD_TYPE__: 'readonly',
                 __PACKAGE_VERSION__: 'readonly',
+                __BUILD_DATE__: 'readonly',
                 define: 'readonly',
             },
         },

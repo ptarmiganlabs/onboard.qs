@@ -1,9 +1,9 @@
-import { PACKAGE_VERSION } from '../util/logger';
+import { PACKAGE_VERSION, BUILD_DATE } from '../util/logger';
 
 /**
  * About / Support property panel section.
  *
- * Displays version info, project description, and links to
+ * Displays version info, build date, project description, and links to
  * documentation, issue tracker, and Ptarmigan Labs website.
  *
  * @returns {object} Property panel section definition.
@@ -16,6 +16,10 @@ export function aboutSection() {
             versionInfo: {
                 component: 'text',
                 label: `Onboard.qs v${PACKAGE_VERSION}`,
+            },
+            buildDate: {
+                component: 'text',
+                label: `Built ${BUILD_DATE}`,
             },
             description: {
                 component: 'text',
