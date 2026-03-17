@@ -305,11 +305,11 @@ export function openAboutModal(version, buildDate) {
                 <span class="onboard-qs-about-modal__icon">&#127891;</span>
                 <span class="onboard-qs-about-modal__title">Onboard.qs</span>
                 <span class="onboard-qs-about-modal__version">v${escapeHtml(version)}</span>
+                <p class="onboard-qs-about-modal__build-date">Built ${escapeHtml(buildDate)}</p>
             </div>
             <p class="onboard-qs-about-modal__tagline">
                 Interactive onboarding tours for Qlik Sense apps.
             </p>
-            <p class="onboard-qs-about-modal__build-date">Built ${escapeHtml(buildDate)}</p>
             <div class="onboard-qs-about-modal__links">
                 <a href="https://github.com/ptarmiganlabs/onboard.qs" target="_blank" rel="noopener noreferrer">
                     <strong>Documentation &amp; Source Code</strong>
