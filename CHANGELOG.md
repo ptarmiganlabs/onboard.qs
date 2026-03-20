@@ -2,27 +2,24 @@
 
 ## [1.7.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.6.0...onboard-qs-v1.7.0) (2026-03-15)
 
-
 ### Features
 
-* add button width and height (%) properties for flexible sizing ([2872bce](https://github.com/ptarmiganlabs/onboard.qs/commit/2872bcefcbba02c78b00fc8901b614c691721005))
-* add button width/height (%) properties for flexible sizing ([ce304c8](https://github.com/ptarmiganlabs/onboard.qs/commit/ce304c80af41970439d8a712f201191f41e606d3))
-* add conditional, independent show/hide of tours and steps ([2cbea49](https://github.com/ptarmiganlabs/onboard.qs/commit/2cbea49032ade24ad6afeae502de1da2d0c3ebfb))
-* add expression: 'optional' to all string and integer property panel fields ([9890106](https://github.com/ptarmiganlabs/onboard.qs/commit/98901066b7186fa92f389a2a30aa846ffb1a7911))
-* enable expression evaluation on all string and integer property panel fields ([b84946f](https://github.com/ptarmiganlabs/onboard.qs/commit/b84946ff07d6e08e71336ea5b1222fe595b3853a))
-* enhance button sizing with width, height, and fill options ([b0637cc](https://github.com/ptarmiganlabs/onboard.qs/commit/b0637cc5db010fa6cf970854852091963bb7ae65))
-
+- add button width and height (%) properties for flexible sizing ([2872bce](https://github.com/ptarmiganlabs/onboard.qs/commit/2872bcefcbba02c78b00fc8901b614c691721005))
+- add button width/height (%) properties for flexible sizing ([ce304c8](https://github.com/ptarmiganlabs/onboard.qs/commit/ce304c80af41970439d8a712f201191f41e606d3))
+- add conditional, independent show/hide of tours and steps ([2cbea49](https://github.com/ptarmiganlabs/onboard.qs/commit/2cbea49032ade24ad6afeae502de1da2d0c3ebfb))
+- add expression: 'optional' to all string and integer property panel fields ([9890106](https://github.com/ptarmiganlabs/onboard.qs/commit/98901066b7186fa92f389a2a30aa846ffb1a7911))
+- enable expression evaluation on all string and integer property panel fields ([b84946f](https://github.com/ptarmiganlabs/onboard.qs/commit/b84946ff07d6e08e71336ea5b1222fe595b3853a))
+- enhance button sizing with width, height, and fill options ([b0637cc](https://github.com/ptarmiganlabs/onboard.qs/commit/b0637cc5db010fa6cf970854852091963bb7ae65))
 
 ### Bug Fixes
 
-* address code review - fix label typo and update JSDoc ([3d5e7b8](https://github.com/ptarmiganlabs/onboard.qs/commit/3d5e7b80e18d82188a44d7c9db05785e620828d1))
-* show only step details when a step is selected in tour editor ([0fbdf01](https://github.com/ptarmiganlabs/onboard.qs/commit/0fbdf017b38f2281195c2e8117239d163a7c93a5)), closes [#72](https://github.com/ptarmiganlabs/onboard.qs/issues/72)
-
+- address code review - fix label typo and update JSDoc ([3d5e7b8](https://github.com/ptarmiganlabs/onboard.qs/commit/3d5e7b80e18d82188a44d7c9db05785e620828d1))
+- show only step details when a step is selected in tour editor ([0fbdf01](https://github.com/ptarmiganlabs/onboard.qs/commit/0fbdf017b38f2281195c2e8117239d163a7c93a5)), closes [#72](https://github.com/ptarmiganlabs/onboard.qs/issues/72)
 
 ### Refactoring
 
-* simplify theme label strings to avoid wrapping in the property panel ([1301ebe](https://github.com/ptarmiganlabs/onboard.qs/commit/1301ebef4bfbad37493f94352be1e6976ec8f4b1))
-* split ext.js into modular files under src/ext/ ([f20eff3](https://github.com/ptarmiganlabs/onboard.qs/commit/f20eff37a8a30fe2d2167678c0379176782a7277))
+- simplify theme label strings to avoid wrapping in the property panel ([1301ebe](https://github.com/ptarmiganlabs/onboard.qs/commit/1301ebef4bfbad37493f94352be1e6976ec8f4b1))
+- split ext.js into modular files under src/ext/ ([f20eff3](https://github.com/ptarmiganlabs/onboard.qs/commit/f20eff37a8a30fe2d2167678c0379176782a7277))
 
 ## [Unreleased]
 
