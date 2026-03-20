@@ -348,6 +348,61 @@ export function toursSection() {
                                         addTranslation: 'Add Step',
                                         itemTitleRef: 'popoverTitle',
                                         items: {
+                                            selectorType: {
+                                                ref: 'selectorType',
+                                                type: 'string',
+                                                label: 'Target type',
+                                                description:
+                                                    'How the step finds its target: a Qlik object, a CSS selector, or no target (standalone dialog).',
+                                                component: 'dropdown',
+                                                defaultValue: 'object',
+                                                options: [
+                                                    {
+                                                        value: 'object',
+                                                        label: 'Sheet Object',
+                                                    },
+                                                    {
+                                                        value: 'css',
+                                                        label: 'Custom CSS Selector',
+                                                    },
+                                                    {
+                                                        value: 'none',
+                                                        label: 'Standalone Dialog (no target)',
+                                                    },
+                                                ],
+                                            },
+                                            targetObjectId: {
+                                                ref: 'targetObjectId',
+                                                type: 'string',
+                                                label: 'Target object',
+                                                component: 'dropdown',
+                                                options: getObjectList,
+                                                /**
+                                                 * Determine visibility of this property panel item.
+                                                 *
+                                                 * @param {object} data - Current property data row.
+                                                 * @returns {boolean} True if item should be shown.
+                                                 */
+                                                show: (data) =>
+                                                    !data.selectorType ||
+                                                    data.selectorType === 'object',
+                                            },
+                                            customCssSelector: {
+                                                ref: 'customCssSelector',
+                                                type: 'string',
+                                                label: 'CSS selector',
+                                                description:
+                                                    'A CSS selector (e.g. .my-class or #my-id) that identifies the DOM element to highlight.',
+                                                defaultValue: '',
+                                                expression: 'optional',
+                                                /**
+                                                 * Determine visibility of this property panel item.
+                                                 *
+                                                 * @param {object} data - Current property data row.
+                                                 * @returns {boolean} True if item should be shown.
+                                                 */
+                                                show: (data) => data.selectorType === 'css',
+                                            },
                                             popoverTitle: {
                                                 ref: 'popoverTitle',
                                                 type: 'string',
@@ -381,62 +436,6 @@ export function toursSection() {
                                                                     'Controls visibility of this step. Use an expression that evaluates to 1 (show) or 0 (hide).',
                                                                 defaultValue: '',
                                                                 expression: 'optional',
-                                                            },
-                                                            selectorType: {
-                                                                ref: 'selectorType',
-                                                                type: 'string',
-                                                                label: 'Target type',
-                                                                description:
-                                                                    'How the step finds its target: a Qlik object, a CSS selector, or no target (standalone dialog).',
-                                                                component: 'dropdown',
-                                                                defaultValue: 'object',
-                                                                options: [
-                                                                    {
-                                                                        value: 'object',
-                                                                        label: 'Sheet Object',
-                                                                    },
-                                                                    {
-                                                                        value: 'css',
-                                                                        label: 'Custom CSS Selector',
-                                                                    },
-                                                                    {
-                                                                        value: 'none',
-                                                                        label: 'Standalone Dialog (no target)',
-                                                                    },
-                                                                ],
-                                                            },
-                                                            targetObjectId: {
-                                                                ref: 'targetObjectId',
-                                                                type: 'string',
-                                                                label: 'Target object',
-                                                                component: 'dropdown',
-                                                                options: getObjectList,
-                                                                /**
-                                                                 * Determine visibility of this property panel item.
-                                                                 *
-                                                                 * @param {object} data - Current property data row.
-                                                                 * @returns {boolean} True if item should be shown.
-                                                                 */
-                                                                show: (data) =>
-                                                                    !data.selectorType ||
-                                                                    data.selectorType === 'object',
-                                                            },
-                                                            customCssSelector: {
-                                                                ref: 'customCssSelector',
-                                                                type: 'string',
-                                                                label: 'CSS selector',
-                                                                description:
-                                                                    'A CSS selector (e.g. .my-class or #my-id) that identifies the DOM element to highlight.',
-                                                                defaultValue: '',
-                                                                expression: 'optional',
-                                                                /**
-                                                                 * Determine visibility of this property panel item.
-                                                                 *
-                                                                 * @param {object} data - Current property data row.
-                                                                 * @returns {boolean} True if item should be shown.
-                                                                 */
-                                                                show: (data) =>
-                                                                    data.selectorType === 'css',
                                                             },
                                                         },
                                                     },
