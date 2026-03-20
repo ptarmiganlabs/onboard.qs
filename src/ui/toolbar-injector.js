@@ -52,6 +52,32 @@ let lastConfig = null;
  */
 let pendingWaitCancel = null;
 
+/**
+ * Original inline styles of the toolbar anchor before we mutated them.
+ * Stored so destroyToolbarButton() can restore the toolbar's original width.
+ *
+ * @type {{ width: string, minWidth: string } | null}
+ */
+let savedAnchorStyles = null;
+
+/**
+ * Interval timer that checks whether the toolbar anchor is still in the DOM.
+ * Acts as a lightweight fallback for SPA navigation where the entire anchor
+ * element is removed (the narrow MutationObserver on the anchor would not
+ * fire in that case).
+ *
+ * @type {ReturnType<typeof setInterval> | null}
+ */
+let anchorCheckTimer = null;
+
+/**
+ * Reference to the active outside-click handler for the toolbar dropdown menu.
+ * Stored at module scope so it can be removed from all close paths.
+ *
+ * @type {((e: Event) => void) | null}
+ */
+let activeMenuCloseHandler = null;
+
 // ---------------------------------------------------------------------------
 // Multi-instance tour registry
 // ---------------------------------------------------------------------------
@@ -245,6 +271,12 @@ function injectToolbarButton(adapter, platform, appId) {
 
     // Client-managed: ensure the anchor has enough width
     if (platform.type === 'client-managed') {
+        if (!savedAnchorStyles) {
+            savedAnchorStyles = {
+                width: anchor.style.width,
+                minWidth: anchor.style.minWidth,
+            };
+        }
         anchor.style.width = 'auto';
         anchor.style.minWidth = '300px';
     }
@@ -272,13 +304,29 @@ export function destroyToolbarButton({ clearConfig = false } = {}) {
         removalObserver.disconnect();
         removalObserver = null;
     }
+    if (anchorCheckTimer) {
+        clearInterval(anchorCheckTimer);
+        anchorCheckTimer = null;
+    }
 
     const container = document.getElementById(CONTAINER_ID);
-    if (container) container.remove();
+    if (container) {
+        // Restore original anchor styles before removing the button
+        if (savedAnchorStyles) {
+            const anchor = container.parentElement;
+            if (anchor) {
+                anchor.style.width = savedAnchorStyles.width;
+                anchor.style.minWidth = savedAnchorStyles.minWidth;
+            }
+            savedAnchorStyles = null;
+        }
+        container.remove();
+    }
 
-    // Also remove any floating menu
+    // Also remove any floating menu and its close handler
     const menu = document.getElementById('oqs-toolbar-menu');
     if (menu) menu.remove();
+    removeMenuCloseHandler();
 
     logger.debug('Toolbar button destroyed', clearConfig ? '(config cleared)' : '(config kept)');
 }
@@ -367,12 +415,23 @@ function watchForRemoval() {
         removalObserver.disconnect();
         removalObserver = null;
     }
+    if (anchorCheckTimer) {
+        clearInterval(anchorCheckTimer);
+        anchorCheckTimer = null;
+    }
 
     if (typeof MutationObserver === 'undefined') return;
 
+    const container = document.getElementById(CONTAINER_ID);
+    if (!container || !container.parentElement) return;
+
+    const anchor = container.parentElement;
+
+    // Observe the toolbar anchor only — fires when its direct children
+    // are added/removed.  Much narrower than document.documentElement.
     removalObserver = new MutationObserver(() => {
         if (!document.getElementById(CONTAINER_ID) && lastConfig) {
-            logger.debug('Toolbar button removed from DOM (SPA navigation?). Re-injecting…');
+            logger.debug('Toolbar button removed from DOM. Re-injecting…');
             setTimeout(() => {
                 if (lastConfig) {
                     injectToolbarButton(lastConfig.adapter, lastConfig.platform, lastConfig.appId);
@@ -380,8 +439,33 @@ function watchForRemoval() {
             }, 300);
         }
     });
+    removalObserver.observe(anchor, { childList: true });
 
-    removalObserver.observe(document.documentElement, { childList: true, subtree: true });
+    // Fallback: periodically check if the anchor itself was removed from
+    // the DOM (e.g. full SPA navigation that replaces the toolbar).  A
+    // 2 s interval is far cheaper than a document-wide subtree observer.
+    anchorCheckTimer = setInterval(() => {
+        if (!document.contains(anchor)) {
+            clearInterval(anchorCheckTimer);
+            anchorCheckTimer = null;
+            if (removalObserver) {
+                removalObserver.disconnect();
+                removalObserver = null;
+            }
+            if (lastConfig) {
+                logger.debug('Toolbar anchor removed from DOM (SPA navigation?). Re-injecting…');
+                setTimeout(() => {
+                    if (lastConfig) {
+                        injectToolbarButton(
+                            lastConfig.adapter,
+                            lastConfig.platform,
+                            lastConfig.appId
+                        );
+                    }
+                }, 300);
+            }
+        }
+    }, 2000);
 }
 
 /**
@@ -398,6 +482,7 @@ function showToolbarMenu(trigger, tours, context, cssVars) {
     if (existing) {
         existing.remove();
         trigger.setAttribute('aria-expanded', 'false');
+        removeMenuCloseHandler();
         return;
     }
 
@@ -423,6 +508,7 @@ function showToolbarMenu(trigger, tours, context, cssVars) {
         item.addEventListener('click', () => {
             menu.remove();
             trigger.setAttribute('aria-expanded', 'false');
+            removeMenuCloseHandler();
             startTour(tour, context);
         });
         menu.appendChild(item);
@@ -438,15 +524,29 @@ function showToolbarMenu(trigger, tours, context, cssVars) {
      * @param {Event} e - Click event.
      */
     const closeHandler = (e) => {
-        if (!menu.contains(e.target) && e.target !== trigger) {
+        if (!menu.contains(e.target) && !trigger.contains(e.target)) {
             menu.remove();
             trigger.setAttribute('aria-expanded', 'false');
-            document.removeEventListener('click', closeHandler, true);
+            removeMenuCloseHandler();
         }
     };
+
+    // Remove any stale handler before registering a new one
+    removeMenuCloseHandler();
+    activeMenuCloseHandler = closeHandler;
     setTimeout(() => {
         document.addEventListener('click', closeHandler, true);
     }, 0);
+}
+
+/**
+ * Remove the active outside-click handler for the toolbar menu, if any.
+ */
+function removeMenuCloseHandler() {
+    if (activeMenuCloseHandler) {
+        document.removeEventListener('click', activeMenuCloseHandler, true);
+        activeMenuCloseHandler = null;
+    }
 }
 
 /**
