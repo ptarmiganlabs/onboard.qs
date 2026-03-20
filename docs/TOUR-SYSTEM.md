@@ -311,7 +311,7 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 | double newline      | paragraph break |
 | single newline      | `<br>`          |
 
-The converter is intentionally minimal (~112 lines) to keep the bundle small.
+The converter is intentionally minimal (~112 lines) to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
 
 ### Markdown editing features
 

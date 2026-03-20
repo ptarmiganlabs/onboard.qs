@@ -17,6 +17,8 @@
  * For full Markdown, consider replacing with `marked` or `snarkdown`.
  */
 
+import DOMPurify from 'dompurify';
+
 /**
  * Convert a Markdown string to HTML.
  *
@@ -107,5 +109,7 @@ export function markdownToHtml(md) {
     text = text.replace(/(<\/(?:ul|ol|blockquote|h[3-6])>)<\/p>/g, '$1');
     text = text.replace(/<p>(<hr>)<\/p>/g, '$1');
 
-    return text.trim();
+    return DOMPurify.sanitize(text.trim(), {
+        ADD_ATTR: ['target', 'rel', 'style'],
+    });
 }
