@@ -17,6 +17,7 @@ import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platfo
 import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
 import logger, { PACKAGE_VERSION, BUILD_DATE } from './util/logger';
+import { extensionState } from './util/extension-state';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
@@ -101,6 +102,9 @@ export default function supernova(galaxy) {
             const options = useOptions();
             const layoutRef = useRef(layout);
             const initRef = useRef(false);
+
+            // Store model reference so utility modules can persist property changes
+            extensionState.model = model;
 
             // Platform detection: async, resolved once then cached in state.
             // useState (not useRef) ensures a re-render when detection completes.
@@ -243,7 +247,7 @@ export default function supernova(galaxy) {
                             // Ensure adapter is available before opening editor
                             const currentAdapter = adapter || getPlatformAdapter();
                             const sheetObjects = await currentAdapter.getSheetObjects(app);
-                            openTourEditor({
+                            await openTourEditor({
                                 layout: layoutRef.current,
                                 model,
                                 app,

@@ -311,7 +311,29 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 | double newline      | paragraph break |
 | single newline      | `<br>`          |
 
-The converter is intentionally minimal (~112 lines) to keep the bundle small.
+The converter is intentionally minimal (~112 lines) to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
+
+### Markdown editing features
+
+All Markdown-editable textareas (in the tour editor and the standalone Markdown editor dialog) include:
+
+- **Tabbed Write / Preview** — switch between editing and a live HTML preview
+- **Formatting toolbar** — buttons for Bold, Italic, Code, Link, Heading (H3/H4), Bullet list, Numbered list, Blockquote, and Horizontal rule
+- **Keyboard shortcuts** — GitHub-style shortcuts (Ctrl on Windows/Linux, Cmd on macOS):
+
+| Shortcut             | With selection        | Without selection           |
+| -------------------- | --------------------- | --------------------------- |
+| Ctrl/Cmd + B         | `**selected**`        | `**bold**` (placeholder)    |
+| Ctrl/Cmd + I         | `*selected*`          | `*italic*` (placeholder)    |
+| Ctrl/Cmd + E         | `` `selected` ``      | `` `code` `` (placeholder)  |
+| Ctrl/Cmd + K         | `[selected](url)`     | `[text](url)` (placeholder) |
+| Ctrl/Cmd + Shift + 7 | Toggle ordered list   | Toggle ordered list         |
+| Ctrl/Cmd + Shift + 8 | Toggle unordered list | Toggle unordered list       |
+| Ctrl/Cmd + Shift + . | Toggle blockquote     | Toggle blockquote           |
+
+Line-level shortcuts (lists, blockquotes) support toggle behavior — pressing again removes the prefix. They also handle multi-line selections correctly.
+
+The property panel also includes an **"Edit in Markdown editor"** button next to the Popover Description field, which opens a larger modal editor with the same features.
 
 ## driver.js configuration
 

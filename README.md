@@ -25,7 +25,7 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Toolbar button** — optionally inject a "Start Tour" button into the Qlik Sense app toolbar (top-right area). Coexists with [HelpButton.qs](https://github.com/ptarmiganlabs/help-button.qs) without visual overlap. The in-sheet widget can be hidden when the toolbar button is the only trigger.
 - **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes. Great for sharing tours across apps or backing up configurations.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
-- **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is [driver.js](https://driverjs.com/) (~5 KB gzip).
+- **Lightweight** — small footprint with only two runtime dependencies: [driver.js](https://driverjs.com/) (~5 KB gzip) for tour rendering and [DOMPurify](https://github.com/cure53/DOMPurify) (~7 KB gzip) for HTML sanitisation.
 
 |                                                                                            |                                                                                                               |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
