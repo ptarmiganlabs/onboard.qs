@@ -1156,3 +1156,93 @@
 .onboard-qs-no-hover-menu [class*='ActionsToolbar'] {
     display: none !important;
 }
+
+/* ========================================================================
+   Toolbar Button — injected into the Qlik Sense app toolbar
+   ======================================================================== */
+
+.oqs-toolbar-container {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 4px;
+    vertical-align: middle;
+}
+
+.oqs-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border: 1px solid var(--oqs-tb-border, #009845);
+    border-radius: 4px;
+    background: var(--oqs-tb-bg, #009845);
+    color: var(--oqs-tb-text, #fff);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.4;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.oqs-toolbar-btn:hover {
+    background: var(--oqs-tb-bg-hover, #007a38);
+}
+
+.oqs-toolbar-btn__icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.oqs-toolbar-btn__icon svg {
+    display: block;
+}
+
+.oqs-toolbar-btn__label {
+    display: inline;
+}
+
+.oqs-toolbar-btn__caret {
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+/* --- Toolbar dropdown menu --- */
+
+.oqs-toolbar-menu {
+    position: fixed;
+    z-index: 10000;
+    min-width: 180px;
+    background: var(--oqs-menu-bg, #fff);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px 0;
+    font-family: 'QlikView Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.oqs-toolbar-menu__item {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--oqs-menu-text, #333);
+    font-family: inherit;
+}
+
+.oqs-toolbar-menu__item:hover {
+    background: var(--oqs-menu-hover-bg, #f0f0f0);
+}
+
+/* --- Hidden widget — hides the extension grid cell in analysis mode --- */
+
+.oqs-hidden-widget {
+    display: none !important;
+}

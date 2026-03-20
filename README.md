@@ -22,6 +22,7 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 - **Theme presets & color pickers** — choose from four built-in presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold) or override every color individually. Font sizes, border radii, font weight, and font family are all configurable.
 - **Configurable appearance** — button label, style (primary/secondary/minimal/outlined/pill), horizontal & vertical alignment, progress indicator, keyboard navigation, overlay colour, stage padding/radius, popover button text.
 - **Hide hover & context menus** — per-object toggles to hide the Qlik Sense hover menu (three-dot / expand) and right-click context menu, overriding app-level settings.
+- **Toolbar button** — optionally inject a "Start Tour" button into the Qlik Sense app toolbar (top-right area). Coexists with [HelpButton.qs](https://github.com/ptarmiganlabs/help-button.qs) without visual overlap. The in-sheet widget can be hidden when the toolbar button is the only trigger.
 - **Tour import / export** — export all tours (plus theme and widget settings) to a JSON file, and import them back with three merge modes. Great for sharing tours across apps or backing up configurations.
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
 - **Lightweight** — production build is ~40 KB zipped. Only runtime dependency is [driver.js](https://driverjs.com/) (~5 KB gzip).
@@ -85,6 +86,26 @@ Platform detection is automatic — the extension identifies the environment and
 
 ---
 
+## Toolbar Coexistence with HelpButton.qs
+
+Onboard.qs is designed to work alongside [HelpButton.qs](https://github.com/ptarmiganlabs/help-button.qs) when both extensions inject buttons into the Qlik Sense app toolbar.
+
+### Button ordering
+
+When both extensions are present on a sheet:
+
+1. **HelpButton.qs** always occupies the **leftmost** position (inserted as `firstChild` of the toolbar anchor).
+2. **Onboard.qs** detects the HelpButton container (`#hbqs-container`) and automatically positions its "Start Tour" button **immediately after** the Help button.
+3. If HelpButton.qs is **not** present, Onboard.qs takes the leftmost position instead.
+
+This ordering is stable regardless of which extension was added to the sheet first — HelpButton.qs always takes `firstChild` and Onboard.qs always checks for it before deciding where to insert.
+
+### Multiple instances on the same sheet
+
+It is valid to place several Onboard.qs extension objects on the same sheet (e.g. different objects defining different tours). All visible tours are **merged** into a single toolbar button / dropdown. Duplicate tours (same tour ID or name) are shown only once. When an object is removed or its "Show toolbar button" toggle is turned off, its tours are unregistered and the button rebuilds from the remaining objects.
+
+---
+
 ## Configuration Reference
 
 ### Widget Appearance
@@ -101,6 +122,9 @@ Platform detection is automatic — the extension identifies the environment and
 | Fill entire widget   | Boolean  | `false`      | Expand the button to cover the entire extension object area edge-to-edge, removing all internal spacing and border radius               |
 | Hide hover menu      | Boolean  | `false`      | Hide the object hover menu (three-dot menu and expand button). Overrides the app-level setting                                          |
 | Hide context menu    | Boolean  | `false`      | Hide the right-click context menu on this extension object. Overrides the app-level setting                                             |
+| Show toolbar button  | Boolean  | `false`      | Inject a "Start Tour" button into the Qlik Sense app toolbar (top-right area)                                                           |
+| Toolbar button text  | String   | `Start Tour` | Label on the toolbar button (expression-enabled). Only visible when toolbar button is enabled                                           |
+| Hide sheet widget    | Boolean  | `false`      | Completely hide the extension object on the sheet in analysis mode. Only visible when toolbar button is enabled                         |
 
 > **Note on Button Sizing**: By default, the button sizes itself to its contents. You can use **Button width (%)** and **Button height (%)** to set a relative size within the available space. If you want the button to completely fill the Qlik Sense object area (edge-to-edge), enable **Fill entire widget**. When "Fill" is enabled, the alignment and width/height percentage properties are ignored.
 
