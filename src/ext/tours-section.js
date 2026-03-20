@@ -348,6 +348,24 @@ export function toursSection() {
                                         addTranslation: 'Add Step',
                                         itemTitleRef: 'popoverTitle',
                                         items: {
+                                            popoverTitle: {
+                                                ref: 'popoverTitle',
+                                                type: 'string',
+                                                label: 'Popover title',
+                                                description:
+                                                    'Bold heading displayed at the top of the tour step popover.',
+                                                defaultValue: '',
+                                                expression: 'optional',
+                                            },
+                                            popoverDescription: {
+                                                ref: 'popoverDescription',
+                                                type: 'string',
+                                                label: 'Popover description',
+                                                description:
+                                                    'Body text of the popover. Supports Markdown and raw HTML.',
+                                                defaultValue: '',
+                                                expression: 'optional',
+                                            },
                                             stepGroups: {
                                                 component: 'expandable-items',
                                                 items: {
@@ -419,30 +437,6 @@ export function toursSection() {
                                                                  */
                                                                 show: (data) =>
                                                                     data.selectorType === 'css',
-                                                            },
-                                                        },
-                                                    },
-                                                    stepContentGroup: {
-                                                        type: 'items',
-                                                        label: 'Step Content',
-                                                        items: {
-                                                            popoverTitle: {
-                                                                ref: 'popoverTitle',
-                                                                type: 'string',
-                                                                label: 'Popover title',
-                                                                description:
-                                                                    'Bold heading displayed at the top of the tour step popover.',
-                                                                defaultValue: '',
-                                                                expression: 'optional',
-                                                            },
-                                                            popoverDescription: {
-                                                                ref: 'popoverDescription',
-                                                                type: 'string',
-                                                                label: 'Popover description',
-                                                                description:
-                                                                    'Body text of the popover. Supports Markdown and raw HTML.',
-                                                                defaultValue: '',
-                                                                expression: 'optional',
                                                             },
                                                         },
                                                     },
