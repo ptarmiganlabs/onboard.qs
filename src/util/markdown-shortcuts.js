@@ -229,6 +229,41 @@ export function applyBlockquote(ta) {
     toggleLinePrefix(ta, '> ');
 }
 
+/**
+ * Insert an h3 heading prefix or wrap the selection.
+ *
+ * @param {HTMLTextAreaElement} ta - Target textarea.
+ */
+export function applyHeading3(ta) {
+    wrapSelection(ta, '### ', '', 'heading');
+}
+
+/**
+ * Insert an h4 heading prefix or wrap the selection.
+ *
+ * @param {HTMLTextAreaElement} ta - Target textarea.
+ */
+export function applyHeading4(ta) {
+    wrapSelection(ta, '#### ', '', 'heading');
+}
+
+/**
+ * Insert a horizontal rule at the cursor position.
+ *
+ * @param {HTMLTextAreaElement} ta - Target textarea.
+ */
+export function applyHorizontalRule(ta) {
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const value = ta.value;
+    const before = start > 0 && value[start - 1] !== '\n' ? '\n' : '';
+    const rule = '---\n';
+    ta.value = value.slice(0, start) + before + rule + value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + before.length + rule.length;
+    ta.focus();
+    notify(ta);
+}
+
 // ---------------------------------------------------------------------------
 // Public API — keyboard shortcut listener
 // ---------------------------------------------------------------------------

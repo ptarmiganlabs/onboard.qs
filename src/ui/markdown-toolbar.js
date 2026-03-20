@@ -13,7 +13,19 @@
  */
 
 import { markdownToHtml } from '../util/markdown';
-import { attachMarkdownShortcuts } from '../util/markdown-shortcuts';
+import {
+    attachMarkdownShortcuts,
+    applyBold,
+    applyItalic,
+    applyCode,
+    applyLink,
+    applyOrderedList,
+    applyUnorderedList,
+    applyBlockquote,
+    applyHeading3,
+    applyHeading4,
+    applyHorizontalRule,
+} from '../util/markdown-shortcuts';
 
 // ---------------------------------------------------------------------------
 // Toolbar button definitions
@@ -48,121 +60,44 @@ const TOOLBAR_BUTTONS = [
 // ---------------------------------------------------------------------------
 
 /**
- * Apply a formatting action to a textarea element.
+ * Dispatch a formatting action to the appropriate function from
+ * the shared markdown-shortcuts module.
  *
  * @param {HTMLTextAreaElement} textarea - Target textarea.
  * @param {string} action - One of the known action names.
  */
 function applyAction(textarea, action) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const value = textarea.value;
-    const selected = value.slice(start, end);
-
-    /**
-     * Wrap selection with before/after markers.
-     *
-     * @param {string} before - Text to insert before.
-     * @param {string} after - Text to insert after.
-     * @param {string} [placeholder] - Fallback when nothing is selected.
-     */
-    const wrap = (before, after, placeholder) => {
-        const inner = selected || placeholder || '';
-        const replacement = before + inner + after;
-        textarea.value = value.slice(0, start) + replacement + value.slice(end);
-        textarea.selectionStart = start + before.length;
-        textarea.selectionEnd = start + before.length + inner.length;
-        textarea.focus();
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
-    /**
-     * Toggle a line-level prefix on selected lines.
-     *
-     * @param {string} prefix - The prefix string, or `"ol"` for numbered.
-     */
-    const linePrefix = (prefix) => {
-        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
-        let lineEnd = value.indexOf('\n', end);
-        if (lineEnd === -1) lineEnd = value.length;
-
-        const block = value.slice(lineStart, lineEnd);
-        const lines = block.split('\n');
-        const isOl = prefix === 'ol';
-        const olPat = /^\d+\.\s/;
-
-        const allPrefixed = lines.every((l) => (isOl ? olPat.test(l) : l.startsWith(prefix)));
-        let replaced;
-        if (allPrefixed) {
-            replaced = lines
-                .map((l) => (isOl ? l.replace(olPat, '') : l.slice(prefix.length)))
-                .join('\n');
-        } else {
-            replaced = lines
-                .map((l, i) => {
-                    if (isOl) return olPat.test(l) ? l : i + 1 + '. ' + l;
-                    return l.startsWith(prefix) ? l : prefix + l;
-                })
-                .join('\n');
-        }
-        textarea.value = value.slice(0, lineStart) + replaced + value.slice(lineEnd);
-        textarea.selectionStart = lineStart;
-        textarea.selectionEnd = lineStart + replaced.length;
-        textarea.focus();
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
     switch (action) {
         case 'bold':
-            wrap('**', '**', 'bold');
+            applyBold(textarea);
             break;
         case 'italic':
-            wrap('*', '*', 'italic');
+            applyItalic(textarea);
             break;
         case 'code':
-            wrap('`', '`', 'code');
+            applyCode(textarea);
             break;
-        case 'link': {
-            if (selected) {
-                const rep = '[' + selected + '](url)';
-                textarea.value = value.slice(0, start) + rep + value.slice(end);
-                const urlStart = start + selected.length + 3;
-                textarea.selectionStart = urlStart;
-                textarea.selectionEnd = urlStart + 3;
-            } else {
-                const rep = '[text](url)';
-                textarea.value = value.slice(0, start) + rep + value.slice(end);
-                textarea.selectionStart = start + 1;
-                textarea.selectionEnd = start + 5;
-            }
-            textarea.focus();
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        case 'link':
+            applyLink(textarea);
             break;
-        }
         case 'h3':
-            wrap('### ', '', 'heading');
+            applyHeading3(textarea);
             break;
         case 'h4':
-            wrap('#### ', '', 'heading');
+            applyHeading4(textarea);
             break;
         case 'ul':
-            linePrefix('- ');
+            applyUnorderedList(textarea);
             break;
         case 'ol':
-            linePrefix('ol');
+            applyOrderedList(textarea);
             break;
         case 'blockquote':
-            linePrefix('> ');
+            applyBlockquote(textarea);
             break;
-        case 'hr': {
-            const before = start > 0 && value[start - 1] !== '\n' ? '\n' : '';
-            const rule = '---\n';
-            textarea.value = value.slice(0, start) + before + rule + value.slice(end);
-            textarea.selectionStart = textarea.selectionEnd = start + before.length + rule.length;
-            textarea.focus();
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        case 'hr':
+            applyHorizontalRule(textarea);
             break;
-        }
         // no default
     }
 }

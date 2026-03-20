@@ -454,13 +454,6 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
             });
         }
 
-        const descInput = overlay.querySelector('.onboard-qs-editor__step-desc');
-        if (descInput) {
-            descInput.addEventListener('input', (e) => {
-                step.popoverDescription = e.target.value;
-            });
-        }
-
         // Mount the tabbed Markdown editor for step description
         const descContainer = overlay.querySelector('.onboard-qs-editor__step-desc-container');
         if (descContainer) {
