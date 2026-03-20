@@ -80,6 +80,27 @@ function unwrapExpression(value) {
 }
 
 /**
+ * Check whether a property value is a qStringExpression object and, if so,
+ * return the expression string with a leading '=' (the form the user typed
+ * in the property panel).  Returns null for non-expression values.
+ *
+ * Qlik strips the leading '=' when it stores the expression internally as
+ * `{ qStringExpression: { qExpr: "$(var)" } }`, so we re-add it here.
+ *
+ * @param {string|object|null|undefined} value - Raw property value.
+ * @returns {string|null} Expression string prefixed with '=', or null.
+ */
+function extractExpression(value) {
+    if (value && typeof value === 'object' && value.qStringExpression != null) {
+        const raw = unwrapExpression(value);
+        if (typeof raw === 'string') {
+            return raw.startsWith('=') ? raw : '=' + raw;
+        }
+    }
+    return null;
+}
+
+/**
  * Wrap '='-prefixed string values in qStringExpression format
  * across all expression-capable fields in a tours array.
  *
@@ -118,18 +139,18 @@ function overlayExpressions(editorTours, propTours) {
         const propTour = propTours[i];
 
         for (const key of TOUR_EXPR_FIELDS) {
-            const raw = unwrapExpression(propTour[key]);
-            if (typeof raw === 'string' && raw.startsWith('=')) {
-                editorTour[key] = raw;
+            const expr = extractExpression(propTour[key]);
+            if (expr !== null) {
+                editorTour[key] = expr;
             }
         }
 
         if (editorTour.steps && propTour.steps) {
             for (let j = 0; j < editorTour.steps.length && j < propTour.steps.length; j++) {
                 for (const key of STEP_EXPR_FIELDS) {
-                    const raw = unwrapExpression(propTour.steps[j][key]);
-                    if (typeof raw === 'string' && raw.startsWith('=')) {
-                        editorTour.steps[j][key] = raw;
+                    const expr = extractExpression(propTour.steps[j][key]);
+                    if (expr !== null) {
+                        editorTour.steps[j][key] = expr;
                     }
                 }
             }
@@ -150,7 +171,7 @@ let activePreviewCleanup = null;
  * @param {Array<{id: string, title: string, type: string}>} params.sheetObjects - Available objects.
  * @param {() => void} [params.onClose] - Called when modal is closed.
  */
-export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose }) {
+export async function openTourEditor({ layout, model, app: _app, sheetObjects, onClose }) {
     // Prevent multiple modals
     if (document.getElementById('onboard-qs-editor-overlay')) {
         return;
@@ -163,26 +184,25 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
 
     const platformType = detectPlatformType();
 
-    // Create modal overlay
+    // Create the overlay element and append immediately so the duplicate-open
+    // guard works even while we await getProperties() below.
     const overlay = document.createElement('div');
     overlay.id = 'onboard-qs-editor-overlay';
     overlay.className = 'onboard-qs-editor-overlay';
-    overlay.innerHTML = buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex);
     document.body.appendChild(overlay);
 
-    // Overlay raw expression strings from model properties so the editor
-    // shows '=expr' instead of the evaluated result for expression fields.
-    model
-        .getProperties()
-        .then((props) => {
-            if (props.tours) {
-                overlayExpressions(tours, props.tours);
-                render();
-            }
-        })
-        .catch((err) => {
-            logger.warn('Could not read raw properties for expression display:', err);
-        });
+    // Read raw properties before building the UI so that expression fields
+    // show '=expr' instead of the evaluated result from the very first render.
+    try {
+        const props = await model.getProperties();
+        if (props.tours) {
+            overlayExpressions(tours, props.tours);
+        }
+    } catch (err) {
+        logger.warn('Could not read raw properties for expression display:', err);
+    }
+
+    overlay.innerHTML = buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex);
 
     // Prevent Qlik from capturing keyboard events in the modal
     overlay.addEventListener('keydown', (e) => e.stopPropagation());

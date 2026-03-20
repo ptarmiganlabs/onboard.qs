@@ -247,7 +247,7 @@ export default function supernova(galaxy) {
                             // Ensure adapter is available before opening editor
                             const currentAdapter = adapter || getPlatformAdapter();
                             const sheetObjects = await currentAdapter.getSheetObjects(app);
-                            openTourEditor({
+                            await openTourEditor({
                                 layout: layoutRef.current,
                                 model,
                                 app,

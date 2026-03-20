@@ -433,9 +433,22 @@ export function toursSection() {
                                                  */
                                                 action(item) {
                                                     const cId = item.cId;
+                                                    // popoverDescription can be a Qlik expression object when
+                                                    // the field value is set to a formula (expression: 'optional').
+                                                    // Normalise it to a plain string before opening the editor.
+                                                    let descValue = item.popoverDescription;
+                                                    if (
+                                                        descValue !== null &&
+                                                        typeof descValue === 'object'
+                                                    ) {
+                                                        descValue =
+                                                            descValue?.qStringExpression?.qExpr ??
+                                                            String(descValue);
+                                                    }
+                                                    descValue = descValue || '';
                                                     openMarkdownEditorDialog({
                                                         title: 'Edit Popover Description',
-                                                        value: item.popoverDescription || '',
+                                                        value: descValue,
                                                         /**
                                                          * Persist the edited text.
                                                          *
