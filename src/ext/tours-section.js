@@ -1,4 +1,6 @@
 import logger from '../util/logger';
+import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
+import { extensionState } from '../util/extension-state';
 
 /**
  * Get the list of objects on the current sheet for dropdown population.
@@ -421,6 +423,34 @@ export function toursSection() {
                                                 defaultValue: '',
                                                 expression: 'optional',
                                             },
+                                            editDescriptionBtn: {
+                                                label: 'Edit in Markdown editor',
+                                                component: 'button',
+                                                /**
+                                                 * Open the Markdown editor dialog for this step.
+                                                 *
+                                                 * @param {object} item - The step data item.
+                                                 */
+                                                action(item) {
+                                                    const cId = item.cId;
+                                                    openMarkdownEditorDialog({
+                                                        title: 'Edit Popover Description',
+                                                        value: item.popoverDescription || '',
+                                                        /**
+                                                         * Persist the edited text.
+                                                         *
+                                                         * @param {string} text - Updated Markdown text.
+                                                         */
+                                                        onSave(text) {
+                                                            persistStepProperty(
+                                                                cId,
+                                                                'popoverDescription',
+                                                                text
+                                                            );
+                                                        },
+                                                    });
+                                                },
+                                            },
                                             stepGroups: {
                                                 component: 'expandable-items',
                                                 items: {
@@ -607,4 +637,42 @@ export function toursSection() {
             },
         },
     };
+}
+
+// ---------------------------------------------------------------------------
+// Helper — persist a single step property via the Enigma API
+// ---------------------------------------------------------------------------
+
+/**
+ * Persist a single step-level property change via the Enigma model.
+ *
+ * Finds the step by its `cId` across all tours and updates the given
+ * property, then calls `setProperties` to save.
+ *
+ * @param {string} cId - The unique cId of the step.
+ * @param {string} property - Property name to update.
+ * @param {string} value - New value for the property.
+ */
+async function persistStepProperty(cId, property, value) {
+    const { model } = extensionState;
+    if (!model) {
+        logger.warn('Cannot persist property change — model not available');
+        return;
+    }
+
+    try {
+        const props = await model.getProperties();
+        const tours = props.tours || [];
+        for (const tour of tours) {
+            const step = (tour.steps || []).find((s) => s.cId === cId);
+            if (step) {
+                step[property] = value;
+                await model.setProperties(props);
+                return;
+            }
+        }
+        logger.warn('Step not found for cId:', cId);
+    } catch (err) {
+        logger.warn('Failed to persist Markdown editor change:', err);
+    }
 }

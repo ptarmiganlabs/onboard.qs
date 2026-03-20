@@ -3,6 +3,7 @@ import { generateUUID } from '../util/uuid';
 import { highlightStep, destroyTour } from '../tour/tour-runner';
 import { detectPlatformType } from '../platform/index';
 import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
+import { createTabbedMarkdownEditor } from './markdown-toolbar';
 
 /**
  * Modal tour editor for edit mode.
@@ -457,6 +458,22 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
         if (descInput) {
             descInput.addEventListener('input', (e) => {
                 step.popoverDescription = e.target.value;
+            });
+        }
+
+        // Mount the tabbed Markdown editor for step description
+        const descContainer = overlay.querySelector('.onboard-qs-editor__step-desc-container');
+        if (descContainer) {
+            const initialValue = descContainer.dataset.initialValue || '';
+            const { container: mdEditor, textarea: mdTextarea } = createTabbedMarkdownEditor({
+                value: initialValue,
+                rows: 5,
+                placeholder: 'Markdown: **bold** *italic* [link](url) ![img](url)',
+                className: 'onboard-qs-editor__step-desc',
+            });
+            descContainer.appendChild(mdEditor);
+            mdTextarea.addEventListener('input', () => {
+                step.popoverDescription = mdTextarea.value;
             });
         }
 
@@ -960,10 +977,8 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                                 (Markdown supported)
                             </small>
                         </span>
-                        <textarea class="onboard-qs-editor__textarea onboard-qs-editor__step-desc"
-                                  rows="5"
-                                  placeholder="Markdown: **bold** *italic* [link](url) ![img](url)"
-                        >${escapeHtml(step.popoverDescription || '')}</textarea>
+                        <div class="onboard-qs-editor__step-desc-container"
+                             data-initial-value="${escapeAttr(step.popoverDescription || '')}"></div>
                     </label>
                     <div class="onboard-qs-editor__field-row">
                         <label class="onboard-qs-editor__field">

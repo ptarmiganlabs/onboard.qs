@@ -1248,3 +1248,259 @@
 .oqs-hidden-widget {
     display: none !important;
 }
+
+/* =========================================================================
+ *  Tabbed Markdown editor (Write / Preview) — shared by tour editor
+ *  and the standalone Markdown editor dialog
+ * ========================================================================= */
+
+.oqs-md-tabbed {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* -- Header: tabs + toolbar buttons -- */
+
+.oqs-md-tabbed-header {
+    display: flex;
+    align-items: center;
+    background: #f6f8fa;
+    border-bottom: 1px solid #d1d5db;
+    padding: 0 6px;
+    gap: 0;
+}
+
+.oqs-md-tabbed-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #57606a;
+    transition:
+        color 0.12s,
+        border-color 0.12s;
+}
+
+.oqs-md-tabbed-tab:hover {
+    color: #24292f;
+}
+
+.oqs-md-tabbed-tab--active {
+    color: #24292f;
+    border-bottom-color: #009845;
+}
+
+/* Toolbar buttons inline after tabs */
+
+.oqs-md-tabbed-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    margin-left: auto;
+    padding: 0 4px;
+}
+
+.oqs-md-tabbed-toolbar-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #57606a;
+    min-width: 22px;
+    text-align: center;
+}
+
+.oqs-md-tabbed-toolbar-btn:hover {
+    background: #e1e4e8;
+    color: #24292f;
+}
+
+.oqs-md-tabbed-toolbar-sep {
+    width: 1px;
+    height: 16px;
+    background: #d1d5db;
+    margin: 0 4px;
+}
+
+/* -- Panels -- */
+
+.oqs-md-tabbed-panel--write {
+    display: block;
+}
+
+.oqs-md-tabbed-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+    color: #1f2937;
+    background: #ffffff;
+}
+
+.oqs-md-tabbed-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.oqs-md-tabbed-panel--preview {
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #374151;
+    min-height: 100px;
+    overflow-y: auto;
+}
+
+/* Inside the modal editor dialog, let the tabbed editor fill space */
+
+.oqs-md-editor-dialog .oqs-md-tabbed-panel--write {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.oqs-md-editor-dialog .oqs-md-tabbed-textarea {
+    flex: 1;
+    resize: none;
+    font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    min-height: 0;
+}
+
+.oqs-md-editor-dialog .oqs-md-tabbed-panel--preview {
+    flex: 1;
+    min-height: 0;
+}
+
+/* =========================================================================
+ *  Markdown editor dialog (property-panel "Edit in Markdown editor")
+ * ========================================================================= */
+
+.oqs-md-editor-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10010;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.oqs-md-editor-dialog {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    width: 860px;
+    max-width: 92vw;
+    height: 560px;
+    max-height: 88vh;
+    overflow: hidden;
+}
+
+.oqs-md-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    flex-shrink: 0;
+}
+
+.oqs-md-editor-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.oqs-md-editor-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+}
+
+.oqs-md-editor-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* -- Counter -- */
+
+.oqs-md-editor-counter {
+    padding: 4px 16px;
+    font-size: 11px;
+    color: #6b7280;
+    text-align: right;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    flex-shrink: 0;
+}
+
+.oqs-md-editor-counter--exceeded {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* -- Footer -- */
+
+.oqs-md-editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 18px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    flex-shrink: 0;
+}
+
+.oqs-md-editor-btn {
+    padding: 7px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+}
+
+.oqs-md-editor-btn--cancel {
+    background: #ffffff;
+    color: #374151;
+}
+
+.oqs-md-editor-btn--cancel:hover {
+    background: #f3f4f6;
+}
+
+.oqs-md-editor-btn--save {
+    background: #009845;
+    color: #ffffff;
+    border-color: #007a37;
+}
+
+.oqs-md-editor-btn--save:hover {
+    background: #007a37;
+}
