@@ -196,7 +196,7 @@ This is critical because:
 
 ## Tour editor (edit mode)
 
-The tour editor is a full-screen modal overlay (`tour-editor.js`, ~879 lines) that opens when the user clicks "Edit Tours" in the extension placeholder.
+The tour editor is a full-screen modal overlay (`tour-editor.js`, ~1200 lines) that opens when the user clicks "Edit Tours" in the extension placeholder.
 
 ```mermaid
 flowchart TD
@@ -217,8 +217,8 @@ flowchart TD
 ### Editor workflow
 
 1. **Open** — Deep-clones `layout.tours` to avoid mutating live properties.
-2. **Edit** — User adds/removes tours and steps. When a step is selected in the list, the detail panel becomes active, allowing the user to configure the step's target object, title, description, and popover position.
-3. **Preview** — "Preview Step" calls `highlightStep()` which creates a temporary driver.js highlight on the actual Qlik object. Auto-dismisses after 3 seconds.
+2. **Edit** — User adds/removes tours and steps. When a **tour** is selected in the tour list (but no step), the detail panel shows tour-level settings: name, show condition, auto-start, show-once, progress indicator, keyboard navigation, overlay & stage settings, and navigation button text. When a **step** is selected, the detail panel switches to step settings: target type, object picker or CSS selector, popover title and description, popover side/alignment, dialog size, and interaction lock.
+3. **Preview** — "Preview Step" calls `highlightStep()` which hides the editor overlay and creates a temporary driver.js highlight on the actual Qlik object. The preview is dismissed automatically after 5 seconds, or immediately on any mouse click or Escape key press.
 4. **Save** — Writes the modified tours back via `model.getProperties()` → mutate → `model.setProperties()`.
 5. **Cancel** — Discards changes, clones are garbage-collected.
 
