@@ -12,6 +12,130 @@ import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io
  * the extension's properties via the Enigma model.
  */
 
+/**
+ * Tour-level string properties that support Qlik expression evaluation.
+ *
+ * @type {string[]}
+ */
+const TOUR_EXPR_FIELDS = [
+    'tourName',
+    'showCondition',
+    'overlayColor',
+    'nextBtnText',
+    'prevBtnText',
+    'doneBtnText',
+];
+
+/**
+ * Step-level string properties that support Qlik expression evaluation.
+ *
+ * @type {string[]}
+ */
+const STEP_EXPR_FIELDS = [
+    'popoverTitle',
+    'popoverDescription',
+    'customCssSelector',
+    'showCondition',
+];
+
+/**
+ * Wrap a string value starting with '=' in qStringExpression format
+ * so that Qlik Sense evaluates it as a Dollar Sign Expansion expression.
+ *
+ * Non-string or non-expression values are returned unchanged.
+ *
+ * @param {string|number|boolean|object|null|undefined} value - Property value to check.
+ *
+ * @returns {object|string|number|boolean|null|undefined} Wrapped expression object, or the original value.
+ */
+function wrapIfExpression(value) {
+    if (typeof value === 'string' && value.startsWith('=')) {
+        return { qStringExpression: value };
+    }
+    return value;
+}
+
+/**
+ * Extract the raw expression string from a qStringExpression object.
+ *
+ * Handles both `{ qStringExpression: "=expr" }` and
+ * `{ qStringExpression: { qExpr: "=expr" } }` formats.
+ * Non-expression values are returned unchanged.
+ *
+ * @param {string|object|null|undefined} value - Property value that may be a qStringExpression object.
+ *
+ * @returns {string|object|null|undefined} The expression string, or the original value.
+ */
+function unwrapExpression(value) {
+    if (value && typeof value === 'object') {
+        if (typeof value.qStringExpression === 'string') {
+            return value.qStringExpression;
+        }
+        if (value.qStringExpression && typeof value.qStringExpression.qExpr === 'string') {
+            return value.qStringExpression.qExpr;
+        }
+    }
+    return value;
+}
+
+/**
+ * Wrap '='-prefixed string values in qStringExpression format
+ * across all expression-capable fields in a tours array.
+ *
+ * Mutates the tours in place.
+ *
+ * @param {Array} tours - Array of tour configuration objects.
+ */
+function wrapExpressions(tours) {
+    for (const tour of tours) {
+        for (const key of TOUR_EXPR_FIELDS) {
+            tour[key] = wrapIfExpression(tour[key]);
+        }
+        if (tour.steps) {
+            for (const step of tour.steps) {
+                for (const key of STEP_EXPR_FIELDS) {
+                    step[key] = wrapIfExpression(step[key]);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Overlay raw expression strings from model properties onto the
+ * editor's tour data (which was cloned from the evaluated layout).
+ *
+ * This ensures that existing expressions appear as '=...' text in
+ * the editor fields instead of their evaluated values.
+ *
+ * @param {Array} editorTours - The editor's in-memory tours (cloned from layout).
+ * @param {Array} propTours - The raw tours from model.getProperties().
+ */
+function overlayExpressions(editorTours, propTours) {
+    for (let i = 0; i < editorTours.length && i < propTours.length; i++) {
+        const editorTour = editorTours[i];
+        const propTour = propTours[i];
+
+        for (const key of TOUR_EXPR_FIELDS) {
+            const raw = unwrapExpression(propTour[key]);
+            if (typeof raw === 'string' && raw.startsWith('=')) {
+                editorTour[key] = raw;
+            }
+        }
+
+        if (editorTour.steps && propTour.steps) {
+            for (let j = 0; j < editorTour.steps.length && j < propTour.steps.length; j++) {
+                for (const key of STEP_EXPR_FIELDS) {
+                    const raw = unwrapExpression(propTour.steps[j][key]);
+                    if (typeof raw === 'string' && raw.startsWith('=')) {
+                        editorTour.steps[j][key] = raw;
+                    }
+                }
+            }
+        }
+    }
+}
+
 let currentHighlight = null;
 let activePreviewCleanup = null;
 
@@ -44,6 +168,20 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
     overlay.className = 'onboard-qs-editor-overlay';
     overlay.innerHTML = buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex);
     document.body.appendChild(overlay);
+
+    // Overlay raw expression strings from model properties so the editor
+    // shows '=expr' instead of the evaluated result for expression fields.
+    model
+        .getProperties()
+        .then((props) => {
+            if (props.tours) {
+                overlayExpressions(tours, props.tours);
+                render();
+            }
+        })
+        .catch((err) => {
+            logger.warn('Could not read raw properties for expression display:', err);
+        });
 
     // Prevent Qlik from capturing keyboard events in the modal
     overlay.addEventListener('keydown', (e) => e.stopPropagation());
@@ -562,7 +700,13 @@ export function openTourEditor({ layout, model, app: _app, sheetObjects, onClose
 async function saveToModel(model, layout, tours) {
     try {
         const props = await model.getProperties();
-        props.tours = tours;
+
+        // Deep-clone to avoid mutating the editor's in-memory data,
+        // then wrap any '='-prefixed values so Qlik evaluates them
+        // as Dollar Sign Expansion expressions.
+        const toursToSave = JSON.parse(JSON.stringify(tours));
+        wrapExpressions(toursToSave);
+        props.tours = toursToSave;
         // Apply imported theme if present
         if (layout._importedTheme) {
             props.theme = { ...props.theme, ...layout._importedTheme };
