@@ -96,7 +96,7 @@ Platform detection is automatic — the extension identifies the environment and
 | -------------------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | Show start button    | Boolean  | `true`       | Display a "Start Tour" button in analysis mode                                                                            |
 | Button text          | String   | `Start Tour` | Label on the start button                                                                                                 |
-| Button style         | Dropdown | `Primary`    | `Primary`, `Secondary`, `Minimal`, `Outlined`, `Pill`                                                                     |
+| Button style         | Dropdown | `Primary`    | `Primary (filled)`, `Secondary (gray)`, `Minimal (outline)`, `Outlined (transparent)`, `Pill (rounded)`                   |
 | Horizontal alignment | Dropdown | `Center`     | `Left`, `Center`, `Right`                                                                                                 |
 | Vertical alignment   | Dropdown | `Center`     | `Top`, `Center`, `Bottom`                                                                                                 |
 | Button width (%)     | String   | Auto         | Width of the button as a percentage (1–100) of the extension object. Leave empty for auto (content-based) sizing.         |
@@ -109,32 +109,32 @@ Platform detection is automatic — the extension identifies the environment and
 
 ### Theme & Styling
 
-| Property              | Type          | Default                  | Description                                                             |
-| --------------------- | ------------- | ------------------------ | ----------------------------------------------------------------------- |
-| Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold` |
-| Font family           | String        | (from preset)            | CSS font-family value                                                   |
-| Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                        |
-| Button font size      | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                 |
-| Button font weight    | Dropdown      | (from preset)            | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`          |
-| Popover colors        | Color pickers | (from preset)            | Background, text, title, button bg/text/hover, progress bar             |
-| Popover font size     | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Popover border radius | String (px)   | (from preset)            | Border radius in pixels                                                 |
-| Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu     |
+| Property              | Type          | Default                  | Description                                                                      |
+| --------------------- | ------------- | ------------------------ | -------------------------------------------------------------------------------- |
+| Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold`          |
+| Font family           | String        | (from preset)            | CSS font-family value                                                            |
+| Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                                 |
+| Button font size      | String (px)   | (from preset)            | Font size in pixels                                                              |
+| Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                          |
+| Button font weight    | Dropdown      | (from preset)            | `Preset default`, `400 (Normal)`, `500 (Medium)`, `600 (Semibold)`, `700 (Bold)` |
+| Popover colors        | Color pickers | (from preset)            | Background, text, title, button bg/text/hover, progress bar                      |
+| Popover font size     | String (px)   | (from preset)            | Font size in pixels                                                              |
+| Popover border radius | String (px)   | (from preset)            | Border radius in pixels                                                          |
+| Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu              |
 
 All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
 
 ### Tour Settings
 
-| Property       | Type    | Default    | Description                                                                      |
-| -------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
-| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                        |
-| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).     |
-| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                       |
-| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`) |
-| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
-| Show progress  | Boolean | `true`     | Display "X of Y" progress indicator in popovers                                  |
-| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
+| Property       | Type    | Default    | Description                                                                                                                       |
+| -------------- | ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                                                                         |
+| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide). When hidden, all steps of this tour are also hidden. |
+| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                                                                        |
+| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)                                                  |
+| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                                                                  |
+| Show progress  | Boolean | `true`     | Display "X of Y" progress indicator in popovers                                                                                   |
+| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                                                                              |
 
 ### Step Settings
 
