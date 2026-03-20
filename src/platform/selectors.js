@@ -43,6 +43,9 @@ const selectors = {
             /** Selector for the Qlik toolbar / navigation bar. */
             toolbar: '.qv-toolbar-container, .qs-toolbar',
 
+            /** Primary toolbar anchor — toolbar button is injected as first child. */
+            toolbarAnchor: '#top-bar-right-side',
+
             /** Selector for grid cells (each cell wraps one object). */
             gridCell: '.qv-gridcell',
         },
@@ -90,6 +93,9 @@ const selectors = {
 
             /** Selector for the Qlik toolbar (Cloud MUI toolbar). */
             toolbar: '[data-testid="top-bar-root"]',
+
+            /** Primary toolbar anchor — toolbar button is injected as first child. */
+            toolbarAnchor: '[data-testid="top-bar-right-side"]',
 
             /** Selector for the Cloud sub-toolbar (selections bar, edit button). */
             subToolbar: '[data-testid="qs-sub-toolbar"]',

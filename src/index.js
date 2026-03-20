@@ -12,6 +12,7 @@ import ext from './ext/index';
 import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
+import { injectToolbarButton, destroyToolbarButton } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
@@ -194,6 +195,11 @@ export default function supernova(galaxy) {
                     // No platform detection needed — render immediately.
                     renderEditPlaceholder(element, layout);
 
+                    // Keep toolbar button visible while editing (if enabled)
+                    if (layout.widget?.showToolbarButton && platform && adapter) {
+                        injectToolbarButton(layout, adapter, platform);
+                    }
+
                     // --- Responsive size tiers via ResizeObserver ---
                     const widgetEl = element.querySelector('.onboard-qs-widget--edit');
                     let resizeObserver;
@@ -299,9 +305,16 @@ export default function supernova(galaxy) {
                     codePath: platform.codePath,
                 });
 
-                // --- Context menu & hover menu visibility overrides ---
-                const hideContextMenu = layout.widget?.hideContextMenu === true;
-                const hideHoverMenu = layout.widget?.hideHoverMenu === true;
+                // --- Toolbar button injection ---
+                const showToolbarButton = layout.widget?.showToolbarButton === true;
+                if (showToolbarButton) {
+                    injectToolbarButton(layout, adapter, platform);
+                } else {
+                    destroyToolbarButton({ clearConfig: true });
+                }
+
+                // --- Hide widget (grid cell) in analysis mode ---
+                const hideWidget = layout.widget?.hideWidget === true && showToolbarButton;
 
                 // Resolve the outermost Qlik wrapper for this object.
                 // Client-managed: the hover nav (.qv-object-nav) is rendered
@@ -316,6 +329,15 @@ export default function supernova(galaxy) {
                     element.closest('.qv-object') ||
                     element.parentElement ||
                     element;
+
+                if (hideWidget) {
+                    qlikWrapper.classList.add('oqs-hidden-widget');
+                    qlikWrapper.setAttribute('aria-hidden', 'true');
+                }
+
+                // --- Context menu & hover menu visibility overrides ---
+                const hideContextMenu = layout.widget?.hideContextMenu === true;
+                const hideHoverMenu = layout.widget?.hideHoverMenu === true;
 
                 // Context menu: Qlik Sense renders its context menu
                 // (.qv-contextmenu) at document-body level via an AngularJS
@@ -412,8 +434,9 @@ export default function supernova(galaxy) {
 
                 /**
                  * Cleanup: remove context menu handler, shared observer
-                 * subscription, pending timer, and hover menu hiding class
-                 * when the effect re-runs or the component unmounts.
+                 * subscription, pending timer, hover menu hiding class,
+                 * and hidden-widget class when the effect re-runs or
+                 * the component unmounts.
                  */
                 return () => {
                     if (contextMenuHandler) {
@@ -426,6 +449,8 @@ export default function supernova(galaxy) {
                     if (hoverMenuTarget) {
                         hoverMenuTarget.classList.remove('onboard-qs-no-hover-menu');
                     }
+                    qlikWrapper.classList.remove('oqs-hidden-widget');
+                    qlikWrapper.removeAttribute('aria-hidden');
                 };
             }, [element, layout, isEditMode, platform, adapter]);
         },

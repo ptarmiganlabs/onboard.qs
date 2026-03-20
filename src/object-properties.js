@@ -17,6 +17,9 @@ export default {
         fillWidget: false,
         hideHoverMenu: false,
         hideContextMenu: false,
+        showToolbarButton: false,
+        toolbarButtonText: 'Start Tour',
+        hideWidget: false,
     },
     theme: {
         preset: 'leanGreen',

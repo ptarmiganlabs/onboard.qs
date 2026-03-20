@@ -355,3 +355,19 @@ export function injectCSS(css, id) {
     style.textContent = css;
     document.head.appendChild(style);
 }
+
+/**
+ * Get the toolbar anchor element where the toolbar button should be injected.
+ *
+ * In client-managed Sense the toolbar right-side container is `#top-bar-right-side`.
+ * The button is injected as the first child so it appears next to the
+ * search / user / help buttons.
+ *
+ * @param {string} [codePath] - Code-path name.
+ * @returns {Element | null} The toolbar anchor element, or null if not found.
+ */
+export function getToolbarAnchor(codePath) {
+    const codePath_ = codePath || resolveCodePath(null);
+    const sels = getSelectors('client-managed', codePath_);
+    return document.querySelector(sels.toolbarAnchor);
+}

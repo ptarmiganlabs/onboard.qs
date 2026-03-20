@@ -179,6 +179,57 @@ export function widgetSection() {
                     { value: false, label: 'Off' },
                 ],
             },
+            toolbarHeader: {
+                component: 'text',
+                label: '── Toolbar Button ──',
+            },
+            showToolbarButton: {
+                ref: 'widget.showToolbarButton',
+                type: 'boolean',
+                label: 'Show toolbar button',
+                description:
+                    'Inject a "Start Tour" button into the Qlik Sense app toolbar (top-right area), next to HelpButton.qs if present.',
+                defaultValue: false,
+                component: 'switch',
+                options: [
+                    { value: true, label: 'On' },
+                    { value: false, label: 'Off' },
+                ],
+            },
+            toolbarButtonText: {
+                ref: 'widget.toolbarButtonText',
+                type: 'string',
+                label: 'Toolbar button text',
+                defaultValue: 'Start Tour',
+                expression: 'optional',
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showToolbarButton === true,
+            },
+            hideWidget: {
+                ref: 'widget.hideWidget',
+                type: 'boolean',
+                label: 'Hide sheet widget',
+                description:
+                    'Completely hide the extension object on the sheet in analysis mode. Useful when the toolbar button is the only trigger.',
+                defaultValue: false,
+                component: 'switch',
+                options: [
+                    { value: true, label: 'On' },
+                    { value: false, label: 'Off' },
+                ],
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showToolbarButton === true,
+            },
         },
     };
 }

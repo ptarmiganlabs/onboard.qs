@@ -170,3 +170,18 @@ export function injectCSS(css, id) {
     style.textContent = css;
     document.head.appendChild(style);
 }
+
+/**
+ * Get the toolbar anchor element where the toolbar button should be injected.
+ *
+ * Cloud toolbar structure uses data-testid attributes. The button is
+ * injected as the first child of the right-side actions area, placing
+ * it next to search / notifications / profile buttons.
+ *
+ * @param {string} [codePath] - Code-path name.
+ * @returns {Element | null} The toolbar anchor element, or null if not found.
+ */
+export function getToolbarAnchor(codePath) {
+    const sels = getSelectors('cloud', codePath);
+    return document.querySelector(sels.toolbarAnchor);
+}
