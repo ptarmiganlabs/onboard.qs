@@ -197,7 +197,7 @@ export default function supernova(galaxy) {
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
-                        injectToolbarButton(layout, adapter, platform);
+                        injectToolbarButton(layout, adapter, platform, app?.id);
                     }
 
                     // --- Responsive size tiers via ResizeObserver ---
@@ -308,12 +308,14 @@ export default function supernova(galaxy) {
                 // --- Toolbar button injection ---
                 const showToolbarButton = layout.widget?.showToolbarButton === true;
                 if (showToolbarButton) {
-                    injectToolbarButton(layout, adapter, platform);
+                    injectToolbarButton(layout, adapter, platform, appId);
                 } else {
                     destroyToolbarButton({ clearConfig: true });
                 }
 
                 // --- Hide widget (grid cell) in analysis mode ---
+                // hideWidget is only effective when toolbar button is also enabled
+                // (the property panel enforces this with a show() condition)
                 const hideWidget = layout.widget?.hideWidget === true && showToolbarButton;
 
                 // Resolve the outermost Qlik wrapper for this object.

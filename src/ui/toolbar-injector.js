@@ -48,8 +48,9 @@ let lastConfig = null;
  * @param {object} layout - Extension layout from useLayout().
  * @param {object} adapter - Platform adapter module (cloud or client-managed).
  * @param {{ type: string, codePath: string, version: string | null }} platform - Platform detection result.
+ * @param {string} [appId] - Application ID from the app context.
  */
-export function injectToolbarButton(layout, adapter, platform) {
+export function injectToolbarButton(layout, adapter, platform, appId) {
     const allTours = layout.tours || [];
     const tours = allTours.filter((t) => isVisible(t.showCondition));
 
@@ -59,7 +60,7 @@ export function injectToolbarButton(layout, adapter, platform) {
     }
 
     // Persist config for watchForRemoval re-injection
-    lastConfig = { layout, adapter, platform };
+    lastConfig = { layout, adapter, platform, appId };
 
     // Remove stale button before (re-)injecting
     const existing = document.getElementById(CONTAINER_ID);
@@ -68,7 +69,7 @@ export function injectToolbarButton(layout, adapter, platform) {
     const anchor = adapter.getToolbarAnchor(platform.codePath);
     if (!anchor) {
         logger.debug('Toolbar anchor not found, will retry via observer');
-        waitAndInject(layout, adapter, platform);
+        waitAndInject(layout, adapter, platform, appId);
         return;
     }
 
@@ -109,12 +110,12 @@ export function injectToolbarButton(layout, adapter, platform) {
 
     // Build context for starting tours
     const sheetId = adapter.getCurrentSheetId();
-    const appId = layout.qInfo?.qId ? layout.qInfo.qId.split('/')[0] : 'unknown';
+    const resolvedAppId = appId || 'unknown';
     const context = {
         platformType: platform.type,
         senseVersion: platform.version,
         codePath: platform.codePath,
-        appId,
+        appId: resolvedAppId,
         sheetId,
     };
 
@@ -195,8 +196,9 @@ export function destroyToolbarButton({ clearConfig = false } = {}) {
  * @param {object} layout - Extension layout.
  * @param {object} adapter - Platform adapter module.
  * @param {object} platform - Platform detection result.
+ * @param {string} [appId] - Application ID.
  */
-function waitAndInject(layout, adapter, platform) {
+function waitAndInject(layout, adapter, platform, appId) {
     const startTime = Date.now();
     const timeout = 30000;
     const pollInterval = 500;
@@ -214,7 +216,7 @@ function waitAndInject(layout, adapter, platform) {
         const anchor = adapter.getToolbarAnchor(platform.codePath);
         if (anchor) {
             cleanup();
-            injectToolbarButton(layout, adapter, platform);
+            injectToolbarButton(layout, adapter, platform, appId);
             return true;
         }
         return false;
@@ -222,6 +224,7 @@ function waitAndInject(layout, adapter, platform) {
 
     /** Remove observer and timer. */
     function cleanup() {
+        cancelled = true;
         if (observer) {
             observer.disconnect();
             observer = null;
@@ -265,7 +268,12 @@ function watchForRemoval() {
             logger.debug('Toolbar button removed from DOM (SPA navigation?). Re-injecting…');
             setTimeout(() => {
                 if (lastConfig) {
-                    injectToolbarButton(lastConfig.layout, lastConfig.adapter, lastConfig.platform);
+                    injectToolbarButton(
+                        lastConfig.layout,
+                        lastConfig.adapter,
+                        lastConfig.platform,
+                        lastConfig.appId
+                    );
                 }
             }, 300);
         }
