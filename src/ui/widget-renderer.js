@@ -1,6 +1,4 @@
-import logger from '../util/logger';
-import { runTour } from '../tour/tour-runner';
-import { hasSeenTour } from '../tour/tour-storage';
+import { startTour, handleAutoStart } from '../tour/tour-helpers';
 import { resolveTheme, applyThemeToElement } from '../theme/resolve';
 import { isVisible } from '../util/visibility';
 
@@ -139,54 +137,6 @@ export function renderWidget(element, layout, context) {
 
     // Handle auto-start tours
     handleAutoStart(tours, layout, context);
-}
-
-/**
- * Handle auto-starting tours that should trigger on sheet load.
- *
- * @param {Array} tours - Tour configurations.
- * @param {object} layout - Extension layout.
- * @param {object} context - Context with appId, sheetId, etc.
- */
-function handleAutoStart(tours, layout, context) {
-    tours.forEach((tour) => {
-        if (!tour.autoStart) return;
-
-        if (tour.showOnce) {
-            const seen = hasSeenTour(
-                context.appId,
-                context.sheetId,
-                tour.tourId,
-                tour.tourVersion || 1
-            );
-            if (seen) {
-                logger.debug(`Tour "${tour.tourName}" already seen, skipping auto-start`);
-                return;
-            }
-        }
-
-        // Delay slightly to let Qlik objects finish rendering
-        setTimeout(() => {
-            logger.info(`Auto-starting tour "${tour.tourName}"`);
-            startTour(tour, context);
-        }, 500);
-    });
-}
-
-/**
- * Start a specific tour.
- *
- * @param {object} tourConfig - Tour configuration.
- * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId.
- */
-function startTour(tourConfig, context) {
-    runTour(tourConfig, {
-        platformType: context.platformType,
-        senseVersion: context.senseVersion,
-        codePath: context.codePath,
-        appId: context.appId,
-        sheetId: context.sheetId,
-    });
 }
 
 /**

@@ -10,8 +10,7 @@
  * to avoid visual overlap.
  */
 
-import { runTour } from '../tour/tour-runner';
-import { hasSeenTour } from '../tour/tour-storage';
+import { startTour } from '../tour/tour-helpers';
 import { resolveTheme } from '../theme/resolve';
 import { isVisible } from '../util/visibility';
 import logger from '../util/logger';
@@ -35,9 +34,17 @@ let removalObserver = null;
  * re-inject the button after SPA navigation even when the
  * Supernova component is no longer mounted.
  *
- * @type {{ layout: object, adapter: object, platform: object } | null}
+ * @type {{ layout: object, adapter: object, platform: object, appId?: string } | null}
  */
 let lastConfig = null;
+
+/**
+ * Cancellation function for an in-progress waitAndInject call.
+ * Ensures only one pending retry is active at a time.
+ *
+ * @type {(() => void) | null}
+ */
+let pendingWaitCancel = null;
 
 /**
  * Inject the "Start Tour" button into the Qlik Sense app toolbar.
@@ -153,9 +160,6 @@ export function injectToolbarButton(layout, adapter, platform, appId) {
     // -- Watch for removal (SPA navigation) --
     watchForRemoval();
 
-    // -- Handle auto-start tours --
-    handleAutoStart(tours, layout, context);
-
     logger.info('Onboard.qs toolbar button injected');
 }
 
@@ -199,6 +203,12 @@ export function destroyToolbarButton({ clearConfig = false } = {}) {
  * @param {string} [appId] - Application ID.
  */
 function waitAndInject(layout, adapter, platform, appId) {
+    // Cancel any previous pending wait so only one is active at a time
+    if (pendingWaitCancel) {
+        pendingWaitCancel();
+        pendingWaitCancel = null;
+    }
+
     const startTime = Date.now();
     const timeout = 30000;
     const pollInterval = 500;
@@ -225,6 +235,7 @@ function waitAndInject(layout, adapter, platform, appId) {
     /** Remove observer and timer. */
     function cleanup() {
         cancelled = true;
+        pendingWaitCancel = null;
         if (observer) {
             observer.disconnect();
             observer = null;
@@ -234,6 +245,9 @@ function waitAndInject(layout, adapter, platform, appId) {
             pollTimer = null;
         }
     }
+
+    // Register this wait as the active singleton
+    pendingWaitCancel = cleanup;
 
     if (typeof MutationObserver !== 'undefined') {
         observer = new MutationObserver(() => {
@@ -345,53 +359,6 @@ function showToolbarMenu(trigger, tours, context, cssVars) {
     setTimeout(() => {
         document.addEventListener('click', closeHandler, true);
     }, 0);
-}
-
-/**
- * Start a specific tour.
- *
- * @param {object} tourConfig - Tour configuration.
- * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId.
- */
-function startTour(tourConfig, context) {
-    runTour(tourConfig, {
-        platformType: context.platformType,
-        senseVersion: context.senseVersion,
-        codePath: context.codePath,
-        appId: context.appId,
-        sheetId: context.sheetId,
-    });
-}
-
-/**
- * Handle auto-starting tours that should trigger on sheet load.
- *
- * @param {Array} tours - Visible tour configurations.
- * @param {object} layout - Extension layout.
- * @param {object} context - Context with appId, sheetId, etc.
- */
-function handleAutoStart(tours, layout, context) {
-    tours.forEach((tour) => {
-        if (!tour.autoStart) return;
-
-        if (tour.showOnce) {
-            const seen = hasSeenTour(
-                context.appId,
-                context.sheetId,
-                tour.tourId,
-                tour.tourVersion || 1
-            );
-            if (seen) {
-                logger.debug(`Tour "${tour.tourName}" already seen, skipping auto-start`);
-                return;
-            }
-        }
-
-        setTimeout(() => {
-            logger.info(`Auto-starting tour "${tour.tourName}"`);
-            startTour(tour, context);
-        }, 500);
-    });
 }
 
 /**

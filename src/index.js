@@ -198,6 +198,8 @@ export default function supernova(galaxy) {
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
                         injectToolbarButton(layout, adapter, platform, app?.id);
+                    } else {
+                        destroyToolbarButton({ clearConfig: true });
                     }
 
                     // --- Responsive size tiers via ResizeObserver ---
