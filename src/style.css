@@ -1171,8 +1171,8 @@
 .oqs-toolbar-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
+    gap: 4px;
+    padding: 5px 8px;
     border: 1px solid var(--oqs-tb-border, #009845);
     border-radius: 4px;
     background: var(--oqs-tb-bg, #009845);

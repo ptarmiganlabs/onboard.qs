@@ -179,10 +179,6 @@ export function widgetSection() {
                     { value: false, label: 'Off' },
                 ],
             },
-            toolbarHeader: {
-                component: 'text',
-                label: '── Toolbar Button ──',
-            },
             showToolbarButton: {
                 ref: 'widget.showToolbarButton',
                 type: 'boolean',

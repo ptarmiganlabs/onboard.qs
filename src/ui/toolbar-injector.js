@@ -5,6 +5,12 @@
  * injecting it, and watching for SPA navigation/removal so the button
  * persists across sheet changes.
  *
+ * Multi-instance support: when several Onboard.qs extension objects live
+ * on the same sheet, each registers its visible tours via
+ * `registerToolbarTours()`.  The module merges all registered tours into
+ * a single toolbar button (or dropdown) so end-users see one unified
+ * entry point regardless of the number of extension objects.
+ *
  * Awareness of HelpButton.qs: if a `#hbqs-container` element is already
  * present in the toolbar, the Onboard.qs button is inserted *after* it
  * to avoid visual overlap.
@@ -34,7 +40,7 @@ let removalObserver = null;
  * re-inject the button after SPA navigation even when the
  * Supernova component is no longer mounted.
  *
- * @type {{ layout: object, adapter: object, platform: object, appId?: string } | null}
+ * @type {{ adapter: object, platform: object, appId?: string } | null}
  */
 let lastConfig = null;
 
@@ -46,28 +52,108 @@ let lastConfig = null;
  */
 let pendingWaitCancel = null;
 
+// ---------------------------------------------------------------------------
+// Multi-instance tour registry
+// ---------------------------------------------------------------------------
+
 /**
- * Inject the "Start Tour" button into the Qlik Sense app toolbar.
+ * Registry of tours contributed by each Onboard.qs extension object.
+ * Key = object ID (layout.qInfo.qId), value = { tours, layout }.
  *
- * If a toolbar button already exists it is replaced so layout changes
- * (button text, tours, theme) are reflected immediately.
+ * @type {Map<string, { tours: Array, layout: object }>}
+ */
+const tourRegistry = new Map();
+
+/**
+ * Register tours from one Onboard.qs extension object and rebuild the
+ * toolbar button with the merged tour list.
  *
+ * @param {string} objectId - Unique object ID (layout.qInfo.qId).
  * @param {object} layout - Extension layout from useLayout().
- * @param {object} adapter - Platform adapter module (cloud or client-managed).
+ * @param {object} adapter - Platform adapter module.
  * @param {{ type: string, codePath: string, version: string | null }} platform - Platform detection result.
  * @param {string} [appId] - Application ID from the app context.
  */
-export function injectToolbarButton(layout, adapter, platform, appId) {
+export function registerToolbarTours(objectId, layout, adapter, platform, appId) {
     const allTours = layout.tours || [];
     const tours = allTours.filter((t) => isVisible(t.showCondition));
 
     if (tours.length === 0) {
-        destroyToolbarButton();
+        // This object has no visible tours — unregister it
+        unregisterToolbarTours(objectId);
         return;
     }
 
-    // Persist config for watchForRemoval re-injection
-    lastConfig = { layout, adapter, platform, appId };
+    tourRegistry.set(objectId, { tours, layout });
+
+    // Store adapter/platform/appId so we can rebuild without
+    // needing every instance to call again
+    lastConfig = { adapter, platform, appId };
+
+    rebuildToolbarButton();
+}
+
+/**
+ * Unregister tours for a specific Onboard.qs object and rebuild (or
+ * remove) the toolbar button.
+ *
+ * @param {string} objectId - Unique object ID.
+ * @param {{ clearConfig?: boolean }} [options] - When clearConfig is true,
+ *   also wipe stored config so watchForRemoval will NOT re-inject.
+ */
+export function unregisterToolbarTours(objectId, { clearConfig = false } = {}) {
+    tourRegistry.delete(objectId);
+
+    if (clearConfig && tourRegistry.size === 0) {
+        lastConfig = null;
+    }
+
+    if (tourRegistry.size === 0) {
+        destroyToolbarButton({ clearConfig });
+    } else {
+        rebuildToolbarButton();
+    }
+}
+
+/**
+ * Rebuild the toolbar button from all registered tours.
+ * Called internally after register/unregister operations.
+ */
+function rebuildToolbarButton() {
+    if (!lastConfig) return;
+    const { adapter, platform, appId } = lastConfig;
+    injectToolbarButton(adapter, platform, appId);
+}
+
+/**
+ * Inject (or re-inject) the "Start Tour" button into the Qlik Sense
+ * app toolbar using the merged tour list from the registry.
+ *
+ * If a toolbar button already exists it is replaced so layout changes
+ * (button text, tours, theme) are reflected immediately.
+ *
+ * @param {object} adapter - Platform adapter module (cloud or client-managed).
+ * @param {{ type: string, codePath: string, version: string | null }} platform - Platform detection result.
+ * @param {string} [appId] - Application ID from the app context.
+ */
+function injectToolbarButton(adapter, platform, appId) {
+    // Merge tours from all registered objects
+    const mergedTours = [];
+    const seenNames = new Set();
+    for (const { tours } of tourRegistry.values()) {
+        for (const tour of tours) {
+            const key = tour.tourId || tour.tourName || JSON.stringify(tour);
+            if (!seenNames.has(key)) {
+                seenNames.add(key);
+                mergedTours.push(tour);
+            }
+        }
+    }
+
+    if (mergedTours.length === 0) {
+        destroyToolbarButton();
+        return;
+    }
 
     // Remove stale button before (re-)injecting
     const existing = document.getElementById(CONTAINER_ID);
@@ -76,15 +162,21 @@ export function injectToolbarButton(layout, adapter, platform, appId) {
     const anchor = adapter.getToolbarAnchor(platform.codePath);
     if (!anchor) {
         logger.debug('Toolbar anchor not found, will retry via observer');
-        waitAndInject(layout, adapter, platform, appId);
+        waitAndInject(adapter, platform, appId);
         return;
     }
 
     logger.debug('Toolbar anchor found. Injecting Onboard.qs toolbar button…');
 
+    // Use the first registered object's layout for button text and theme
+    const firstEntry = tourRegistry.values().next().value;
+    const layout = firstEntry ? firstEntry.layout : {};
     const widgetConfig = layout.widget || {};
     const buttonText = widgetConfig.toolbarButtonText || 'Start Tour';
     const cssVars = resolveTheme(layout);
+
+    // Use merged tours
+    const tours = mergedTours;
 
     // -- Container --
     const container = document.createElement('div');
@@ -167,11 +259,13 @@ export function injectToolbarButton(layout, adapter, platform, appId) {
  * Remove the toolbar button and clean up observers.
  *
  * @param {{ clearConfig?: boolean }} [options] - When clearConfig is true,
- *   also wipe stored config so watchForRemoval will NOT re-inject.
+ *   also wipe stored config and the tour registry so watchForRemoval
+ *   will NOT re-inject.
  */
 export function destroyToolbarButton({ clearConfig = false } = {}) {
     if (clearConfig) {
         lastConfig = null;
+        tourRegistry.clear();
     }
 
     if (removalObserver) {
@@ -197,12 +291,11 @@ export function destroyToolbarButton({ clearConfig = false } = {}) {
  * Wait for the toolbar to appear, then inject.
  * Uses a MutationObserver + polling fallback.
  *
- * @param {object} layout - Extension layout.
  * @param {object} adapter - Platform adapter module.
  * @param {object} platform - Platform detection result.
  * @param {string} [appId] - Application ID.
  */
-function waitAndInject(layout, adapter, platform, appId) {
+function waitAndInject(adapter, platform, appId) {
     // Cancel any previous pending wait so only one is active at a time
     if (pendingWaitCancel) {
         pendingWaitCancel();
@@ -226,7 +319,7 @@ function waitAndInject(layout, adapter, platform, appId) {
         const anchor = adapter.getToolbarAnchor(platform.codePath);
         if (anchor) {
             cleanup();
-            injectToolbarButton(layout, adapter, platform, appId);
+            injectToolbarButton(adapter, platform, appId);
             return true;
         }
         return false;
@@ -282,12 +375,7 @@ function watchForRemoval() {
             logger.debug('Toolbar button removed from DOM (SPA navigation?). Re-injecting…');
             setTimeout(() => {
                 if (lastConfig) {
-                    injectToolbarButton(
-                        lastConfig.layout,
-                        lastConfig.adapter,
-                        lastConfig.platform,
-                        lastConfig.appId
-                    );
+                    injectToolbarButton(lastConfig.adapter, lastConfig.platform, lastConfig.appId);
                 }
             }, 300);
         }

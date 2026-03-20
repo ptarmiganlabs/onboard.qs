@@ -86,6 +86,26 @@ Platform detection is automatic — the extension identifies the environment and
 
 ---
 
+## Toolbar Coexistence with HelpButton.qs
+
+Onboard.qs is designed to work alongside [HelpButton.qs](https://github.com/ptarmiganlabs/help-button.qs) when both extensions inject buttons into the Qlik Sense app toolbar.
+
+### Button ordering
+
+When both extensions are present on a sheet:
+
+1. **HelpButton.qs** always occupies the **leftmost** position (inserted as `firstChild` of the toolbar anchor).
+2. **Onboard.qs** detects the HelpButton container (`#hbqs-container`) and automatically positions its "Start Tour" button **immediately after** the Help button.
+3. If HelpButton.qs is **not** present, Onboard.qs takes the leftmost position instead.
+
+This ordering is stable regardless of which extension was added to the sheet first — HelpButton.qs always takes `firstChild` and Onboard.qs always checks for it before deciding where to insert.
+
+### Multiple instances on the same sheet
+
+It is valid to place several Onboard.qs extension objects on the same sheet (e.g. different objects defining different tours). All visible tours are **merged** into a single toolbar button / dropdown. Duplicate tours (same tour ID or name) are shown only once. When an object is removed or its "Show toolbar button" toggle is turned off, its tours are unregistered and the button rebuilds from the remaining objects.
+
+---
+
 ## Configuration Reference
 
 ### Widget Appearance

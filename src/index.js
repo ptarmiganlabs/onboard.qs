@@ -12,7 +12,7 @@ import ext from './ext/index';
 import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
-import { injectToolbarButton, destroyToolbarButton } from './ui/toolbar-injector';
+import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
@@ -197,9 +197,9 @@ export default function supernova(galaxy) {
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
-                        injectToolbarButton(layout, adapter, platform, app?.id);
+                        registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, app?.id);
                     } else {
-                        destroyToolbarButton({ clearConfig: true });
+                        unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                     }
 
                     // --- Responsive size tiers via ResizeObserver ---
@@ -259,9 +259,12 @@ export default function supernova(galaxy) {
                     }
                     initRef.current = true;
 
-                    // Cleanup: disconnect observer when effect re-runs or unmounts
+                    // Cleanup: disconnect observer and unregister tours
+                    // when effect re-runs or the component unmounts
+                    // (e.g. object deleted from sheet)
                     return () => {
                         if (resizeObserver) resizeObserver.disconnect();
+                        unregisterToolbarTours(layout.qInfo.qId);
                     };
                 }
 
@@ -310,9 +313,9 @@ export default function supernova(galaxy) {
                 // --- Toolbar button injection ---
                 const showToolbarButton = layout.widget?.showToolbarButton === true;
                 if (showToolbarButton) {
-                    injectToolbarButton(layout, adapter, platform, appId);
+                    registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, appId);
                 } else {
-                    destroyToolbarButton({ clearConfig: true });
+                    unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                 }
 
                 // --- Hide widget (grid cell) in analysis mode ---
@@ -455,6 +458,9 @@ export default function supernova(galaxy) {
                     }
                     qlikWrapper.classList.remove('oqs-hidden-widget');
                     qlikWrapper.removeAttribute('aria-hidden');
+                    // Unregister this object's tours so the toolbar button
+                    // rebuilds without them (e.g. object deleted from sheet)
+                    unregisterToolbarTours(layout.qInfo.qId);
                 };
             }, [element, layout, isEditMode, platform, adapter]);
         },
