@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.8.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.7.0...onboard-qs-v1.8.0) (2026-03-20)
+
+
+### Features
+
+* add build date display to About modal ([d563fe8](https://github.com/ptarmiganlabs/onboard.qs/commit/d563fe8edb49a46a39eb62f4e37869edc7aff7b3)), closes [#115](https://github.com/ptarmiganlabs/onboard.qs/issues/115)
+* add build date/time to About section and About dialog ([ab370f6](https://github.com/ptarmiganlabs/onboard.qs/commit/ab370f6c8ff38130006ef2610dba7a1852b5d1ad))
+* add build date/time to About section and About dialog ([9d8d2f1](https://github.com/ptarmiganlabs/onboard.qs/commit/9d8d2f15a7e0c1ee3c1df550106c040f792b73b7))
+* add Markdown keyboard shortcuts, formatting toolbar, and preview ([41d4689](https://github.com/ptarmiganlabs/onboard.qs/commit/41d4689b16527b5f8fc4388fde87613df0c32ae2))
+* add optional toolbar button for starting tours ([259348a](https://github.com/ptarmiganlabs/onboard.qs/commit/259348ac721f070191693cd389811856fabd3b0d))
+* Add support for multiple Onboard.qs objects on same app sheet ([c83929a](https://github.com/ptarmiganlabs/onboard.qs/commit/c83929af3e5be5299412ce93cf7c9116a05f7925))
+
+
+### Bug Fixes
+
+* address code review feedback for toolbar injector ([ab29552](https://github.com/ptarmiganlabs/onboard.qs/commit/ab29552ff5b8b0edb82b854d21099a893f4e41e1))
+* align panel header heights in tour editor ([40134e5](https://github.com/ptarmiganlabs/onboard.qs/commit/40134e5fabd8e6e5bda0675ad099db7722d872a8))
+* wrap Dollar Sign Expansion expressions in qStringExpression format when saving from tour editor ([78b8f25](https://github.com/ptarmiganlabs/onboard.qs/commit/78b8f2506ebf5ff92818669cd7ec19b85df84c0d))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([11602f6](https://github.com/ptarmiganlabs/onboard.qs/commit/11602f643d05ba0b6324b885953b28cd738a75eb))
+* **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([0d22084](https://github.com/ptarmiganlabs/onboard.qs/commit/0d22084c76f6433d37846afd0d28d3bf264ea0bf))
+* **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([90cab5c](https://github.com/ptarmiganlabs/onboard.qs/commit/90cab5ccac718bd5febb5f00c0765305453f85d1))
+* **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([6030412](https://github.com/ptarmiganlabs/onboard.qs/commit/60304127fadb0a7c2843771b52e19fa32b946143))
+* **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([ad7de0c](https://github.com/ptarmiganlabs/onboard.qs/commit/ad7de0cd7fedfb292ad3f770e6faccd9bbe0f9df))
+* **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([020a715](https://github.com/ptarmiganlabs/onboard.qs/commit/020a71579269eca0a1815ea2ad9c400d558ba137))
+* **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([d6d4109](https://github.com/ptarmiganlabs/onboard.qs/commit/d6d410953d4900b63e68cc0df96820d134c9b3e2))
+* **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([6a23c9b](https://github.com/ptarmiganlabs/onboard.qs/commit/6a23c9b4a1523c1dbb2d111fdea4031590582aa0))
+* **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([5db3bf6](https://github.com/ptarmiganlabs/onboard.qs/commit/5db3bf6c0bbbd515d044b382e0468177ac5de0bd))
+* **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([7868ce4](https://github.com/ptarmiganlabs/onboard.qs/commit/7868ce402ce942f0e5ff08516dc6bc7402dea8d0))
+* **deps:** update dependencies to stay safe and secure ([3b01ca4](https://github.com/ptarmiganlabs/onboard.qs/commit/3b01ca46761388e0d176969c7d534e9fa0fe3a26))
+
+
+### Refactoring
+
+* remove duplicated formatting logic from markdown-toolbar ([8dc33d5](https://github.com/ptarmiganlabs/onboard.qs/commit/8dc33d5928a249303f17e6f1ac1dde8c6b951fa3))
+
+
+### Documentation
+
+* update Qlik Sense Enterprise prerequisites to November 2025 ([39491ca](https://github.com/ptarmiganlabs/onboard.qs/commit/39491cac90d4b27844f13d03a298cd060e525ba4))
+
 ## [1.7.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.6.0...onboard-qs-v1.7.0) (2026-03-15)
 
 ### Features
