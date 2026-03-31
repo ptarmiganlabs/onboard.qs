@@ -10,6 +10,7 @@
  */
 
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
+import { confirmDiscardChanges } from './confirm-discard';
 import logger from '../util/logger';
 
 // ---------------------------------------------------------------------------
@@ -61,7 +62,6 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
     closeBtn.className = 'oqs-md-editor-close';
     closeBtn.setAttribute('aria-label', 'Close');
     closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', closeMarkdownEditorDialog);
     header.appendChild(closeBtn);
 
     dialog.appendChild(header);
@@ -72,6 +72,11 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
         maxLength: maxLength || 0,
         rows: 16,
     });
+
+    // Capture baseline from the actual textarea after creation so that any
+    // normalisation performed by createTabbedMarkdownEditor is accounted for.
+    const initialValue = textarea.value;
+
     // Give the tabbed editor flex growth inside the dialog
     editorContainer.style.flex = '1';
     editorContainer.style.minHeight = '0';
@@ -96,6 +101,36 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
         dialog.appendChild(counter);
     }
 
+    // -- Dirty check helper --
+    /**
+     * Check whether the textarea content has been modified.
+     *
+     * @returns {boolean} Whether the textarea differs from its initial value.
+     */
+    const hasPendingChanges = () => textarea.value !== initialValue;
+
+    /**
+     * Attempt to close the editor dialog.
+     * If there are unsaved changes, show a confirmation dialog first.
+     */
+    const guardedClose = async () => {
+        if (hasPendingChanges()) {
+            const discard = await confirmDiscardChanges();
+            if (!discard) {
+                // Only refocus the textarea when no confirmation overlay is
+                // still visible (it keeps focus on its own "Keep editing" btn).
+                if (!document.querySelector('.oqs-confirm-discard-backdrop')) {
+                    textarea.focus();
+                }
+                return;
+            }
+        }
+        closeMarkdownEditorDialog();
+    };
+
+    // -- Wire up close button to guarded close --
+    closeBtn.addEventListener('click', guardedClose);
+
     // -- Footer --
     const footer = document.createElement('div');
     footer.className = 'oqs-md-editor-footer';
@@ -104,7 +139,7 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
     cancelBtn.className = 'oqs-md-editor-btn oqs-md-editor-btn--cancel';
     cancelBtn.type = 'button';
     cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', closeMarkdownEditorDialog);
+    cancelBtn.addEventListener('click', guardedClose);
 
     const saveBtn = document.createElement('button');
     saveBtn.className = 'oqs-md-editor-btn oqs-md-editor-btn--save';
@@ -123,12 +158,15 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
 
     // -- Keyboard handler --
     /**
-     * Close on Escape key.
+     * Guard close on Escape key.
      *
      * @param {KeyboardEvent} e - Keyboard event.
      */
     const onKeyDown = (e) => {
-        if (e.key === 'Escape') closeMarkdownEditorDialog();
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            guardedClose();
+        }
     };
     document.addEventListener('keydown', onKeyDown);
     backdrop._oqsKeyHandler = onKeyDown;

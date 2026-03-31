@@ -4,6 +4,7 @@ import { highlightStep, destroyTour } from '../tour/tour-runner';
 import { detectPlatformType } from '../platform/index';
 import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
+import { confirmDiscardChanges } from './confirm-discard';
 
 /**
  * Modal tour editor for edit mode.
@@ -201,6 +202,9 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
     } catch (err) {
         logger.warn('Could not read raw properties for expression display:', err);
     }
+
+    // Capture a serialised baseline so we can detect unsaved changes later.
+    const toursBaseline = JSON.stringify(tours);
 
     overlay.innerHTML = buildEditorHTML(tours, sheetObjects, selectedTourIndex, selectedStepIndex);
 
@@ -654,9 +658,29 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         closeEditor();
     });
 
+    // -- Dirty check helper --
+    /**
+     * Check whether tours have been modified since the editor opened.
+     *
+     * @returns {boolean} Whether tours differ from the baseline snapshot.
+     */
+    const hasPendingChanges = () => JSON.stringify(tours) !== toursBaseline;
+
+    /**
+     * Attempt to close the editor.
+     * If there are unsaved changes, show a confirmation dialog first.
+     */
+    const guardedClose = async () => {
+        if (hasPendingChanges()) {
+            const discard = await confirmDiscardChanges();
+            if (!discard) return;
+        }
+        closeEditor();
+    };
+
     // Cancel button
     overlay.querySelector('.onboard-qs-editor__cancel')?.addEventListener('click', () => {
-        closeEditor();
+        guardedClose();
     });
 
     // Export button
@@ -689,13 +713,14 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
 
     // Close on ESC
     /**
-     * Handle ESC key to close the editor.
+     * Handle ESC key to guard-close the editor.
      *
      * @param {KeyboardEvent} e - The keyboard event.
      */
     const escHandler = (e) => {
         if (e.key === 'Escape') {
-            closeEditor();
+            e.preventDefault();
+            guardedClose();
         }
     };
     document.addEventListener('keydown', escHandler);
