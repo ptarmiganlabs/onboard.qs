@@ -31,6 +31,9 @@ export function confirmDiscardChanges() {
             return;
         }
 
+        // Remember the previously focused element so we can restore it later
+        const previouslyFocused = /** @type {HTMLElement|null} */ (document.activeElement);
+
         const backdrop = document.createElement('div');
         backdrop.className = `${CLS}-backdrop`;
 
@@ -73,6 +76,9 @@ export function confirmDiscardChanges() {
         const cleanup = (result) => {
             document.removeEventListener('keydown', onKey, true);
             backdrop.remove();
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+                previouslyFocused.focus();
+            }
             resolve(result);
         };
 
@@ -91,6 +97,7 @@ export function confirmDiscardChanges() {
          */
         const onKey = (e) => {
             if (e.key === 'Escape') {
+                e.preventDefault();
                 e.stopPropagation();
                 cleanup(false);
             }

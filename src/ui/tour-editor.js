@@ -711,7 +711,8 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         }
     });
 
-    // Close on ESC
+    // Close on ESC — listen on the overlay (not document) because the
+    // overlay stops keydown propagation to prevent Qlik from capturing keys.
     /**
      * Handle ESC key to guard-close the editor.
      *
@@ -723,7 +724,7 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             guardedClose();
         }
     };
-    document.addEventListener('keydown', escHandler);
+    overlay.addEventListener('keydown', escHandler);
 
     // Attach initial inner listeners
     attachInnerListeners();
@@ -739,7 +740,7 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             destroyTour(currentHighlight);
             currentHighlight = null;
         }
-        document.removeEventListener('keydown', escHandler);
+        overlay.removeEventListener('keydown', escHandler);
         overlay.remove();
         if (onClose) onClose();
     }
