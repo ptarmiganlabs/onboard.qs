@@ -46,7 +46,8 @@ onboard.qs/
 ├── nebula.config.cjs         # nebula.js / Rollup build configuration
 ├── eslint.config.js          # ESLint flat config
 ├── scripts/
-│   ├── post-build.mjs        # Token replacement (version, build type)
+│   ├── build-date.cjs       # Shared build-date generator (CJS)
+│   ├── post-build.mjs        # Token replacement (version, build type, build date)
 │   └── zip-extension.mjs     # Zip builder for Sense deployment
 └── src/
     ├── index.js              # Supernova entry point (hooks, lifecycle)

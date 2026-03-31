@@ -25,6 +25,7 @@
 
 ### Features
 
+- add build date/time to property panel About section and About dialog
 - restructure theme and styling sections into subsections in property panel
 
 ## [1.6.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.5.0...onboard-qs-v1.6.0) (2026-03-14)
