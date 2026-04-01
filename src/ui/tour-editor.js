@@ -660,11 +660,13 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
 
     // -- Dirty check helper --
     /**
-     * Check whether tours have been modified since the editor opened.
+     * Check whether tours or theme have been modified since the editor opened.
      *
-     * @returns {boolean} Whether tours differ from the baseline snapshot.
+     * @returns {boolean} Whether tours differ from the baseline snapshot or a
+     *   theme import is pending.
      */
-    const hasPendingChanges = () => JSON.stringify(tours) !== toursBaseline;
+    const hasPendingChanges = () =>
+        JSON.stringify(tours) !== toursBaseline || !!layout._importedTheme;
 
     /**
      * Attempt to close the editor.

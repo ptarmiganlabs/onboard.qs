@@ -41,12 +41,20 @@ export function confirmDiscardChanges() {
         box.className = `${CLS}-dialog`;
         box.setAttribute('role', 'alertdialog');
         box.setAttribute('aria-modal', 'true');
-        box.setAttribute('aria-label', 'Unsaved changes');
         box.addEventListener('click', (e) => e.stopPropagation());
+
+        const title = document.createElement('h2');
+        title.className = `${CLS}-title`;
+        title.id = `${CLS}-title`;
+        title.textContent = 'Unsaved changes';
+        box.setAttribute('aria-labelledby', title.id);
 
         const msg = document.createElement('p');
         msg.className = `${CLS}-msg`;
+        msg.id = `${CLS}-msg`;
         msg.textContent = 'You have unsaved changes. Are you sure you want to discard them?';
+        box.setAttribute('aria-describedby', msg.id);
+        box.appendChild(title);
         box.appendChild(msg);
 
         const actions = document.createElement('div');

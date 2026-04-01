@@ -1530,6 +1530,13 @@
     width: 90vw;
 }
 
+.oqs-confirm-discard-title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
 .oqs-confirm-discard-msg {
     margin: 0 0 16px;
     font-size: 14px;
