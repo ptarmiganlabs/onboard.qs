@@ -282,6 +282,27 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         });
 
+        // Clone tour button
+        overlay.querySelectorAll('.onboard-qs-editor__clone-tour').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.tourIndex, 10);
+                const original = tours[idx];
+                const clone = JSON.parse(JSON.stringify(original));
+                clone.tourId = generateUUID();
+                clone.tourName = (clone.tourName || '') + ' (Copy)';
+                // Strip Qlik-internal cId so the property panel treats this as a new item
+                delete clone.cId;
+                if (Array.isArray(clone.steps)) {
+                    clone.steps.forEach((s) => delete s.cId);
+                }
+                tours.splice(idx + 1, 0, clone);
+                selectedTourIndex = idx + 1;
+                selectedStepIndex = -1;
+                render();
+            });
+        });
+
         // Step list clicks
         overlay.querySelectorAll('.onboard-qs-editor__step-item').forEach((item) => {
             item.addEventListener('click', () => {
@@ -327,6 +348,22 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
                     }
                     render();
                 }
+            });
+        });
+
+        // Clone step button
+        overlay.querySelectorAll('.onboard-qs-editor__clone-step').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.stepIndex, 10);
+                if (selectedTourIndex < 0) return;
+                const steps = tours[selectedTourIndex].steps;
+                const clone = JSON.parse(JSON.stringify(steps[idx]));
+                // Strip Qlik-internal cId so the property panel treats this as a new item
+                delete clone.cId;
+                steps.splice(idx + 1, 0, clone);
+                selectedStepIndex = idx + 1;
+                render();
             });
         });
 
@@ -763,6 +800,31 @@ async function saveToModel(model, layout, tours) {
         // then wrap any '='-prefixed values so Qlik evaluates them
         // as Dollar Sign Expansion expressions.
         const toursToSave = JSON.parse(JSON.stringify(tours));
+
+        // Strip duplicate Qlik-internal cId values so the property panel
+        // can render every item. Qlik auto-assigns fresh cIds on setProperties.
+        const seenCids = new Set();
+        for (const tour of toursToSave) {
+            if (tour.cId) {
+                if (seenCids.has(tour.cId)) {
+                    delete tour.cId;
+                } else {
+                    seenCids.add(tour.cId);
+                }
+            }
+            if (Array.isArray(tour.steps)) {
+                for (const step of tour.steps) {
+                    if (step.cId) {
+                        if (seenCids.has(step.cId)) {
+                            delete step.cId;
+                        } else {
+                            seenCids.add(step.cId);
+                        }
+                    }
+                }
+            }
+        }
+
         wrapExpressions(toursToSave);
         props.tours = toursToSave;
         // Apply imported theme if present
@@ -841,6 +903,7 @@ function buildTourListPanel(tours, selectedTourIndex) {
              data-tour-index="${i}">
             <span class="onboard-qs-editor__tour-item-name">${escapeHtml(tour.tourName || `Tour ${i + 1}`)}</span>
             <span class="onboard-qs-editor__tour-item-badge">${tour.steps?.length || 0} steps</span>
+            <button class="onboard-qs-editor__clone-tour" data-tour-index="${i}" title="Clone tour">&#x2398;</button>
             <button class="onboard-qs-editor__delete-tour" data-tour-index="${i}" title="Delete tour">&times;</button>
         </div>
     `
@@ -906,6 +969,7 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
                             title="Move up" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
                     <button class="onboard-qs-editor__move-step" data-step-index="${i}" data-direction="down"
                             title="Move down" ${i === steps.length - 1 ? 'disabled' : ''}>&#9660;</button>
+                    <button class="onboard-qs-editor__clone-step" data-step-index="${i}" title="Clone step">&#x2398;</button>
                     <button class="onboard-qs-editor__delete-step" data-step-index="${i}" title="Delete step">&times;</button>
                 </div>
             </div>
