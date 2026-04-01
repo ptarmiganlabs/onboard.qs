@@ -2,6 +2,7 @@ node_modules/
 dist/
 onboard-qs-ext/
 *.zip
+README.pdf
 coverage/
 .DS_Store
 bundle-analysis.html

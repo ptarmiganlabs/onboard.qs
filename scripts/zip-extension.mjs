@@ -40,6 +40,10 @@ async function main() {
         ignore: ['.*', '**/.*'],
     });
 
+    // Include documentation files in the archive root
+    archive.file('README.md', { name: 'README.md' });
+    archive.file('README.pdf', { name: 'README.pdf' });
+
     await archive.finalize();
 }
 
