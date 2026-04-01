@@ -135,6 +135,8 @@ export function toursSection() {
                 label: 'Tours',
                 allowAdd: true,
                 allowRemove: true,
+                allowMove: true,
+                allowDuplicate: true,
                 addTranslation: 'Add Tour',
                 itemTitleRef: 'tourName',
                 items: {
@@ -347,6 +349,8 @@ export function toursSection() {
                                         label: 'Steps',
                                         allowAdd: true,
                                         allowRemove: true,
+                                        allowMove: true,
+                                        allowDuplicate: true,
                                         addTranslation: 'Add Step',
                                         itemTitleRef: 'popoverTitle',
                                         items: {
