@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import archiver from 'archiver';
 
 /**
@@ -41,8 +41,11 @@ async function main() {
     });
 
     // Include documentation files in the archive root
-    archive.file('README.md', { name: 'README.md' });
-    archive.file('README.pdf', { name: 'README.pdf' });
+    const docFiles = ['README.md', 'README.pdf'];
+    for (const file of docFiles) {
+        await access(file);
+        archive.file(file, { name: file });
+    }
 
     await archive.finalize();
 }
