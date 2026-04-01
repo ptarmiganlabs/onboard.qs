@@ -591,6 +591,25 @@
     opacity: 1;
 }
 
+.onboard-qs-editor__clone-tour,
+.onboard-qs-editor__clone-step {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.onboard-qs-editor__clone-tour:hover,
+.onboard-qs-editor__clone-step:hover {
+    opacity: 1;
+    color: #009845;
+}
+
 /* --- Step list items --- */
 
 .onboard-qs-editor__step-item {

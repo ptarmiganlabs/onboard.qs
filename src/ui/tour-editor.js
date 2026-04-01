@@ -282,6 +282,22 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         });
 
+        // Clone tour button
+        overlay.querySelectorAll('.onboard-qs-editor__clone-tour').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.tourIndex, 10);
+                const original = tours[idx];
+                const clone = JSON.parse(JSON.stringify(original));
+                clone.tourId = generateUUID();
+                clone.tourName = (clone.tourName || '') + ' (Copy)';
+                tours.splice(idx + 1, 0, clone);
+                selectedTourIndex = idx + 1;
+                selectedStepIndex = -1;
+                render();
+            });
+        });
+
         // Step list clicks
         overlay.querySelectorAll('.onboard-qs-editor__step-item').forEach((item) => {
             item.addEventListener('click', () => {
@@ -327,6 +343,20 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
                     }
                     render();
                 }
+            });
+        });
+
+        // Clone step button
+        overlay.querySelectorAll('.onboard-qs-editor__clone-step').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.stepIndex, 10);
+                if (selectedTourIndex < 0) return;
+                const steps = tours[selectedTourIndex].steps;
+                const clone = JSON.parse(JSON.stringify(steps[idx]));
+                steps.splice(idx + 1, 0, clone);
+                selectedStepIndex = idx + 1;
+                render();
             });
         });
 
@@ -841,6 +871,7 @@ function buildTourListPanel(tours, selectedTourIndex) {
              data-tour-index="${i}">
             <span class="onboard-qs-editor__tour-item-name">${escapeHtml(tour.tourName || `Tour ${i + 1}`)}</span>
             <span class="onboard-qs-editor__tour-item-badge">${tour.steps?.length || 0} steps</span>
+            <button class="onboard-qs-editor__clone-tour" data-tour-index="${i}" title="Clone tour">&#x2398;</button>
             <button class="onboard-qs-editor__delete-tour" data-tour-index="${i}" title="Delete tour">&times;</button>
         </div>
     `
@@ -906,6 +937,7 @@ function buildStepListPanel(tour, tourIndex, selectedStepIndex, sheetObjects) {
                             title="Move up" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
                     <button class="onboard-qs-editor__move-step" data-step-index="${i}" data-direction="down"
                             title="Move down" ${i === steps.length - 1 ? 'disabled' : ''}>&#9660;</button>
+                    <button class="onboard-qs-editor__clone-step" data-step-index="${i}" title="Clone step">&#x2398;</button>
                     <button class="onboard-qs-editor__delete-step" data-step-index="${i}" title="Delete step">&times;</button>
                 </div>
             </div>
