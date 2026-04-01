@@ -40,11 +40,19 @@ async function main() {
         ignore: ['.*', '**/.*'],
     });
 
-    // Include documentation files in the archive root
+    // Include documentation files in the archive root (skip missing files with a warning)
     const docFiles = ['README.md', 'README.pdf'];
     for (const file of docFiles) {
-        await access(file);
-        archive.file(file, { name: file });
+        try {
+            await access(file);
+            archive.file(file, { name: file });
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                console.warn(`Warning: ${file} not found, skipping`);
+            } else {
+                throw err;
+            }
+        }
     }
 
     await archive.finalize();
