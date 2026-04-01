@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import archiver from 'archiver';
 
 /**
@@ -39,6 +39,21 @@ async function main() {
         cwd: 'onboard-qs-ext/',
         ignore: ['.*', '**/.*'],
     });
+
+    // Include documentation files in the archive root (skip missing files with a warning)
+    const docFiles = ['README.md', 'README.pdf'];
+    for (const file of docFiles) {
+        try {
+            await access(file);
+            archive.file(file, { name: file });
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                console.warn(`Warning: ${file} not found, skipping`);
+            } else {
+                throw err;
+            }
+        }
+    }
 
     await archive.finalize();
 }

@@ -39,9 +39,10 @@
         "start": "nebula serve",
         "sense": "nebula sense --meta src/meta.json",
         "post-build": "node scripts/post-build.mjs",
+        "generate-pdf": "node scripts/generate-readme-pdf.mjs",
         "zip": "node scripts/zip-extension.mjs",
-        "pack:dev": "cross-env BUILD_TYPE=development npm run build && npm run sense && cross-env BUILD_TYPE=development npm run post-build && npm run zip",
-        "pack:prod": "cross-env BUILD_TYPE=production npm run build:dist && cross-env BUILD_TYPE=production npm run sense && cross-env BUILD_TYPE=production npm run post-build && npm run zip",
+        "pack:dev": "cross-env BUILD_TYPE=development npm run build && npm run sense && cross-env BUILD_TYPE=development npm run post-build && npm run generate-pdf && npm run zip",
+        "pack:prod": "cross-env BUILD_TYPE=production npm run build:dist && cross-env BUILD_TYPE=production npm run sense && cross-env BUILD_TYPE=production npm run post-build && npm run generate-pdf && npm run zip",
         "cloc": "cloc --exclude-dir=node_modules src/",
         "version:major": "npm version major --no-git-tag-version",
         "version:minor": "npm version minor --no-git-tag-version",
@@ -69,6 +70,7 @@
         "globals": "^17.4.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.4.0",
+        "md-to-pdf": "^5.2.5",
         "prettier": "^3.8.1"
     },
     "peerDependencies": {
