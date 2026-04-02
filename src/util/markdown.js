@@ -51,6 +51,10 @@ export function markdownToHtml(md, options) {
     // We only escape & and angle brackets that are NOT part of existing HTML tags
     text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/<(?![/a-zA-Z!])/g, '&lt;');
 
+    // Collapse multi-line HTML tags into single lines so that the <br> replacement
+    // later does not inject <br> inside opening tags and break them.
+    text = text.replace(/<[a-zA-Z][^>]*\n[^>]*>/g, (match) => match.replace(/\n\s*/g, ' '));
+
     // Horizontal rules: --- or *** or ___ on their own line
     text = text.replace(/^(?:[-*_]){3,}\s*$/gm, '<hr>');
 
