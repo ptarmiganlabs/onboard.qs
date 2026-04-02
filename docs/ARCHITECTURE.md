@@ -45,6 +45,8 @@ graph TD
             LG[util/logger.js]
             MD[util/markdown.js]
             UU[util/uuid.js]
+            XS[util/extension-state.js<br/>Shared State]
+            TB[util/tab-switcher.js<br/>Tab Container Support]
         end
 
         subgraph "Configuration"
@@ -70,6 +72,10 @@ graph TD
     TR --> TS
     TE --> TR
     TE --> TI
+    TR --> TB
+    TB --> XS
+    TB --> SE
+    EP --> TB
     TR --> PI
 ```
 
@@ -104,6 +110,7 @@ sequenceDiagram
     participant EP as index.js
     participant PI as platform/index.js
     participant AD as Adapter (CM/Cloud)
+    participant TB as tab-switcher.js
     participant WR as widget-renderer.js
     participant TR as tour-runner.js
     participant DJ as driver.js
@@ -117,11 +124,15 @@ sequenceDiagram
     PI-->>EP: adapter module
     EP->>AD: injectCSS(driverCSS)
     EP->>AD: getCurrentSheetId()
+    EP->>TB: buildTabContainerMap(app, adapter)
+    Note over TB: Scan sheet for sn-tabbed-container objects,<br/>populate extensionState.tabContainerMap
     EP->>WR: renderWidget(element, layout, context)
     Note over WR: User clicks "Start Tour"
     WR->>TR: runTour(tourConfig, options)
     TR->>PI: getObjectSelectorSync(platform, objectId, codePath)
     PI-->>TR: CSS selector string
+    TR->>TB: ensureTabVisible(objectId) [if in tab container]
+    Note over TB: Click tab button + wait for DOM element
     TR->>DJ: driver(config).drive()
     DJ-->>QS: Overlay + popovers on Qlik objects
 ```
@@ -220,7 +231,9 @@ src/
 │   ├── widget-renderer.js    # Analysis mode widget
 │   └── tour-editor.js        # Edit mode modal editor
 └── util/
+    ├── extension-state.js    # Shared state (model ref, tabContainerMap)
     ├── logger.js             # Build-aware logging
     ├── markdown.js           # Minimal MD→HTML
+    ├── tab-switcher.js       # Tab container auto-switching
     └── uuid.js               # UUID v4 generator
 ```

@@ -4,6 +4,8 @@ import { markdownToHtml } from '../util/markdown';
 import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
+import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
+import { extensionState } from '../util/extension-state';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
@@ -75,15 +77,32 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                         ? step.customCssSelector
                         : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
 
+                // For objects inside tab containers, we need to switch to
+                // the correct tab before the element can be found in the DOM.
+                // The sync variant clicks the tab immediately; if Qlik renders
+                // the child synchronously, querySelector will find it.
+                const objectId = step.selectorType !== 'css' ? step.targetObjectId : null;
+
                 return {
                     // Use a function for lazy evaluation — the Qlik object DOM
                     // element may not exist yet when steps are configured
                     /**
                      * Lazily resolve the DOM element for this step.
+                     * If the object is inside a tab container, switch to the
+                     * correct tab first (synchronous click).
+                     *
+                     * Tab info is checked at call time (not when steps are
+                     * built) so that late-arriving tabContainerMap data is
+                     * still picked up.
                      *
                      * @returns {Element|null} The matching DOM element, or null.
                      */
-                    element: () => document.querySelector(cssSelector),
+                    element: () => {
+                        if (objectId && getTabInfo(objectId)) {
+                            ensureTabVisibleSync(objectId, platformType, codePath);
+                        }
+                        return document.querySelector(cssSelector);
+                    },
                     popover: {
                         title: step.popoverTitle || '',
                         description: markdownToHtml(step.popoverDescription || ''),
@@ -91,6 +110,10 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                         align: step.popoverAlign || 'center',
                     },
                     disableActiveInteraction: step.disableInteraction !== false,
+                    // Custom metadata — used by onNextClick/onPrevClick to
+                    // pre-switch tabs before the step transition.
+                    _targetObjectId: objectId,
+                    _cssSelector: cssSelector,
                 };
             })
     );
@@ -107,9 +130,9 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
- * @returns {object} The driver.js instance.
+ * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
-export function runTour(tourConfig, options = {}) {
+export async function runTour(tourConfig, options = {}) {
     const {
         platformType = detectPlatformType(),
         senseVersion: _senseVersion,
@@ -118,6 +141,13 @@ export function runTour(tourConfig, options = {}) {
         sheetId,
         onComplete,
     } = options;
+
+    // Ensure tab-container metadata is fully built before we create
+    // driver.js steps — auto-start tours may fire before the async
+    // Engine calls in buildTabContainerMap() have finished.
+    if (extensionState.tabContainerMapReady) {
+        await extensionState.tabContainerMapReady;
+    }
 
     const steps = buildDriverSteps(tourConfig, platformType, codePath);
 
@@ -146,6 +176,44 @@ export function runTour(tourConfig, options = {}) {
         prevBtnText: tourConfig.prevBtnText || 'Previous',
         doneBtnText: tourConfig.doneBtnText || 'Done',
         /**
+         * Pre-switch tab containers when navigating forward.
+         * This fires INSTEAD of the default next behavior, so we must
+         * call driverObj.moveNext() ourselves after the tab switch.
+         *
+         * @param {Element|undefined} _element - Current highlighted element.
+         * @param {object} _step - Current step config.
+         * @param {{ driver: object }} opts - Driver options containing the driver instance.
+         */
+        onNextClick: async (_element, _step, { driver: driverInstance }) => {
+            const activeIdx = driverInstance.getActiveIndex();
+            const nextIdx = activeIdx + 1;
+            if (nextIdx < steps.length) {
+                const nextStep = steps[nextIdx];
+                if (nextStep._targetObjectId && getTabInfo(nextStep._targetObjectId)) {
+                    await ensureTabVisible(nextStep._targetObjectId, platformType, codePath);
+                }
+            }
+            driverInstance.moveNext();
+        },
+        /**
+         * Pre-switch tab containers when navigating backward.
+         *
+         * @param {Element|undefined} _element - Current highlighted element.
+         * @param {object} _step - Current step config.
+         * @param {{ driver: object }} opts - Driver options containing the driver instance.
+         */
+        onPrevClick: async (_element, _step, { driver: driverInstance }) => {
+            const activeIdx = driverInstance.getActiveIndex();
+            const prevIdx = activeIdx - 1;
+            if (prevIdx >= 0) {
+                const prevStep = steps[prevIdx];
+                if (prevStep._targetObjectId && getTabInfo(prevStep._targetObjectId)) {
+                    await ensureTabVisible(prevStep._targetObjectId, platformType, codePath);
+                }
+            }
+            driverInstance.movePrevious();
+        },
+        /**
          * Callback invoked when the driver.js tour is destroyed.
          */
         onDestroyed: () => {
@@ -159,6 +227,15 @@ export function runTour(tourConfig, options = {}) {
             }
         },
     };
+
+    // Pre-switch tab for the first step if it targets a tab container child.
+    // This must happen before drive() so the element exists when resolved.
+    if (steps.length > 0 && steps[0]._targetObjectId) {
+        const firstTabInfo = getTabInfo(steps[0]._targetObjectId);
+        if (firstTabInfo) {
+            await ensureTabVisible(steps[0]._targetObjectId, platformType, codePath);
+        }
+    }
 
     const driverObj = driver(driverConfig);
     driverObj.drive();
@@ -214,9 +291,53 @@ export function highlightStep(step, platformType, codePath) {
         step.selectorType === 'css' && step.customCssSelector
             ? step.customCssSelector
             : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+
+    // For objects inside tab containers, switch to the correct tab first
+    const objectId = step.selectorType !== 'css' ? step.targetObjectId : null;
+    if (objectId && getTabInfo(objectId)) {
+        ensureTabVisibleSync(objectId, platformType, codePath);
+    }
+
     const element = document.querySelector(cssSelector);
 
     if (!element) {
+        // If the element is still not found (async tab rendering), try
+        // again after a short delay. This handles the case where Qlik
+        // renders tab content asynchronously.
+        if (objectId && getTabInfo(objectId)) {
+            logger.debug(
+                `highlightStep: element not found after sync tab switch, ` +
+                    `retrying with async wait for ${cssSelector}`
+            );
+            const driverObj = driver({
+                popoverClass: 'onboard-qs-popover',
+                stagePadding: 8,
+                stageRadius: 5,
+            });
+
+            // Fire-and-forget: wait for element, then highlight
+            ensureTabVisible(objectId, platformType, codePath).then((el) => {
+                if (el) {
+                    driverObj.highlight({
+                        element: el,
+                        popover: {
+                            title: step.popoverTitle || '(No title)',
+                            description: markdownToHtml(
+                                step.popoverDescription || '(No description)'
+                            ),
+                            side: step.popoverSide || 'bottom',
+                            align: step.popoverAlign || 'center',
+                        },
+                    });
+                } else {
+                    logger.warn(
+                        `highlightStep: element still not found after async tab switch: ${cssSelector}`
+                    );
+                }
+            });
+            return driverObj;
+        }
+
         logger.warn(`Cannot highlight: element not found for selector ${cssSelector}`);
         return null;
     }

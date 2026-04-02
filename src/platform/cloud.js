@@ -1,5 +1,6 @@
 import logger from '../util/logger';
 import { getSelectors } from './selectors';
+import { extensionState } from '../util/extension-state';
 
 /**
  * Qlik Cloud platform adapter.
@@ -66,20 +67,42 @@ export async function getSheetObjects(app) {
                 const sheetObj = await app.getObject(sheetId);
                 const sheetLayout = await sheetObj.getLayout();
                 let sheetObjectIds = (sheetLayout.cells || []).map((c) => c.name);
-                // Add children of objects (e.g. layout containers)
+                // Add children of objects (e.g. layout containers, tab containers)
+                // and build tab-container metadata map for runtime tab-switching.
+                // TODO: Cloud — verify sn-tabbed-container layout structure matches client-managed
+                const tabMap = {};
                 for (const id of [...sheetObjectIds]) {
                     try {
                         const objHandle = await app.getObject(id);
                         const layout = await objHandle.getLayout();
                         if (layout.qChildList?.qItems) {
+                            const isTabContainer = layout.qInfo?.qType === 'sn-tabbed-container';
+
                             layout.qChildList.qItems.forEach((item) => {
                                 sheetObjectIds.push(item.qInfo.qId);
+
+                                // For tab containers, record which tab each
+                                // child lives in so we can switch tabs at
+                                // tour runtime.
+                                // TODO: Cloud — verify qData.childRefId exists in Cloud layout
+                                if (isTabContainer && item.qData?.childRefId) {
+                                    tabMap[item.qInfo.qId] = {
+                                        containerId: id,
+                                        tabCId: item.qData.childRefId,
+                                        tabLabel:
+                                            item.qData.title ||
+                                            item.qData.visualization ||
+                                            item.qInfo.qId,
+                                    };
+                                }
                             });
                         }
                     } catch (e) {
                         logger.warn(`Cloud: could not get layout for object ${id}:`, e);
                     }
                 }
+                // Publish tab-container metadata for tour-runner / tab-switcher
+                extensionState.tabContainerMap = tabMap;
                 if (sheetLayout.qChildList?.qItems) {
                     const childIds = sheetLayout.qChildList.qItems.map((item) => item.qInfo.qId);
                     sheetObjectIds = [...new Set([...sheetObjectIds, ...childIds])];
