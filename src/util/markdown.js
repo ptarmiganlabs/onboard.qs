@@ -12,6 +12,7 @@
  *   - Headings (### h3, #### h4 — h1/h2 intentionally omitted for popovers)
  *   - > blockquotes
  *   - --- horizontal rules
+ *   - Embedded videos via raw HTML (`<video>`, `<iframe>`, `<source>`)
  *
  * This is intentionally minimal (~60 lines) to keep the bundle small.
  * For full Markdown, consider replacing with `marked` or `snarkdown`.
@@ -105,11 +106,29 @@ export function markdownToHtml(md) {
     text = text.replace(/<p>\s*<\/p>/g, '');
 
     // Clean up paragraphs wrapping block elements
-    text = text.replace(/<p>(<(?:ul|ol|blockquote|h[3-6]|hr))/g, '$1');
-    text = text.replace(/(<\/(?:ul|ol|blockquote|h[3-6])>)<\/p>/g, '$1');
+    text = text.replace(/<p>(<(?:ul|ol|blockquote|h[3-6]|hr|video|iframe))/g, '$1');
+    text = text.replace(/(<\/(?:ul|ol|blockquote|h[3-6]|video|iframe)>)<\/p>/g, '$1');
     text = text.replace(/<p>(<hr>)<\/p>/g, '$1');
 
     return DOMPurify.sanitize(text.trim(), {
-        ADD_ATTR: ['target', 'rel', 'style'],
+        ADD_TAGS: ['iframe', 'video', 'source'],
+        ADD_ATTR: [
+            'target',
+            'rel',
+            'style',
+            // video/iframe attributes
+            'controls',
+            'autoplay',
+            'muted',
+            'loop',
+            'poster',
+            'preload',
+            'playsinline',
+            'frameborder',
+            'allowfullscreen',
+            'allow',
+            'loading',
+            'referrerpolicy',
+        ],
     });
 }
