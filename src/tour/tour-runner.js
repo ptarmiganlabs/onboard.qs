@@ -1,6 +1,6 @@
 import { driver } from 'driver.js';
 import logger from '../util/logger';
-import { markdownToHtml } from '../util/markdown';
+import { markdownToHtml, stripHtml } from '../util/markdown';
 import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
@@ -18,9 +18,11 @@ import { extensionState } from '../util/extension-state';
  * @param {object} tourConfig - A single tour from the layout's tours array.
  * @param {string} platformType - 'client-managed' or 'cloud'
  * @param {string} [codePath] - Code-path name for selector lookup (e.g. 'default').
+ * @param {object} [options] - Additional options.
+ * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
  * @returns {Array<object>} Array of driver.js DriveStep objects.
  */
-export function buildDriverSteps(tourConfig, platformType, codePath) {
+export function buildDriverSteps(tourConfig, platformType, codePath, options) {
     if (!tourConfig.steps || !Array.isArray(tourConfig.steps)) {
         return [];
     }
@@ -46,8 +48,8 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                     const size = step.dialogSize || 'medium';
                     const sizeClass = `onboard-qs-dialog-${size}`;
                     const popoverConfig = {
-                        title: step.popoverTitle || '',
-                        description: markdownToHtml(step.popoverDescription || ''),
+                        title: stripHtml(step.popoverTitle || ''),
+                        description: markdownToHtml(step.popoverDescription || '', options),
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                         popoverClass: `onboard-qs-popover ${sizeClass}`,
@@ -104,8 +106,8 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                         return document.querySelector(cssSelector);
                     },
                     popover: {
-                        title: step.popoverTitle || '',
-                        description: markdownToHtml(step.popoverDescription || ''),
+                        title: stripHtml(step.popoverTitle || ''),
+                        description: markdownToHtml(step.popoverDescription || '', options),
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                     },
@@ -120,6 +122,29 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
 }
 
 /**
+ * Validate a CSS color string. Returns the value if it matches a known
+ * pattern (hex, rgb/rgba, hsl/hsla, named colors), otherwise returns the
+ * default.
+ *
+ * @param {string} value - Candidate color value.
+ * @param {string} fallback - Default color.
+ * @returns {string} Safe color string.
+ */
+function safeCssColor(value, fallback) {
+    if (!value || typeof value !== 'string') return fallback;
+    // Accept hex, rgb(), rgba(), hsl(), hsla(), and simple named colors
+    const cleaned = value.trim();
+    if (
+        /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(cleaned) ||
+        /^(?:rgb|rgba|hsl|hsla)\([^)]+\)$/i.test(cleaned) ||
+        /^[a-z]{3,20}$/i.test(cleaned)
+    ) {
+        return cleaned;
+    }
+    return fallback;
+}
+
+/**
  * Create and run a tour.
  *
  * @param {object} tourConfig - Tour configuration from layout.
@@ -129,6 +154,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
  * @param {string} [options.codePath] - Code-path name for selector lookup.
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
+ * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
@@ -139,6 +165,7 @@ export async function runTour(tourConfig, options = {}) {
         codePath = 'default',
         appId,
         sheetId,
+        allowedUriPatterns,
         onComplete,
     } = options;
 
@@ -149,7 +176,9 @@ export async function runTour(tourConfig, options = {}) {
         await extensionState.tabContainerMapReady;
     }
 
-    const steps = buildDriverSteps(tourConfig, platformType, codePath);
+    const steps = buildDriverSteps(tourConfig, platformType, codePath, {
+        allowedUriPatterns,
+    });
 
     if (steps.length === 0) {
         logger.warn('Tour has no valid steps, nothing to show');
@@ -167,14 +196,14 @@ export async function runTour(tourConfig, options = {}) {
         showProgress: tourConfig.showProgress !== false,
         progressText: '{{current}} of {{total}}',
         showButtons: ['next', 'previous', 'close'],
-        overlayColor: tourConfig.overlayColor || 'rgba(0, 0, 0, 0.6)',
+        overlayColor: safeCssColor(tourConfig.overlayColor, 'rgba(0, 0, 0, 0.6)'),
         overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
         stagePadding: tourConfig.stagePadding || 8,
         stageRadius: tourConfig.stageRadius || 5,
         popoverClass: 'onboard-qs-popover',
-        nextBtnText: tourConfig.nextBtnText || 'Next',
-        prevBtnText: tourConfig.prevBtnText || 'Previous',
-        doneBtnText: tourConfig.doneBtnText || 'Done',
+        nextBtnText: stripHtml(tourConfig.nextBtnText || 'Next'),
+        prevBtnText: stripHtml(tourConfig.prevBtnText || 'Previous'),
+        doneBtnText: stripHtml(tourConfig.doneBtnText || 'Done'),
         /**
          * Pre-switch tab containers when navigating forward.
          * This fires INSTEAD of the default next behavior, so we must
@@ -277,7 +306,7 @@ export function highlightStep(step, platformType, codePath) {
         const driverObj = driver(driverConfig);
         driverObj.highlight({
             popover: {
-                title: step.popoverTitle || '(No title)',
+                title: stripHtml(step.popoverTitle || '(No title)'),
                 description: markdownToHtml(step.popoverDescription || '(No description)'),
             },
         });
@@ -321,7 +350,7 @@ export function highlightStep(step, platformType, codePath) {
                     driverObj.highlight({
                         element: el,
                         popover: {
-                            title: step.popoverTitle || '(No title)',
+                            title: stripHtml(step.popoverTitle || '(No title)'),
                             description: markdownToHtml(
                                 step.popoverDescription || '(No description)'
                             ),
@@ -351,7 +380,7 @@ export function highlightStep(step, platformType, codePath) {
     driverObj.highlight({
         element,
         popover: {
-            title: step.popoverTitle || '(No title)',
+            title: stripHtml(step.popoverTitle || '(No title)'),
             description: markdownToHtml(step.popoverDescription || '(No description)'),
             side: step.popoverSide || 'bottom',
             align: step.popoverAlign || 'center',

@@ -15,6 +15,7 @@ export function startTour(tourConfig, context) {
         codePath: context.codePath,
         appId: context.appId,
         sheetId: context.sheetId,
+        allowedUriPatterns: context.allowedUriPatterns,
     });
 }
 

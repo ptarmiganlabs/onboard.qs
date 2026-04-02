@@ -46,6 +46,9 @@ export default {
     popoverButtonTextColor: { color: '#ffffff', index: '-1' },
     popoverButtonHoverBgColor: { color: '#007a38', index: '-1' },
     progressBarColor: { color: '#00b856', index: '-1' },
+    security: {
+        allowedUriPatterns: '',
+    },
     tours: [
         {
             tourName: 'Demo tour 1',

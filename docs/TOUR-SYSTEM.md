@@ -391,6 +391,29 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 
 The converter is intentionally minimal (~112 lines) to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
 
+### Embedded videos
+
+Step descriptions also support embedded videos via raw HTML. The DOMPurify configuration whitelists `<video>`, `<iframe>`, and `<source>` tags along with their common attributes (`controls`, `autoplay`, `muted`, `loop`, `poster`, `allowfullscreen`, `allow`, etc.).
+
+Use the **Large** or **X-Large** dialog size preset for steps containing video — CSS ensures `max-width: 100%` so videos scale responsively within the popover.
+
+```html
+<!-- Self-hosted video -->
+<video width="400" controls>
+    <source src="/content/Default/demo.mp4" type="video/mp4" />
+</video>
+
+<!-- YouTube embed -->
+<iframe
+    width="400"
+    height="225"
+    src="https://www.youtube.com/embed/VIDEO_ID"
+    allowfullscreen
+></iframe>
+```
+
+> **Note:** `<iframe>` embeds are subject to the browser Content Security Policy (CSP). The tenant or proxy CSP configuration may block external iframe sources.
+
 ### Markdown editing features
 
 All Markdown-editable textareas (in the tour editor and the standalone Markdown editor dialog) include:

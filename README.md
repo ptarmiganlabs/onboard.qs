@@ -418,6 +418,50 @@ This bar chart shows **quarterly revenue** broken down by sales region.
 </small>
 ```
 
+### Embedding Videos
+
+You can embed videos in step descriptions using raw HTML. Use the **Large** or **X-Large** dialog size preset (or a **Custom** size) for steps that contain video embeds — videos need horizontal space to look good.
+
+#### Self-hosted / Content server (`<video>` tag)
+
+On **Qlik Sense Enterprise on Windows (client-managed)**, files uploaded via the QMC content library are served at `/content/Default/<filename>`:
+
+```html
+<video width="400" controls>
+    <source src="/content/Default/demo.mp4" type="video/mp4" />
+</video>
+```
+
+On **Qlik Cloud** or any platform, use a full HTTPS URL:
+
+```html
+<video width="400" controls>
+    <source src="https://cdn.example.com/videos/tour-intro.mp4" type="video/mp4" />
+</video>
+```
+
+#### YouTube / Vimeo (`<iframe>` embed)
+
+```html
+<iframe width="400" height="225" src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen>
+</iframe>
+```
+
+> **Note:** `<iframe>` embeds are subject to the browser Content Security Policy (CSP).
+> On Qlik Cloud, the tenant's CSP may block external iframe sources.
+> On client-managed Qlik Sense, admins control CSP via the proxy configuration.
+
+#### Fallback: clickable thumbnail
+
+If CSP blocks iframes, a clickable thumbnail that opens the video in a new tab is a universally compatible alternative:
+
+```html
+<a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank">
+    <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" width="300" />
+    <br /><small>▶ Click to watch the tutorial</small>
+</a>
+```
+
 ---
 
 ## Tour Import & Export
