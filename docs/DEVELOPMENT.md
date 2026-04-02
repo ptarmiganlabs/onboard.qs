@@ -72,8 +72,10 @@ onboard.qs/
     │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
     │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
     └── util/
+        ├── extension-state.js # Shared state (model ref, tabContainerMap)
         ├── logger.js         # Build-type-aware console logger
         ├── markdown.js       # Mini Markdown-to-HTML converter
+        ├── tab-switcher.js   # Tab container auto-switching
         └── uuid.js           # UUID v4 generator
 ```
 
@@ -83,7 +85,7 @@ onboard.qs/
 
 1. **Edit mode**: The extension renders an "Open Tour Editor" placeholder. Clicking it opens a full-screen modal with three panels — tour list, step list, and detail editor. Alternatively, use the Qlik property panel on the right.
 
-2. **Analysis mode**: The extension renders a start button (or auto-starts). When triggered, it builds a driver.js configuration from the saved tour steps, resolving sheet objects to live DOM elements via CSS class selectors (`.qv-object-{objectId}`), and runs the tour.
+2. **Analysis mode**: The extension renders a start button (or auto-starts). When triggered, it builds a driver.js configuration from the saved tour steps, resolving sheet objects to live DOM elements via CSS class selectors (`.qv-object-{objectId}`), and runs the tour. Objects inside **tab containers** are handled automatically — the extension switches to the correct tab and waits for the element to render before highlighting.
 
 3. **Show-once**: When a tour completes or is dismissed, a localStorage key (`onboard-qs:{appId}:{sheetId}:{tourId}:v{version}`) is written. Auto-start checks this key and skips if present.
 

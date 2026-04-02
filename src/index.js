@@ -18,6 +18,7 @@ import { generateUUID } from './util/uuid';
 import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/resolve';
 import logger, { PACKAGE_VERSION, BUILD_DATE } from './util/logger';
 import { extensionState } from './util/extension-state';
+import { buildTabContainerMap } from './util/tab-switcher';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
@@ -274,6 +275,12 @@ export default function supernova(galaxy) {
 
                 // Analysis mode: needs platform for tour selector resolution
                 if (!platform || !adapter) return;
+
+                // Populate tab-container metadata early so tours can
+                // resolve tab-container children.  Fire-and-forget:
+                // auto-start tours already wait 500 ms, and manual
+                // starts require a user click, so this completes in time.
+                buildTabContainerMap(app, adapter);
 
                 const sheetId = adapter.getCurrentSheetId();
                 const appId = app?.id || 'unknown';

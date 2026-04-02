@@ -194,3 +194,7 @@ flowchart TD
     K --> M[Sort by title, return]
     L --> M
 ```
+
+### Tab container discovery
+
+During object enumeration, both adapters detect **tab container** objects (`qInfo.qType === 'sn-tabbed-container'`). When found, they read `qChildList.qItems[]` to extract child object metadata and populate `extensionState.tabContainerMap`. This metadata is also built independently in `util/tab-switcher.js` via `buildTabContainerMap()` during analysis-mode initialization, ensuring it is available before any auto-start tour runs.

@@ -48,6 +48,9 @@ const getObjectList = async (_data, handler) => {
     try {
         let infos = await app.getAllInfos();
         const sheetId = getCurrentSheetId();
+        // tabMap is declared at function scope so it can be referenced
+        // later when enriching titles even if sheetId is not found.
+        let tabMap = extensionState.tabContainerMap || {};
 
         if (sheetId) {
             try {
@@ -55,20 +58,37 @@ const getObjectList = async (_data, handler) => {
                 const sheetLayout = await sheetObj.getLayout();
                 let sheetObjectIds = (sheetLayout.cells || []).map((c) => c.name);
 
-                // Add children of objects (e.g. layout containers)
+                // Add children of objects (e.g. layout containers, tab containers)
+                // and build tab-container metadata map for runtime tab-switching.
+                tabMap = {};
                 for (const id of [...sheetObjectIds]) {
                     try {
                         const obj = await app.getObject(id);
                         const layout = await obj.getLayout();
                         if (layout.qChildList?.qItems) {
+                            const isTabContainer = layout.qInfo?.qType === 'sn-tabbed-container';
+
                             layout.qChildList.qItems.forEach((item) => {
                                 sheetObjectIds.push(item.qInfo.qId);
+
+                                if (isTabContainer && item.qData?.childRefId) {
+                                    tabMap[item.qInfo.qId] = {
+                                        containerId: id,
+                                        tabCId: item.qData.childRefId,
+                                        tabLabel:
+                                            item.qData.title ||
+                                            item.qData.visualization ||
+                                            item.qInfo.qId,
+                                    };
+                                }
                             });
                         }
                     } catch (e) {
                         logger.warn(`Could not get layout for object ${id}:`, e);
                     }
                 }
+                // Publish tab-container metadata for tour-runner / tab-switcher
+                extensionState.tabContainerMap = tabMap;
 
                 if (sheetLayout.qChildList?.qItems) {
                     const childIds = sheetLayout.qChildList.qItems.map((item) => item.qInfo.qId);
@@ -100,8 +120,19 @@ const getObjectList = async (_data, handler) => {
                             const layout = await obj.getLayout();
                             const title = layout.title || layout.qMeta?.title || item.value;
                             const type = layout.qInfo?.qType || 'unknown';
-                            return { value: item.value, label: `${title} (${type})` };
+                            let label = `${title} (${type})`;
+                            // Append tab context for objects inside tab containers
+                            const tabInfo = tabMap[item.value];
+                            if (tabInfo) {
+                                label += ` — Tab: ${tabInfo.tabLabel}`;
+                            }
+                            return { value: item.value, label };
                         } catch (_) {}
+                    }
+                    // Even if title didn't need enrichment, check for tab info
+                    const tabInfo2 = tabMap[item.value];
+                    if (tabInfo2 && !item.label.includes('— Tab:')) {
+                        return { ...item, label: `${item.label} — Tab: ${tabInfo2.tabLabel}` };
                     }
                     return item;
                 })

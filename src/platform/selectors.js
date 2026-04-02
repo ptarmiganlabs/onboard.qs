@@ -48,6 +48,25 @@ const selectors = {
 
             /** Selector for grid cells (each cell wraps one object). */
             gridCell: '.qv-gridcell',
+
+            /**
+             * Selector for a tab container's tab button by its child-ref ID (cId).
+             * The cId comes from `qChildList.qItems[].qData.childRefId` in the
+             * tab container's Engine layout.
+             *
+             * @param {string} tabCId - The tab's child-ref ID.
+             * @returns {string} CSS selector string.
+             */
+            tabButton: (tabCId) => `[data-testid="container-tab-${tabCId}"]`,
+
+            /**
+             * Selector for a tab container object by its object ID.
+             * Tab containers have qType 'sn-tabbed-container'.
+             *
+             * @param {string} objectId - The tab container's object ID.
+             * @returns {string} CSS selector string.
+             */
+            tabContainer: (objectId) => `.qv-object-${objectId}`,
         },
 
         // Add future code-path overrides here. Only the selectors that
@@ -108,6 +127,24 @@ const selectors = {
 
             /** Selector for grid cells. */
             gridCell: '.qv-gridcell',
+
+            /**
+             * Selector for a tab container's tab button by its child-ref ID (cId).
+             * // TODO: Cloud — verify data-testid pattern for tab buttons matches client-managed.
+             *
+             * @param {string} tabCId - The tab's child-ref ID.
+             * @returns {string} CSS selector string.
+             */
+            tabButton: (tabCId) => `[data-testid="container-tab-${tabCId}"]`,
+
+            /**
+             * Selector for a tab container object by its object ID.
+             * // TODO: Cloud — verify tab container selector matches client-managed.
+             *
+             * @param {string} objectId - The tab container's object ID.
+             * @returns {string} CSS selector string.
+             */
+            tabContainer: (objectId) => `.qv-object-${objectId}`,
         },
     },
 };

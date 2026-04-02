@@ -109,6 +109,7 @@ sequenceDiagram
     participant User
     participant WR as widget-renderer.js
     participant TR as tour-runner.js
+    participant TB as tab-switcher.js
     participant PI as platform/index.js
     participant SE as selectors.js
     participant DJ as driver.js
@@ -133,11 +134,17 @@ sequenceDiagram
     end
 
     TR->>DJ: driver({steps, ...config})
+    TR->>TB: ensureTabVisible(firstStep.objectId) [if in tab container]
+    Note over TB: Click tab button + poll DOM until element appears
     TR->>DJ: driverObj.drive()
     DJ->>User: Shows overlay + first popover
 
     loop User navigates steps
         User->>DJ: Next / Previous / Close
+        DJ->>TR: onNextClick / onPrevClick callback
+        TR->>TB: ensureTabVisible(nextStep.objectId) [if in tab container]
+        Note over TB: Switch tab + wait for element before advancing
+        TR->>DJ: moveNext() / movePrevious()
         DJ->>DJ: Lazy element resolution via () => document.querySelector(css)
     end
 
@@ -193,6 +200,77 @@ This is critical because:
 
 1. Qlik objects may not be in the DOM when the tour starts (e.g., objects below the fold that render lazily).
 2. The DOM can change between step transitions in Qlik Sense.
+3. Objects inside tab containers only exist in the DOM when their tab is active (see [Tab container support](#tab-container-support) below).
+
+## Tab container support
+
+Qlik Sense's **tab container** (`sn-tabbed-container`) presents a challenge: inactive tab panels are **lazy-rendered** — their child objects have no DOM elements until the tab is activated. This means `document.querySelector('.qv-object-{id}')` returns `null` for objects on inactive tabs.
+
+Onboard.qs handles this transparently via the `util/tab-switcher.js` module.
+
+### Tab container metadata
+
+At startup (analysis mode), `buildTabContainerMap(app, adapter)` scans the current sheet's objects via the Engine API. For each `sn-tabbed-container` it finds, it reads `qChildList.qItems[]` and builds a lookup map:
+
+```text
+extensionState.tabContainerMap = {
+    [childObjectId]: {
+        containerId: 'parent-tab-container-id',
+        tabCId:      'child-ref-id',    // from qData.childRefId
+        tabLabel:    'Tab display name'
+    }
+}
+```
+
+This map is stored in `extensionState` (shared mutable state) and consulted by the tour runner before each step.
+
+### Tab switching flow
+
+```mermaid
+flowchart TD
+    A[Tour step targets objectId] --> B{objectId in tabContainerMap?}
+    B -- No --> C[Regular step — no tab switching needed]
+    B -- Yes --> D{DOM element exists?}
+    D -- Yes --> E[Tab already active — proceed]
+    D -- No --> F[Look up tabCId from metadata]
+    F --> G["querySelector('[data-testid=container-tab-{tabCId}]')"]
+    G --> H[Click tab button]
+    H --> I[Poll DOM every 50ms up to 2s]
+    I --> J{Element appeared?}
+    J -- Yes --> K[Proceed with step]
+    J -- No --> L[Timeout — step may show centered]
+```
+
+### Key functions
+
+| Function                                                 | Type  | Description                                                                                |
+| -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------ |
+| `buildTabContainerMap(app, adapter)`                     | async | Scans sheet for tab containers, populates `extensionState.tabContainerMap`                 |
+| `getTabInfo(objectId)`                                   | sync  | Looks up tab metadata for a child object (returns `null` if not in a tab container)        |
+| `waitForElement(selector, timeout?, interval?)`          | async | Polls the DOM until a matching element appears or timeout expires                          |
+| `ensureTabVisible(objectId, platformType, codePath)`     | async | Checks if tab switch is needed, clicks the tab button, waits for the DOM element to appear |
+| `ensureTabVisibleSync(objectId, platformType, codePath)` | sync  | Synchronous variant used inside driver.js `element()` callbacks (best-effort, no wait)     |
+
+### Integration with tour runner
+
+Tab switching is integrated at three points in `tour-runner.js`:
+
+1. **First step** — Before calling `driverObj.drive()`, `runTour()` calls `await ensureTabVisible()` for the first step. This is critical because driver.js's `element()` function is synchronous and cannot wait for async tab rendering.
+
+2. **Step navigation** — `onNextClick` and `onPrevClick` callbacks are async. They call `await ensureTabVisible()` for the upcoming step, then call `moveNext()` / `movePrevious()` after the element is in the DOM.
+
+3. **Element resolution fallback** — Each step's `element()` function calls `ensureTabVisibleSync()` as a best-effort synchronous fallback. This handles edge cases like keyboard navigation where the async callbacks may not fire.
+
+### Property panel integration
+
+In the tour editor's object dropdown (populated by `getObjectList()` in `tours-section.js`), objects inside tab containers are labeled with a suffix:
+
+```text
+My Chart — Tab: Revenue
+Pivot Table — Tab: Details
+```
+
+This helps tour authors identify which tab an object belongs to when configuring steps.
 
 ## Tour editor (edit mode)
 
