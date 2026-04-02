@@ -320,6 +320,7 @@ export default function supernova(galaxy) {
                     platformType: platform.type,
                     senseVersion: platform.version,
                     codePath: platform.codePath,
+                    allowedUriPatterns: layout.security?.allowedUriPatterns,
                 });
 
                 // --- Toolbar button injection ---

@@ -6,10 +6,14 @@
  */
 
 import { generateUUID } from '../util/uuid';
+import { stripHtml } from '../util/markdown';
 import logger from '../util/logger';
 
 /** Current schema version for export files. */
 const EXPORT_VERSION = 1;
+
+/** Maximum import file size in bytes (1 MB). */
+const MAX_IMPORT_SIZE = 1024 * 1024;
 
 /**
  * Export tours and theme configuration to a downloadable JSON file.
@@ -82,12 +86,22 @@ export function importFromFile() {
                 return;
             }
 
+            if (file.size > MAX_IMPORT_SIZE) {
+                reject(
+                    new Error(
+                        `Import file is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 1 MB.`
+                    )
+                );
+                return;
+            }
+
             const reader = new FileReader();
             /** Handle successful file read and parse the JSON content. */
             reader.onload = () => {
                 try {
                     const data = JSON.parse(reader.result);
                     const validated = validateImportData(data);
+                    sanitizeImportData(validated);
                     logger.info(`Import file parsed: ${validated.tours.length} tour(s)`);
                     resolve(validated);
                 } catch (err) {
@@ -150,6 +164,39 @@ function validateImportData(data) {
         theme: data.theme && typeof data.theme === 'object' ? data.theme : null,
         widget: data.widget && typeof data.widget === 'object' ? data.widget : null,
     };
+}
+
+/**
+ * Sanitize imported data by stripping HTML from all plain-text string fields.
+ *
+ * This mutates the validated data in place. Fields that are rendered through
+ * markdownToHtml() (popoverDescription) are left untouched — DOMPurify
+ * handles those at render time.
+ *
+ * @param {object} data - Validated import data (from validateImportData).
+ */
+function sanitizeImportData(data) {
+    /** Tour-level plain-text string fields. */
+    const tourFields = ['tourName', 'nextBtnText', 'prevBtnText', 'doneBtnText', 'overlayColor'];
+    /** Step-level plain-text string fields. */
+    const stepFields = ['popoverTitle', 'customCssSelector'];
+
+    for (const tour of data.tours) {
+        for (const field of tourFields) {
+            if (typeof tour[field] === 'string') {
+                tour[field] = stripHtml(tour[field]);
+            }
+        }
+        if (Array.isArray(tour.steps)) {
+            for (const step of tour.steps) {
+                for (const field of stepFields) {
+                    if (typeof step[field] === 'string') {
+                        step[field] = stripHtml(step[field]);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**

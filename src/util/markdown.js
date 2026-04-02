@@ -21,12 +21,27 @@
 import DOMPurify from 'dompurify';
 
 /**
+ * Strip all HTML tags and attributes from a string, returning plain text.
+ * Uses DOMPurify with an empty allowlist for robust sanitization.
+ *
+ * @param {string} text - Potentially unsafe string.
+ * @returns {string} Plain text with all HTML removed.
+ */
+export function stripHtml(text) {
+    if (!text) return '';
+    return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+}
+
+/**
  * Convert a Markdown string to HTML.
  *
  * @param {string} md - Markdown source text.
+ * @param {object} [options] - Conversion options.
+ * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for
+ *   allowed iframe/video/source src attributes. Empty string = allow all.
  * @returns {string} HTML string.
  */
-export function markdownToHtml(md) {
+export function markdownToHtml(md, options) {
     if (!md) return '';
 
     // Normalize line endings
@@ -110,7 +125,7 @@ export function markdownToHtml(md) {
     text = text.replace(/(<\/(?:ul|ol|blockquote|h[3-6]|video|iframe)>)<\/p>/g, '$1');
     text = text.replace(/<p>(<hr>)<\/p>/g, '$1');
 
-    return DOMPurify.sanitize(text.trim(), {
+    const sanitized = DOMPurify.sanitize(text.trim(), {
         ADD_TAGS: ['iframe', 'video', 'source'],
         ADD_ATTR: [
             'target',
@@ -130,4 +145,44 @@ export function markdownToHtml(md) {
             'referrerpolicy',
         ],
     });
+
+    return filterMediaUris(sanitized, options?.allowedUriPatterns);
+}
+
+/**
+ * Remove iframe, video, and source elements whose src does not match any
+ * of the allowed URI prefixes.
+ *
+ * @param {string} html - Sanitized HTML string.
+ * @param {string} allowedUriPatterns - Comma-separated URL prefixes.
+ * @returns {string} HTML with non-matching media elements removed.
+ */
+function filterMediaUris(html, allowedUriPatterns) {
+    if (!allowedUriPatterns) return html;
+
+    const prefixes = allowedUriPatterns
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
+    if (prefixes.length === 0) return html;
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    container.querySelectorAll('iframe, video, source').forEach((el) => {
+        const src = el.getAttribute('src') || '';
+        const allowed = prefixes.some((prefix) => src.startsWith(prefix));
+        if (!allowed) {
+            el.remove();
+        }
+    });
+
+    // Clean up video elements that lost all their source children
+    container.querySelectorAll('video').forEach((video) => {
+        if (!video.querySelector('source') && !video.getAttribute('src')) {
+            video.remove();
+        }
+    });
+
+    return container.innerHTML;
 }

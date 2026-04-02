@@ -1,5 +1,6 @@
 import { widgetSection } from './widget-section';
 import { themeSection } from './theme-section';
+import { securitySection } from './security-section';
 import { toursSection } from './tours-section';
 import { aboutSection } from './about-section';
 
@@ -27,6 +28,7 @@ export default function ext(_galaxy) {
             items: {
                 widgetSection: widgetSection(),
                 themeSection: themeSection(),
+                securitySection: securitySection(),
                 toursSection: toursSection(),
                 supportSection: aboutSection(),
             },

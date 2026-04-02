@@ -242,6 +242,7 @@ function injectToolbarButton(adapter, platform, appId) {
         codePath: platform.codePath,
         appId: resolvedAppId,
         sheetId,
+        allowedUriPatterns: layout.security?.allowedUriPatterns,
     };
 
     // -- Click handler --
