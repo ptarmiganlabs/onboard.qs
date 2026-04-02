@@ -277,10 +277,11 @@ export default function supernova(galaxy) {
                 if (!platform || !adapter) return;
 
                 // Populate tab-container metadata early so tours can
-                // resolve tab-container children.  Fire-and-forget:
-                // auto-start tours already wait 500 ms, and manual
-                // starts require a user click, so this completes in time.
-                buildTabContainerMap(app, adapter);
+                // reliably resolve tab-container children. Store the
+                // promise so runTour() can await it — this guarantees
+                // the map is fully built before any tour starts, even
+                // on large sheets where the Engine calls take > 500 ms.
+                extensionState.tabContainerMapReady = buildTabContainerMap(app, adapter);
 
                 const sheetId = adapter.getCurrentSheetId();
                 const appId = app?.id || 'unknown';

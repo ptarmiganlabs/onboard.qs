@@ -43,8 +43,24 @@ export async function buildTabContainerMap(app, adapter) {
         const sheetLayout = await sheetObj.getLayout();
         const sheetObjectIds = (sheetLayout.cells || []).map((c) => c.name);
 
+        // Also include direct children from qChildList (e.g. objects
+        // that are not in cells but appear in the sheet child list).
+        if (sheetLayout.qChildList?.qItems) {
+            for (const item of sheetLayout.qChildList.qItems) {
+                if (item.qInfo?.qId && !sheetObjectIds.includes(item.qInfo.qId)) {
+                    sheetObjectIds.push(item.qInfo.qId);
+                }
+            }
+        }
+
         const tabMap = {};
-        for (const id of sheetObjectIds) {
+
+        /**
+         * Recursively inspect an object and its children for tab containers.
+         *
+         * @param {string} id - Qlik object ID to inspect.
+         */
+        async function inspectObject(id) {
             try {
                 const objHandle = await app.getObject(id);
                 const layout = await objHandle.getLayout();
@@ -59,10 +75,23 @@ export async function buildTabContainerMap(app, adapter) {
                             };
                         }
                     });
+                } else if (layout.qChildList?.qItems) {
+                    // Not a tab container but has children (e.g. layout
+                    // container) — walk children to find nested tab
+                    // containers.
+                    for (const child of layout.qChildList.qItems) {
+                        if (child.qInfo?.qId) {
+                            await inspectObject(child.qInfo.qId);
+                        }
+                    }
                 }
             } catch (_) {
                 // Skip objects we can't inspect (e.g. missing permissions)
             }
+        }
+
+        for (const id of sheetObjectIds) {
+            await inspectObject(id);
         }
 
         extensionState.tabContainerMap = tabMap;

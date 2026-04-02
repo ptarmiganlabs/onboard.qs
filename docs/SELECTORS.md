@@ -71,18 +71,19 @@ The merge strategy means overrides only need to specify the selectors that **cha
 
 ### Cloud — `default`
 
-| Selector           | Value                                    | Usage                              |
-| ------------------ | ---------------------------------------- | ---------------------------------- | --- | ---------------- | -------------------------------------- | ---------------------------------------- |
-| `objectById(id)`   | `.qv-object-${id}`                       | Tour step targeting                |
-| `allObjects`       | `.qv-object`                             | Enumerate all objects              |
-| `sheetContainer`   | `.qvt-sheet.qv-panel-sheet`              | Sheet container                    |
-| `sheetTitle`       | `.sheet-title-container`                 | Sheet title                        |
-| `toolbar`          | `[data-testid="top-bar-root"]`           | Cloud MUI top bar                  |
-| `subToolbar`       | `[data-testid="qs-sub-toolbar"]`         | Selections bar                     |
-| `editButton`       | `[data-testid="toolbar-edit-button"]`    | Edit mode button                   |
-| `analysisContent`  | `[data-testid="sense-analysis-content"]` | Main content area                  |
-| `gridCell`         | `.qv-gridcell`                           | Grid cells                         |     | `tabButton(cId)` | `[data-testid="container-tab-${cId}"]` | Tab container tab button by child-ref ID |
-| `tabContainer(id)` | `.qv-object-${id}`                       | Tab container element by object ID |
+| Selector           | Value                                    | Usage                                    |
+| ------------------ | ---------------------------------------- | ---------------------------------------- |
+| `objectById(id)`   | `.qv-object-${id}`                       | Tour step targeting                      |
+| `allObjects`       | `.qv-object`                             | Enumerate all objects                    |
+| `sheetContainer`   | `.qvt-sheet.qv-panel-sheet`              | Sheet container                          |
+| `sheetTitle`       | `.sheet-title-container`                 | Sheet title                              |
+| `toolbar`          | `[data-testid="top-bar-root"]`           | Cloud MUI top bar                        |
+| `subToolbar`       | `[data-testid="qs-sub-toolbar"]`         | Selections bar                           |
+| `editButton`       | `[data-testid="toolbar-edit-button"]`    | Edit mode button                         |
+| `analysisContent`  | `[data-testid="sense-analysis-content"]` | Main content area                        |
+| `gridCell`         | `.qv-gridcell`                           | Grid cells                               |
+| `tabButton(cId)`   | `[data-testid="container-tab-${cId}"]`   | Tab container tab button by child-ref ID |
+| `tabContainer(id)` | `.qv-object-${id}`                       | Tab container element by object ID       |
 
 > **Note:** Cloud tab container selectors are assumed to match client-managed (same `data-testid` pattern). Verify against a live Cloud app if Cloud tab container support is needed.
 > **Key finding (Feb 2026):** Cloud visualization objects use the same `.qv-object-{id}` class pattern as client-managed. The `data-testid` attribute exists only on toolbar/chrome elements, NOT on visualization objects.

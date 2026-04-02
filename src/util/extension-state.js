@@ -26,4 +26,13 @@ export const extensionState = {
      * @type {{[key: string]: {containerId: string, tabCId: string, tabLabel: string}}}
      */
     tabContainerMap: {},
+
+    /**
+     * Promise that resolves when tabContainerMap is fully built.
+     * Set by the main render effect; awaited by runTour() so that
+     * auto-start tours never race the map-building Engine calls.
+     *
+     * @type {Promise<void>|null}
+     */
+    tabContainerMapReady: null,
 };

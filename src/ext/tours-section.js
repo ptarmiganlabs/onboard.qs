@@ -48,9 +48,10 @@ const getObjectList = async (_data, handler) => {
     try {
         let infos = await app.getAllInfos();
         const sheetId = getCurrentSheetId();
-        // tabMap is declared at function scope so it can be referenced
-        // later when enriching titles even if sheetId is not found.
-        let tabMap = extensionState.tabContainerMap || {};
+        // Only use a tab map built for the current sheet.
+        // When sheetId is null we can't verify the map belongs to this
+        // sheet, so fall back to an empty map to avoid stale labels.
+        let tabMap = {};
 
         if (sheetId) {
             try {

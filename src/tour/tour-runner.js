@@ -5,6 +5,7 @@ import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
+import { extensionState } from '../util/extension-state';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
@@ -81,7 +82,6 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                 // The sync variant clicks the tab immediately; if Qlik renders
                 // the child synchronously, querySelector will find it.
                 const objectId = step.selectorType !== 'css' ? step.targetObjectId : null;
-                const inTabContainer = objectId ? !!getTabInfo(objectId) : false;
 
                 return {
                     // Use a function for lazy evaluation — the Qlik object DOM
@@ -91,10 +91,14 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
                      * If the object is inside a tab container, switch to the
                      * correct tab first (synchronous click).
                      *
+                     * Tab info is checked at call time (not when steps are
+                     * built) so that late-arriving tabContainerMap data is
+                     * still picked up.
+                     *
                      * @returns {Element|null} The matching DOM element, or null.
                      */
                     element: () => {
-                        if (inTabContainer) {
+                        if (objectId && getTabInfo(objectId)) {
                             ensureTabVisibleSync(objectId, platformType, codePath);
                         }
                         return document.querySelector(cssSelector);
@@ -126,7 +130,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath) {
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
- * @returns {object} The driver.js instance.
+ * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
 export async function runTour(tourConfig, options = {}) {
     const {
@@ -137,6 +141,13 @@ export async function runTour(tourConfig, options = {}) {
         sheetId,
         onComplete,
     } = options;
+
+    // Ensure tab-container metadata is fully built before we create
+    // driver.js steps — auto-start tours may fire before the async
+    // Engine calls in buildTabContainerMap() have finished.
+    if (extensionState.tabContainerMapReady) {
+        await extensionState.tabContainerMapReady;
+    }
 
     const steps = buildDriverSteps(tourConfig, platformType, codePath);
 
