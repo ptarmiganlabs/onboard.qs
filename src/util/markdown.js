@@ -124,7 +124,6 @@ export function markdownToHtml(md) {
             'poster',
             'preload',
             'playsinline',
-            'frameborder',
             'allowfullscreen',
             'allow',
             'loading',

@@ -443,13 +443,7 @@ On **Qlik Cloud** or any platform, use a full HTTPS URL:
 #### YouTube / Vimeo (`<iframe>` embed)
 
 ```html
-<iframe
-    width="400"
-    height="225"
-    src="https://www.youtube.com/embed/VIDEO_ID"
-    frameborder="0"
-    allowfullscreen
->
+<iframe width="400" height="225" src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen>
 </iframe>
 ```
 

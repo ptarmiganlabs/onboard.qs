@@ -408,7 +408,6 @@ Use the **Large** or **X-Large** dialog size preset for steps containing video â
     width="400"
     height="225"
     src="https://www.youtube.com/embed/VIDEO_ID"
-    frameborder="0"
     allowfullscreen
 ></iframe>
 ```
