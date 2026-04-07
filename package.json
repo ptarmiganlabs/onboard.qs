@@ -63,7 +63,7 @@
         "archiver": "^7.0.1",
         "cloc": "^2.6.0-cloc",
         "cross-env": "^10.1.0",
-        "esbuild": "^0.27.5",
+        "esbuild": "^0.28.0",
         "eslint": "^10.1.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-jsdoc": "^62.9.0",
