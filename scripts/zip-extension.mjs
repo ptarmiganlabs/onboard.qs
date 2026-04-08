@@ -41,7 +41,7 @@ async function main() {
     });
 
     // Include documentation files in the archive root (skip missing files with a warning)
-    const docFiles = ['README.md', 'README.pdf'];
+    const docFiles = ['README.md'];
     for (const file of docFiles) {
         try {
             await access(file);
