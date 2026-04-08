@@ -74,6 +74,9 @@ jobs:
                   # Copy LICENSE
                   cp LICENSE release-staging/LICENSE
 
+                  # Copy README.pdf
+                  cp README.pdf release-staging/README.pdf
+
                   # Create the outer release zip
                   cd release-staging
                   zip -r "../${DIST_FILE_NAME}-v${VERSION}.zip" .
