@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.0...onboard-qs-v1.8.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* revert inner zip versioned naming, keep stable onboard-qs.zip ([940c815](https://github.com/ptarmiganlabs/onboard.qs/commit/940c8151e80f1fac8b8a77649fd1ef80ba6aec09))
+* update release asset ZIP file naming and README instructions for versioning ([13cac93](https://github.com/ptarmiganlabs/onboard.qs/commit/13cac93bcd674497e297721da437766c8fb1524a))
+
+
+### Miscellaneous
+
+* update dependencies to latest versions ([8ac47be](https://github.com/ptarmiganlabs/onboard.qs/commit/8ac47beba2dd09d2ec3fbd5caed18514d1e71885))
+
 ## [1.8.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.7.0...onboard-qs-v1.8.0) (2026-04-02)
 
 
