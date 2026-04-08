@@ -6,7 +6,7 @@ Version: __VERSION__
 Getting Started
 ---------------
 
-1. Upload the included "onboard-qs.zip" extension file to Qlik Sense:
+   Upload the included "onboard-qs-v__VERSION__.zip" extension file to Qlik Sense:
 
    - Qlik Cloud:
      Open Management Console > Extensions > Add (+) > Upload the zip file.

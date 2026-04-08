@@ -66,13 +66,16 @@ jobs:
                   mkdir -p release-staging
 
                   # Copy the extension zip (the file users upload to Sense)
-                  cp "${DIST_FILE_NAME}.zip" "release-staging/${DIST_FILE_NAME}.zip"
+                  cp "${DIST_FILE_NAME}-v${VERSION}.zip" "release-staging/${DIST_FILE_NAME}-v${VERSION}.zip"
 
                   # Generate readme.txt from template with version injected
                   sed "s/__VERSION__/${VERSION}/g" release-config/readme-template.txt > release-staging/readme.txt
 
                   # Copy LICENSE
                   cp LICENSE release-staging/LICENSE
+
+                  # Copy README.pdf
+                  cp README.pdf release-staging/README.pdf
 
                   # Create the outer release zip
                   cd release-staging
@@ -85,7 +88,7 @@ jobs:
                   zipinfo "${DIST_FILE_NAME}-v${{ needs.release-please.outputs.release_version }}.zip"
                   echo ""
                   echo "=== Inner extension zip ==="
-                  zipinfo "release-staging/${DIST_FILE_NAME}.zip"
+                  zipinfo "release-staging/${DIST_FILE_NAME}-v${{ needs.release-please.outputs.release_version }}.zip"
 
             - name: Upload release artifacts
               uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
