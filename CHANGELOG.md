@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.1...onboard-qs-v1.8.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* remove README.pdf from extension zip file ([a403c35](https://github.com/ptarmiganlabs/onboard.qs/commit/a403c352c5bb12ba5bf123110636dab892db2a56))
+
 ## [1.8.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.0...onboard-qs-v1.8.1) (2026-04-08)
 
 
