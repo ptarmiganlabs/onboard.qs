@@ -351,10 +351,10 @@ function buildButtonSizeStyle(widgetConfig) {
  * @returns {string} HTML string for the button's inner content.
  */
 function buildButtonContent(text, icon, position, isDropdown = false) {
-    const caret = isDropdown ? ' <span class="onboard-qs-btn__caret">&#9662;</span>' : '';
+    const caret = isDropdown ? '<span class="onboard-qs-btn__caret">&#9662;</span>' : '';
 
     if (!icon) {
-        return `${escapeHtml(text)}${isDropdown ? ' &#9662;' : ''}`;
+        return escapeHtml(text) + caret;
     }
 
     const iconHtml = `<span class="lui-icon lui-icon--${icon} onboard-qs-btn__icon" aria-hidden="true"></span>`;
