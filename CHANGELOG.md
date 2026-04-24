@@ -2,90 +2,82 @@
 
 ## [1.8.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.1...onboard-qs-v1.8.2) (2026-04-08)
 
-
 ### Bug Fixes
 
-* remove README.pdf from extension zip file ([a403c35](https://github.com/ptarmiganlabs/onboard.qs/commit/a403c352c5bb12ba5bf123110636dab892db2a56))
+- remove README.pdf from extension zip file ([a403c35](https://github.com/ptarmiganlabs/onboard.qs/commit/a403c352c5bb12ba5bf123110636dab892db2a56))
 
 ## [1.8.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.0...onboard-qs-v1.8.1) (2026-04-08)
 
-
 ### Bug Fixes
 
-* revert inner zip versioned naming, keep stable onboard-qs.zip ([940c815](https://github.com/ptarmiganlabs/onboard.qs/commit/940c8151e80f1fac8b8a77649fd1ef80ba6aec09))
-* update release asset ZIP file naming and README instructions for versioning ([13cac93](https://github.com/ptarmiganlabs/onboard.qs/commit/13cac93bcd674497e297721da437766c8fb1524a))
-
+- revert inner zip versioned naming, keep stable onboard-qs.zip ([940c815](https://github.com/ptarmiganlabs/onboard.qs/commit/940c8151e80f1fac8b8a77649fd1ef80ba6aec09))
+- update release asset ZIP file naming and README instructions for versioning ([13cac93](https://github.com/ptarmiganlabs/onboard.qs/commit/13cac93bcd674497e297721da437766c8fb1524a))
 
 ### Miscellaneous
 
-* update dependencies to latest versions ([8ac47be](https://github.com/ptarmiganlabs/onboard.qs/commit/8ac47beba2dd09d2ec3fbd5caed18514d1e71885))
+- update dependencies to latest versions ([8ac47be](https://github.com/ptarmiganlabs/onboard.qs/commit/8ac47beba2dd09d2ec3fbd5caed18514d1e71885))
 
 ## [1.8.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.7.0...onboard-qs-v1.8.0) (2026-04-02)
 
-
 ### Features
 
-* add build date display to About modal ([d563fe8](https://github.com/ptarmiganlabs/onboard.qs/commit/d563fe8edb49a46a39eb62f4e37869edc7aff7b3)), closes [#115](https://github.com/ptarmiganlabs/onboard.qs/issues/115)
-* add build date/time to About section and About dialog ([ab370f6](https://github.com/ptarmiganlabs/onboard.qs/commit/ab370f6c8ff38130006ef2610dba7a1852b5d1ad))
-* add build date/time to About section and About dialog ([9d8d2f1](https://github.com/ptarmiganlabs/onboard.qs/commit/9d8d2f15a7e0c1ee3c1df550106c040f792b73b7))
-* add clone/duplicate buttons for tours and steps in modal tour editor ([9840471](https://github.com/ptarmiganlabs/onboard.qs/commit/9840471e4114e2229044610f231ff9511ed575ea))
-* add Markdown keyboard shortcuts, formatting toolbar, and preview ([41d4689](https://github.com/ptarmiganlabs/onboard.qs/commit/41d4689b16527b5f8fc4388fde87613df0c32ae2))
-* add optional toolbar button for starting tours ([259348a](https://github.com/ptarmiganlabs/onboard.qs/commit/259348ac721f070191693cd389811856fabd3b0d))
-* Add support for multiple Onboard.qs objects on same app sheet ([c83929a](https://github.com/ptarmiganlabs/onboard.qs/commit/c83929af3e5be5299412ce93cf7c9116a05f7925))
-* Add support for tab containers in tour steps ([2844a26](https://github.com/ptarmiganlabs/onboard.qs/commit/2844a265ef51d2bfb5e1e40d27536b8953b9d455)), closes [#145](https://github.com/ptarmiganlabs/onboard.qs/issues/145)
-* enable duplication of tours and tour steps in modal tour editor dialog ([bf03cc9](https://github.com/ptarmiganlabs/onboard.qs/commit/bf03cc98208b2c0ac517fc3e029d8e87ef0f7eca))
-* enable moving of tours and tour steps in property panel ([2e39a1d](https://github.com/ptarmiganlabs/onboard.qs/commit/2e39a1ddeac704d5551596d2f5f45eb12b59db03))
-* enable video embedding in tour step dialogs ([b7d5f30](https://github.com/ptarmiganlabs/onboard.qs/commit/b7d5f30b0096dfa9be063330f42295ced51b5b55))
-* enable video embedding in tour step dialogs ([c92c76b](https://github.com/ptarmiganlabs/onboard.qs/commit/c92c76b16bbc162d0a5511ddfd4739871542420b))
-* include README.md and PDF version in distribution ZIP ([5b08250](https://github.com/ptarmiganlabs/onboard.qs/commit/5b08250c5cf2b94a41f3e3c1c4a078dbb7fcd93c))
-* **security:** Security review and associated fixes ([6072a81](https://github.com/ptarmiganlabs/onboard.qs/commit/6072a8149073b711e7516aaba494602dc86aeaec))
-
+- add build date display to About modal ([d563fe8](https://github.com/ptarmiganlabs/onboard.qs/commit/d563fe8edb49a46a39eb62f4e37869edc7aff7b3)), closes [#115](https://github.com/ptarmiganlabs/onboard.qs/issues/115)
+- add build date/time to About section and About dialog ([ab370f6](https://github.com/ptarmiganlabs/onboard.qs/commit/ab370f6c8ff38130006ef2610dba7a1852b5d1ad))
+- add build date/time to About section and About dialog ([9d8d2f1](https://github.com/ptarmiganlabs/onboard.qs/commit/9d8d2f15a7e0c1ee3c1df550106c040f792b73b7))
+- add clone/duplicate buttons for tours and steps in modal tour editor ([9840471](https://github.com/ptarmiganlabs/onboard.qs/commit/9840471e4114e2229044610f231ff9511ed575ea))
+- add Markdown keyboard shortcuts, formatting toolbar, and preview ([41d4689](https://github.com/ptarmiganlabs/onboard.qs/commit/41d4689b16527b5f8fc4388fde87613df0c32ae2))
+- add optional toolbar button for starting tours ([259348a](https://github.com/ptarmiganlabs/onboard.qs/commit/259348ac721f070191693cd389811856fabd3b0d))
+- Add support for multiple Onboard.qs objects on same app sheet ([c83929a](https://github.com/ptarmiganlabs/onboard.qs/commit/c83929af3e5be5299412ce93cf7c9116a05f7925))
+- Add support for tab containers in tour steps ([2844a26](https://github.com/ptarmiganlabs/onboard.qs/commit/2844a265ef51d2bfb5e1e40d27536b8953b9d455)), closes [#145](https://github.com/ptarmiganlabs/onboard.qs/issues/145)
+- enable duplication of tours and tour steps in modal tour editor dialog ([bf03cc9](https://github.com/ptarmiganlabs/onboard.qs/commit/bf03cc98208b2c0ac517fc3e029d8e87ef0f7eca))
+- enable moving of tours and tour steps in property panel ([2e39a1d](https://github.com/ptarmiganlabs/onboard.qs/commit/2e39a1ddeac704d5551596d2f5f45eb12b59db03))
+- enable video embedding in tour step dialogs ([b7d5f30](https://github.com/ptarmiganlabs/onboard.qs/commit/b7d5f30b0096dfa9be063330f42295ced51b5b55))
+- enable video embedding in tour step dialogs ([c92c76b](https://github.com/ptarmiganlabs/onboard.qs/commit/c92c76b16bbc162d0a5511ddfd4739871542420b))
+- include README.md and PDF version in distribution ZIP ([5b08250](https://github.com/ptarmiganlabs/onboard.qs/commit/5b08250c5cf2b94a41f3e3c1c4a078dbb7fcd93c))
+- **security:** Security review and associated fixes ([6072a81](https://github.com/ptarmiganlabs/onboard.qs/commit/6072a8149073b711e7516aaba494602dc86aeaec))
 
 ### Bug Fixes
 
-* address code review feedback for toolbar injector ([ab29552](https://github.com/ptarmiganlabs/onboard.qs/commit/ab29552ff5b8b0edb82b854d21099a893f4e41e1))
-* address review comments on tab container support ([d0c4030](https://github.com/ptarmiganlabs/onboard.qs/commit/d0c4030b8e04b4903efec1710c581d8772d91fed))
-* align panel header heights in tour editor ([40134e5](https://github.com/ptarmiganlabs/onboard.qs/commit/40134e5fabd8e6e5bda0675ad099db7722d872a8))
-* gracefully skip missing doc files in zip script with warning ([d428d53](https://github.com/ptarmiganlabs/onboard.qs/commit/d428d5320d45ec18bae71767ec21bc73dc2f4b3e))
-* remove deprecated frameborder from docs and DOMPurify config ([76ffa10](https://github.com/ptarmiganlabs/onboard.qs/commit/76ffa10eca4b651d3868b1931d10f2f1e6745669))
-* wrap Dollar Sign Expansion expressions in qStringExpression format when saving from tour editor ([78b8f25](https://github.com/ptarmiganlabs/onboard.qs/commit/78b8f2506ebf5ff92818669cd7ec19b85df84c0d))
-
+- address code review feedback for toolbar injector ([ab29552](https://github.com/ptarmiganlabs/onboard.qs/commit/ab29552ff5b8b0edb82b854d21099a893f4e41e1))
+- address review comments on tab container support ([d0c4030](https://github.com/ptarmiganlabs/onboard.qs/commit/d0c4030b8e04b4903efec1710c581d8772d91fed))
+- align panel header heights in tour editor ([40134e5](https://github.com/ptarmiganlabs/onboard.qs/commit/40134e5fabd8e6e5bda0675ad099db7722d872a8))
+- gracefully skip missing doc files in zip script with warning ([d428d53](https://github.com/ptarmiganlabs/onboard.qs/commit/d428d5320d45ec18bae71767ec21bc73dc2f4b3e))
+- remove deprecated frameborder from docs and DOMPurify config ([76ffa10](https://github.com/ptarmiganlabs/onboard.qs/commit/76ffa10eca4b651d3868b1931d10f2f1e6745669))
+- wrap Dollar Sign Expansion expressions in qStringExpression format when saving from tour editor ([78b8f25](https://github.com/ptarmiganlabs/onboard.qs/commit/78b8f2506ebf5ff92818669cd7ec19b85df84c0d))
 
 ### Miscellaneous
 
-* **deps-dev:** bump eslint-plugin-jsdoc from 62.8.0 to 62.8.1 ([8bbf08d](https://github.com/ptarmiganlabs/onboard.qs/commit/8bbf08d9e6fa847d8d42063c9802456f54100d8a))
-* **deps-dev:** bump eslint-plugin-jsdoc from 62.8.0 to 62.8.1 ([697ecb4](https://github.com/ptarmiganlabs/onboard.qs/commit/697ecb43d76bfef9a5efc8d4e7fc0335a190d623))
-* **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([11602f6](https://github.com/ptarmiganlabs/onboard.qs/commit/11602f643d05ba0b6324b885953b28cd738a75eb))
-* **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([0d22084](https://github.com/ptarmiganlabs/onboard.qs/commit/0d22084c76f6433d37846afd0d28d3bf264ea0bf))
-* **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([90cab5c](https://github.com/ptarmiganlabs/onboard.qs/commit/90cab5ccac718bd5febb5f00c0765305453f85d1))
-* **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([6030412](https://github.com/ptarmiganlabs/onboard.qs/commit/60304127fadb0a7c2843771b52e19fa32b946143))
-* **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([ad7de0c](https://github.com/ptarmiganlabs/onboard.qs/commit/ad7de0cd7fedfb292ad3f770e6faccd9bbe0f9df))
-* **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([020a715](https://github.com/ptarmiganlabs/onboard.qs/commit/020a71579269eca0a1815ea2ad9c400d558ba137))
-* **deps:** bump github/codeql-action from 4.33.0 to 4.35.1 ([855ecc6](https://github.com/ptarmiganlabs/onboard.qs/commit/855ecc674550dccb28574834c81635bcbb99d1df))
-* **deps:** bump github/codeql-action from 4.33.0 to 4.35.1 ([19eb8d2](https://github.com/ptarmiganlabs/onboard.qs/commit/19eb8d2fd81d029ad8df69832a630fe1f71e2fe9))
-* **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([d6d4109](https://github.com/ptarmiganlabs/onboard.qs/commit/d6d410953d4900b63e68cc0df96820d134c9b3e2))
-* **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([6a23c9b](https://github.com/ptarmiganlabs/onboard.qs/commit/6a23c9b4a1523c1dbb2d111fdea4031590582aa0))
-* **deps:** bump github/gh-aw from 0.59.0 to 0.65.0 ([2cae868](https://github.com/ptarmiganlabs/onboard.qs/commit/2cae868603aa09c339f75d7247f9276e50c80867))
-* **deps:** bump github/gh-aw from 0.59.0 to 0.65.0 ([6e02236](https://github.com/ptarmiganlabs/onboard.qs/commit/6e022360efe35dd8b990618cb1985573f5f6905a))
-* **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([5db3bf6](https://github.com/ptarmiganlabs/onboard.qs/commit/5db3bf6c0bbbd515d044b382e0468177ac5de0bd))
-* **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([7868ce4](https://github.com/ptarmiganlabs/onboard.qs/commit/7868ce402ce942f0e5ff08516dc6bc7402dea8d0))
-* **deps:** update dependencies to stay safe and secure ([3b01ca4](https://github.com/ptarmiganlabs/onboard.qs/commit/3b01ca46761388e0d176969c7d534e9fa0fe3a26))
-* Force workflows to use Node24 ([be5cf9a](https://github.com/ptarmiganlabs/onboard.qs/commit/be5cf9a42e2cc82e93d9a176050899782c049788))
-* update nebula.js dependencies and eslint versions ([2143b35](https://github.com/ptarmiganlabs/onboard.qs/commit/2143b35de6d5a537c4d79dc9263cdc443d3d599d))
-
+- **deps-dev:** bump eslint-plugin-jsdoc from 62.8.0 to 62.8.1 ([8bbf08d](https://github.com/ptarmiganlabs/onboard.qs/commit/8bbf08d9e6fa847d8d42063c9802456f54100d8a))
+- **deps-dev:** bump eslint-plugin-jsdoc from 62.8.0 to 62.8.1 ([697ecb4](https://github.com/ptarmiganlabs/onboard.qs/commit/697ecb43d76bfef9a5efc8d4e7fc0335a190d623))
+- **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([11602f6](https://github.com/ptarmiganlabs/onboard.qs/commit/11602f643d05ba0b6324b885953b28cd738a75eb))
+- **deps-dev:** bump lint-staged from 16.3.4 to 16.4.0 ([0d22084](https://github.com/ptarmiganlabs/onboard.qs/commit/0d22084c76f6433d37846afd0d28d3bf264ea0bf))
+- **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([90cab5c](https://github.com/ptarmiganlabs/onboard.qs/commit/90cab5ccac718bd5febb5f00c0765305453f85d1))
+- **deps:** bump actions/download-artifact from 8.0.0 to 8.0.1 ([6030412](https://github.com/ptarmiganlabs/onboard.qs/commit/60304127fadb0a7c2843771b52e19fa32b946143))
+- **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([ad7de0c](https://github.com/ptarmiganlabs/onboard.qs/commit/ad7de0cd7fedfb292ad3f770e6faccd9bbe0f9df))
+- **deps:** bump github/codeql-action from 4.32.6 to 4.33.0 ([020a715](https://github.com/ptarmiganlabs/onboard.qs/commit/020a71579269eca0a1815ea2ad9c400d558ba137))
+- **deps:** bump github/codeql-action from 4.33.0 to 4.35.1 ([855ecc6](https://github.com/ptarmiganlabs/onboard.qs/commit/855ecc674550dccb28574834c81635bcbb99d1df))
+- **deps:** bump github/codeql-action from 4.33.0 to 4.35.1 ([19eb8d2](https://github.com/ptarmiganlabs/onboard.qs/commit/19eb8d2fd81d029ad8df69832a630fe1f71e2fe9))
+- **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([d6d4109](https://github.com/ptarmiganlabs/onboard.qs/commit/d6d410953d4900b63e68cc0df96820d134c9b3e2))
+- **deps:** bump github/gh-aw from 0.51.2 to 0.59.0 ([6a23c9b](https://github.com/ptarmiganlabs/onboard.qs/commit/6a23c9b4a1523c1dbb2d111fdea4031590582aa0))
+- **deps:** bump github/gh-aw from 0.59.0 to 0.65.0 ([2cae868](https://github.com/ptarmiganlabs/onboard.qs/commit/2cae868603aa09c339f75d7247f9276e50c80867))
+- **deps:** bump github/gh-aw from 0.59.0 to 0.65.0 ([6e02236](https://github.com/ptarmiganlabs/onboard.qs/commit/6e022360efe35dd8b990618cb1985573f5f6905a))
+- **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([5db3bf6](https://github.com/ptarmiganlabs/onboard.qs/commit/5db3bf6c0bbbd515d044b382e0468177ac5de0bd))
+- **deps:** bump ncipollo/release-action from 1.20.0 to 1.21.0 ([7868ce4](https://github.com/ptarmiganlabs/onboard.qs/commit/7868ce402ce942f0e5ff08516dc6bc7402dea8d0))
+- **deps:** update dependencies to stay safe and secure ([3b01ca4](https://github.com/ptarmiganlabs/onboard.qs/commit/3b01ca46761388e0d176969c7d534e9fa0fe3a26))
+- Force workflows to use Node24 ([be5cf9a](https://github.com/ptarmiganlabs/onboard.qs/commit/be5cf9a42e2cc82e93d9a176050899782c049788))
+- update nebula.js dependencies and eslint versions ([2143b35](https://github.com/ptarmiganlabs/onboard.qs/commit/2143b35de6d5a537c4d79dc9263cdc443d3d599d))
 
 ### Refactoring
 
-* add file existence checks before adding docs to ZIP archive ([986901b](https://github.com/ptarmiganlabs/onboard.qs/commit/986901b511ffe34588e759f983303dd17ac4ca91))
-* remove duplicated formatting logic from markdown-toolbar ([8dc33d5](https://github.com/ptarmiganlabs/onboard.qs/commit/8dc33d5928a249303f17e6f1ac1dde8c6b951fa3))
-
+- add file existence checks before adding docs to ZIP archive ([986901b](https://github.com/ptarmiganlabs/onboard.qs/commit/986901b511ffe34588e759f983303dd17ac4ca91))
+- remove duplicated formatting logic from markdown-toolbar ([8dc33d5](https://github.com/ptarmiganlabs/onboard.qs/commit/8dc33d5928a249303f17e6f1ac1dde8c6b951fa3))
 
 ### Documentation
 
-* add sponsorship section and contribution guidelines to README.md ([d967277](https://github.com/ptarmiganlabs/onboard.qs/commit/d9672778330ac17cd8ae575fa415fa2ff489b579))
-* document __BUILD_DATE__ compile-time constant ([a638a02](https://github.com/ptarmiganlabs/onboard.qs/commit/a638a026de76272725216eccdca94582052be345))
-* document __BUILD_DATE__ compile-time constant and build-date.cjs script ([673ca90](https://github.com/ptarmiganlabs/onboard.qs/commit/673ca907c58e562d8a9cc280381131f942709ba0))
-* update Qlik Sense Enterprise prerequisites to November 2025 ([39491ca](https://github.com/ptarmiganlabs/onboard.qs/commit/39491cac90d4b27844f13d03a298cd060e525ba4))
+- add sponsorship section and contribution guidelines to README.md ([d967277](https://github.com/ptarmiganlabs/onboard.qs/commit/d9672778330ac17cd8ae575fa415fa2ff489b579))
+- document **BUILD_DATE** compile-time constant ([a638a02](https://github.com/ptarmiganlabs/onboard.qs/commit/a638a026de76272725216eccdca94582052be345))
+- document **BUILD_DATE** compile-time constant and build-date.cjs script ([673ca90](https://github.com/ptarmiganlabs/onboard.qs/commit/673ca907c58e562d8a9cc280381131f942709ba0))
+- update Qlik Sense Enterprise prerequisites to November 2025 ([39491ca](https://github.com/ptarmiganlabs/onboard.qs/commit/39491cac90d4b27844f13d03a298cd060e525ba4))
 
 ## [1.7.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.6.0...onboard-qs-v1.7.0) (2026-03-15)
 

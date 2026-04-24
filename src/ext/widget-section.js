@@ -1,3 +1,5 @@
+import { LUI_ICON_OPTIONS } from './lui-icons';
+
 /**
  * Widget Appearance property panel section.
  *
@@ -28,6 +30,40 @@ export function widgetSection() {
                 label: 'Button text',
                 defaultValue: 'Start Tour',
                 expression: 'optional',
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showButton !== false,
+            },
+            buttonIcon: {
+                ref: 'widget.buttonIcon',
+                type: 'string',
+                label: 'Button icon',
+                component: 'dropdown',
+                defaultValue: '',
+                options: LUI_ICON_OPTIONS,
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showButton !== false,
+            },
+            buttonIconPosition: {
+                ref: 'widget.buttonIconPosition',
+                type: 'string',
+                label: 'Icon position',
+                component: 'dropdown',
+                defaultValue: 'left',
+                options: [
+                    { value: 'left', label: 'Left of text' },
+                    { value: 'right', label: 'Right of text' },
+                    { value: 'only', label: 'Icon only (no text)' },
+                ],
                 /**
                  * Determine visibility of this property panel item.
                  *

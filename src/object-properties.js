@@ -9,6 +9,8 @@ export default {
     widget: {
         showButton: true,
         buttonText: 'Start Tour',
+        buttonIcon: '',
+        buttonIconPosition: 'left',
         buttonStyle: 'primary',
         horizontalAlign: 'center',
         verticalAlign: 'center',

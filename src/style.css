@@ -87,6 +87,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 8px 16px;
     border: none;
     border-radius: var(--oqs-btn-border-radius, 4px);
@@ -98,6 +99,19 @@
         box-shadow 0.15s ease;
     font-family: inherit;
     line-height: 1.4;
+}
+
+/* --- Button icon element (Lui icon inside the start button) --- */
+
+.onboard-qs-btn__icon {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.onboard-qs-btn__caret {
+    font-size: 10px;
 }
 
 .onboard-qs-btn--primary {

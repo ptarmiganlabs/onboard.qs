@@ -1,6 +1,7 @@
 import { startTour, handleAutoStart } from '../tour/tour-helpers';
 import { resolveTheme, applyThemeToElement } from '../theme/resolve';
 import { isVisible } from '../util/visibility';
+import { sanitizeIconName } from '../util/sanitize';
 
 /**
  * Widget renderer for analysis mode.
@@ -59,6 +60,8 @@ export function renderWidget(element, layout, context) {
     const hAlign = widgetConfig.horizontalAlign || 'center';
     const vAlign = widgetConfig.verticalAlign || 'center';
     const alignClasses = `onboard-qs-widget--h-${hAlign} onboard-qs-widget--v-${vAlign}`;
+    const buttonIcon = sanitizeIconName(widgetConfig.buttonIcon || '');
+    const buttonIconPosition = widgetConfig.buttonIconPosition || 'left';
 
     // Fill-widget mode: button covers entire extension object, ignoring size/alignment
     const fillWidget = widgetConfig.fillWidget === true;
@@ -71,21 +74,27 @@ export function renderWidget(element, layout, context) {
         ? `onboard-qs-widget${fillClass}`
         : `onboard-qs-widget ${alignClasses}`;
 
+    // aria-label is needed when icon-only mode hides the text content
+    const iconOnly = buttonIcon && buttonIconPosition === 'only';
+    const ariaAttr = iconOnly ? ` aria-label="${escapeAttr(buttonText)}"` : '';
+
     if (tours.length === 1) {
         // Single tour — simple button
+        const content = buildButtonContent(buttonText, buttonIcon, buttonIconPosition, false);
         element.innerHTML = `
             <div class="${containerClasses}">
-                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn"${btnSizeStyle}>
-                    ${escapeHtml(buttonText)}
+                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-start-btn"${btnSizeStyle}${ariaAttr}>
+                    ${content}
                 </button>
             </div>
         `;
     } else {
         // Multiple tours — button that opens a floating menu
+        const content = buildButtonContent(buttonText, buttonIcon, buttonIconPosition, true);
         element.innerHTML = `
             <div class="${containerClasses}">
-                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger"${btnSizeStyle}>
-                    ${escapeHtml(buttonText)} &#9662;
+                <button class="onboard-qs-btn onboard-qs-btn--${buttonStyle} onboard-qs-dropdown-trigger"${btnSizeStyle}${ariaAttr}>
+                    ${content}
                 </button>
             </div>
         `;
@@ -329,6 +338,39 @@ function buildButtonSizeStyle(widgetConfig) {
 }
 
 /**
+ * Build the inner HTML content for a tour trigger button.
+ *
+ * Composes the icon span and label span according to the configured
+ * position. The label is always wrapped in a `<span>` so that the
+ * button's flex `gap` applies uniformly in every configuration.
+ *
+ * @param {string} text - Button label text.
+ * @param {string} icon - Sanitized Lui icon name, or empty string for no icon.
+ * @param {string} position - Icon position: 'left', 'right', or 'only'.
+ * @param {boolean} [isDropdown] - When true, appends a caret glyph for dropdown buttons.
+ * @returns {string} HTML string for the button's inner content.
+ */
+function buildButtonContent(text, icon, position, isDropdown = false) {
+    const caret = isDropdown ? '<span class="onboard-qs-btn__caret">&#9662;</span>' : '';
+    const labelHtml = `<span class="onboard-qs-btn__label">${escapeHtml(text)}</span>`;
+
+    if (!icon) {
+        return labelHtml + caret;
+    }
+
+    const iconHtml = `<span class="lui-icon lui-icon--${icon} onboard-qs-btn__icon" aria-hidden="true"></span>`;
+
+    if (position === 'only') {
+        return iconHtml + caret;
+    }
+    if (position === 'right') {
+        return labelHtml + iconHtml + caret;
+    }
+    // default: 'left'
+    return iconHtml + labelHtml + caret;
+}
+
+/**
  * Escape HTML to prevent XSS in user-provided text.
  *
  * @param {string} str - Raw string.
@@ -338,4 +380,20 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+/**
+ * Escape a string for safe use inside an HTML attribute value (quoted with `"`).
+ *
+ * `escapeHtml()` relies on `textContent`/`innerHTML` which encodes `<`, `>`, and `&`
+ * but leaves `"` and `'` unmodified. Interpolating such a value into a double-quoted
+ * attribute (e.g. `aria-label="…"`) would allow a `"` in the value to terminate the
+ * attribute and inject arbitrary HTML. This function additionally replaces `"` with
+ * `&quot;` and `'` with `&#39;` to prevent that.
+ *
+ * @param {string} str - Raw string.
+ * @returns {string} Attribute-safe escaped string.
+ */
+function escapeAttr(str) {
+    return escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
