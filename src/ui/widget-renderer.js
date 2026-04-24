@@ -76,7 +76,7 @@ export function renderWidget(element, layout, context) {
 
     // aria-label is needed when icon-only mode hides the text content
     const iconOnly = buttonIcon && buttonIconPosition === 'only';
-    const ariaAttr = iconOnly ? ` aria-label="${escapeHtml(buttonText)}"` : '';
+    const ariaAttr = iconOnly ? ` aria-label="${escapeAttr(buttonText)}"` : '';
 
     if (tours.length === 1) {
         // Single tour — simple button
@@ -341,8 +341,8 @@ function buildButtonSizeStyle(widgetConfig) {
  * Build the inner HTML content for a tour trigger button.
  *
  * Composes the icon span and label span according to the configured
- * position. When no icon is given the function falls back to plain
- * escaped text (preserving backwards-compatible behaviour).
+ * position. The label is always wrapped in a `<span>` so that the
+ * button's flex `gap` applies uniformly in every configuration.
  *
  * @param {string} text - Button label text.
  * @param {string} icon - Sanitized Lui icon name, or empty string for no icon.
@@ -352,13 +352,13 @@ function buildButtonSizeStyle(widgetConfig) {
  */
 function buildButtonContent(text, icon, position, isDropdown = false) {
     const caret = isDropdown ? '<span class="onboard-qs-btn__caret">&#9662;</span>' : '';
+    const labelHtml = `<span class="onboard-qs-btn__label">${escapeHtml(text)}</span>`;
 
     if (!icon) {
-        return escapeHtml(text) + caret;
+        return labelHtml + caret;
     }
 
     const iconHtml = `<span class="lui-icon lui-icon--${icon} onboard-qs-btn__icon" aria-hidden="true"></span>`;
-    const labelHtml = `<span class="onboard-qs-btn__label">${escapeHtml(text)}</span>`;
 
     if (position === 'only') {
         return iconHtml + caret;
@@ -380,4 +380,20 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+/**
+ * Escape a string for safe use inside an HTML attribute value (quoted with `"`).
+ *
+ * `escapeHtml()` relies on `textContent`/`innerHTML` which encodes `<`, `>`, and `&`
+ * but leaves `"` and `'` unmodified. Interpolating such a value into a double-quoted
+ * attribute (e.g. `aria-label="…"`) would allow a `"` in the value to terminate the
+ * attribute and inject arbitrary HTML. This function additionally replaces `"` with
+ * `&quot;` and `'` with `&#39;` to prevent that.
+ *
+ * @param {string} str - Raw string.
+ * @returns {string} Attribute-safe escaped string.
+ */
+function escapeAttr(str) {
+    return escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
