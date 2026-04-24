@@ -570,7 +570,7 @@ function removeMenuCloseHandler() {
  * @returns {string} HTML string for the button's inner content.
  */
 function buildToolbarContent(text, icon, position, hasMultipleTours = false) {
-    const caret = hasMultipleTours ? ' <span class="oqs-toolbar-btn__caret">&#9662;</span>' : '';
+    const caret = hasMultipleTours ? '<span class="oqs-toolbar-btn__caret">&#9662;</span>' : '';
     const labelHtml = `<span class="oqs-toolbar-btn__label">${escapeHtml(text)}</span>`;
 
     if (icon) {
