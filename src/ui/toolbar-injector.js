@@ -19,6 +19,7 @@
 import { startTour } from '../tour/tour-helpers';
 import { resolveTheme } from '../theme/resolve';
 import { isVisible } from '../util/visibility';
+import { sanitizeIconName } from '../util/sanitize';
 import logger from '../util/logger';
 
 /**
@@ -199,6 +200,8 @@ function injectToolbarButton(adapter, platform, appId) {
     const layout = firstEntry ? firstEntry.layout : {};
     const widgetConfig = layout.widget || {};
     const buttonText = widgetConfig.toolbarButtonText || 'Start Tour';
+    const buttonIcon = sanitizeIconName(widgetConfig.buttonIcon || '');
+    const buttonIconPosition = widgetConfig.buttonIconPosition || 'left';
     const cssVars = resolveTheme(layout);
 
     // Use merged tours
@@ -225,11 +228,13 @@ function injectToolbarButton(adapter, platform, appId) {
     if (cssVars['--oqs-btn-border'])
         btn.style.setProperty('--oqs-tb-border', cssVars['--oqs-btn-border']);
 
-    // Graduation cap icon (SVG) + label
-    btn.innerHTML =
-        `<span class="oqs-toolbar-btn__icon">${graduationCapSvg(16)}</span>` +
-        `<span class="oqs-toolbar-btn__label">${escapeHtml(buttonText)}</span>` +
-        (tours.length > 1 ? ' <span class="oqs-toolbar-btn__caret">&#9662;</span>' : '');
+    // Graduation cap icon (SVG) + label — or user-configured Lui icon
+    btn.innerHTML = buildToolbarContent(
+        buttonText,
+        buttonIcon,
+        buttonIconPosition,
+        tours.length > 1
+    );
 
     container.appendChild(btn);
 
@@ -548,6 +553,40 @@ function removeMenuCloseHandler() {
         document.removeEventListener('click', activeMenuCloseHandler, true);
         activeMenuCloseHandler = null;
     }
+}
+
+/**
+ * Build the inner HTML for the toolbar button.
+ *
+ * When a Lui icon name is configured it replaces the default graduation-cap
+ * SVG and is positioned according to `position`. Without a configured icon
+ * the graduation-cap SVG is used with the label to the right (existing
+ * behaviour).
+ *
+ * @param {string} text - Button label text.
+ * @param {string} icon - Sanitized Lui icon name, or empty string for default SVG.
+ * @param {string} position - Icon position: 'left', 'right', or 'only'.
+ * @param {boolean} [hasMultipleTours] - When true, appends a caret for dropdown buttons.
+ * @returns {string} HTML string for the button's inner content.
+ */
+function buildToolbarContent(text, icon, position, hasMultipleTours = false) {
+    const caret = hasMultipleTours ? ' <span class="oqs-toolbar-btn__caret">&#9662;</span>' : '';
+    const labelHtml = `<span class="oqs-toolbar-btn__label">${escapeHtml(text)}</span>`;
+
+    if (icon) {
+        const iconHtml = `<span class="oqs-toolbar-btn__icon lui-icon lui-icon--${icon}" aria-hidden="true"></span>`;
+        if (position === 'only') {
+            return iconHtml + caret;
+        }
+        if (position === 'right') {
+            return labelHtml + iconHtml + caret;
+        }
+        // default: 'left'
+        return iconHtml + labelHtml + caret;
+    }
+
+    // No configured icon — use the default graduation-cap SVG on the left
+    return `<span class="oqs-toolbar-btn__icon">${graduationCapSvg(16)}</span>` + labelHtml + caret;
 }
 
 /**

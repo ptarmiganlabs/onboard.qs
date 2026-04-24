@@ -36,6 +36,41 @@ export function widgetSection() {
                  */
                 show: (data) => data.widget?.showButton !== false,
             },
+            buttonIcon: {
+                ref: 'widget.buttonIcon',
+                type: 'string',
+                label: 'Button icon',
+                description:
+                    'Lui icon name to display on the button (e.g. "play", "home", "arrow-right"). Leave empty for no icon. See the Lui icon catalogue for available names.',
+                defaultValue: '',
+                expression: 'optional',
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showButton !== false,
+            },
+            buttonIconPosition: {
+                ref: 'widget.buttonIconPosition',
+                type: 'string',
+                label: 'Icon position',
+                component: 'dropdown',
+                defaultValue: 'left',
+                options: [
+                    { value: 'left', label: 'Left of text' },
+                    { value: 'right', label: 'Right of text' },
+                    { value: 'only', label: 'Icon only (no text)' },
+                ],
+                /**
+                 * Determine visibility of this property panel item.
+                 *
+                 * @param {object} data - Current property data row.
+                 * @returns {boolean} True if item should be shown.
+                 */
+                show: (data) => data.widget?.showButton !== false,
+            },
             buttonStyle: {
                 ref: 'widget.buttonStyle',
                 type: 'string',
