@@ -61,3 +61,21 @@ When adding/modifying functions, include complete JSDoc: describe behavior, list
 - Do not edit generated artifacts (`node_modules/`, `onboard-qs-ext/`, `dist/`) unless task requires it
 - Only runtime deps: `driver.js`, `dompurify`; everything else dev-only
 - Keep diffs focused — avoid drive-by formatting changes
+
+## Project Todo List
+
+**Keep a project-wide todo list** in `./docs/TODO.md` for things that need follow-up:
+
+- Tests skipped or marked as pending (e.g., `test.skip()`)
+- Security findings or vulnerabilities discovered
+- Known flaky tests that need investigation
+- Feature gaps or missing test coverage
+- Bugs found during testing that aren't part of the test itself
+
+Use Mermaid to explain complex flows or architecture where helpful.
+
+When you skip a test, add a TODO item so it's not forgotten:
+
+```markdown
+- [ ] Investigate show-once behavior (test 05-tour-features spec skipped)
+```
