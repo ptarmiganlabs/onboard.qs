@@ -1,3 +1,5 @@
+import { LUI_ICON_OPTIONS } from './lui-icons';
+
 /**
  * Widget Appearance property panel section.
  *
@@ -40,10 +42,9 @@ export function widgetSection() {
                 ref: 'widget.buttonIcon',
                 type: 'string',
                 label: 'Button icon',
-                description:
-                    'Lui icon name to display on the button (e.g. "play", "home", "arrow-right"). Leave empty for no icon. See the Lui icon catalogue for available names.',
+                component: 'dropdown',
                 defaultValue: '',
-                expression: 'optional',
+                options: LUI_ICON_OPTIONS,
                 /**
                  * Determine visibility of this property panel item.
                  *
