@@ -67,7 +67,7 @@ The Rollup UMD bundle must be a single file (Qlik Sense loads extensions as sing
 
 After `npm run pack:dev`:
 
-```
+```text
 onboard-qs-ext/
 ├── onboard-qs.js       # UMD bundle (Qlik loads this)
 ├── onboard-qs.qext     # Qlik extension manifest
@@ -75,6 +75,17 @@ onboard-qs-ext/
 
 onboard-qs.zip           # Deployable package
 ```
+
+## Release artifacts in CI
+
+The GitHub release workflow produces more than the deployable extension zip:
+
+- `onboard-qs.zip` - the extension package uploaded to Qlik Sense
+- `onboard-qs-v{VERSION}.zip` - the outer release archive published on GitHub
+- `README.pdf` - generated from the repository README during release packaging
+- `onboard-qs-v{VERSION}.sbom.cdx.json` - a CycloneDX SBOM for the published npm dependency inventory
+
+The SBOM is uploaded as a separate release artifact. It is not embedded inside the outer release zip.
 
 ## Deployment
 

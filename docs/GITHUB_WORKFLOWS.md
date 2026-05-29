@@ -1,61 +1,74 @@
 # GitHub Workflows
 
-This document outlines the various GitHub Workflows configured in the `onboard.qs` repository under `.github/workflows`. The repository utilizes a mix of traditional GitHub Actions and Copilot Agentic workflows (`gh-aw`).
+This document outlines the GitHub workflows configured in `onboard.qs` under `.github/workflows` and, just as importantly, which files are the durable source of truth.
 
-## Standard GitHub Actions Workflows
+The repository uses two workflow styles:
 
-These are standard YAML-based workflows used for continuous integration, deployment, and security checks.
+- hand-authored GitHub Actions YAML for the core build, release, and security pipeline
+- GitHub Agent Workflows (`gh-aw`) for the Copilot-driven maintenance workflows
 
-- **`ci.yaml`**
-    - **Purpose**: Automates the testing, building, and publishing sequence of the project.
-    - **Triggers**: Manually (`workflow_dispatch`) or automatically when pushing to the `main` branch.
-    - **Details**: Handles version bumping and PR management via Release Please. On successful release, it builds the production zip, injects version metadata, and uploads the artifacts to the GitHub release.
+## Source Of Truth
 
-- **`codeql-analysis.yaml`**
-    - **Purpose**: Checks the codebase for known vulnerabilities using GitHub's CodeQL static code analyzer.
-    - **Triggers**: Scheduled execution, pushes/PRs against `main`, and manual execution.
-    - **Details**: Scans JavaScript files and uploads security feedback to GitHub's code scanning alerts.
+Before editing a workflow, confirm whether it is hand-authored or generated.
 
-- **`virus-scan.yaml`**
-    - **Purpose**: Scans published artifacts with VirusTotal to prevent distributing malware.
-    - **Triggers**: Runs when a new GitHub release is published.
-    - **Details**: Downloads the release artifacts, extracts the extension ZIP, uploads to VirusTotal, and appends the scan results to the release's Markdown body.
+### Hand-authored workflows
 
-- **`agentics-maintenance.yml`**
-    - **Purpose**: An auto-generated utility workflow that cleans up old/stale artifacts created by the agentic workflows.
-    - **Triggers**: Runs on a cron schedule and manually.
-    - **Details**: Programmatically closes expired issues, discussions, and pull requests that have passed their designated lifetime.
+These files are edited directly:
 
-## Copilot Agentic Workflows
+- `ci.yaml`
+- `codeql-analysis.yaml`
+- `virus-scan.yaml`
+- `zizmor.yaml`
 
-These workflows are built with the [GitHub Agent Workflows (`gh-aw`)](https://github.com/github/gh-aw) framework. Their logic is defined in Markdown files (`.md`), which compile into functional `.lock.yml` GitHub Actions definitions.
+### Generated workflows
 
-- **`code-simplifier` (`.md` / `.lock.yml`)**
-    - **Purpose**: An expert code simplification agent that applies project-specific styles to enhance code clarity and readability.
-    - **Triggers**: Manual execution (`workflow_dispatch`).
-    - **Details**: Reads recent commits/PRs and creates a new pull request summarizing formatting and readability refinements.
+These files are generated and should not be edited directly:
 
-- **`daily-file-diet` (`.md` / `.lock.yml`)**
-    - **Purpose**: Monitors the repository for exceptionally large source files that violate size thresholds.
-    - **Triggers**: Manual execution (`workflow_dispatch`).
-    - **Details**: Opens a GitHub issue suggesting how to break down oversized files for better maintainability.
+- `agentics-maintenance.yml`
+- `*.lock.yml`
 
-- **`daily-malicious-code-scan` (`.md` / `.lock.yml`)**
-    - **Purpose**: A security verification agent that reviews recent code changes for suspicious patterns or known attack vectors.
-    - **Triggers**: Manual execution (`workflow_dispatch`).
-    - **Details**: Creates and logs GitHub code scanning alerts if threat patterns are detected.
+For the agentic workflows, the durable sources are:
 
-- **`daily-secrets-analysis` (`.md` / `.lock.yml`)**
-    - **Purpose**: Reviews how environment variables and secrets are handled across all compiled `.yml` workflows to detect misconfigurations.
-    - **Triggers**: Manual execution (`workflow_dispatch`).
-    - **Details**: Opens a GitHub discussion regarding potential issues, expiring automatically after a set duration.
+- the matching `.md` workflow prompt in `.github/workflows/`
+- shared prompt fragments in `.github/workflows/shared/`
+- pinned action metadata in `.github/aw/actions-lock.json`
 
-- **`duplicate-code-detector` (`.md` / `.lock.yml`)**
-    - **Purpose**: Scans the codebase for identically written or duplicated code blocks to reduce technical debt.
-    - **Triggers**: Manual execution (`workflow_dispatch`).
-    - **Details**: Creates an issue mapping specific refactoring steps to group similar logic.
+Regenerate derived workflows with `gh aw compile` after editing the durable source files.
 
-- **`weekly-repo-status` (`.md` / `.lock.yml`)**
-    - **Purpose**: A data aggregator that captures recent commits, PR events, and issues to highlight productivity and community status.
-    - **Triggers**: Scheduled execution (Sundays) or manual triggering.
-    - **Details**: Generates a comprehensive status report issue about the health and velocity of the repository.
+`agentics-maintenance.yml` is also generated by `gh-aw`. It exists because some agentic workflows use expiring safe outputs such as temporary issues, discussions, or pull requests.
+
+## Core GitHub Actions Workflows
+
+These are the hand-authored workflows used for release automation and security checks.
+
+- **`ci.yaml`** — Purpose: automate release creation, production packaging, and release artifact upload. Triggers: `workflow_dispatch` and pushes to `main`. Details: runs Release Please, builds the production package, assembles the outer release zip, generates a CycloneDX SBOM, and uploads the release artifacts.
+- **`codeql-analysis.yaml`** — Purpose: run GitHub CodeQL static analysis on the JavaScript codebase. Triggers: manual runs, pushes to `main`, pull requests against `main`, and a weekly schedule. Details: initializes CodeQL, autobuilds the project, and uploads results to GitHub code scanning.
+- **`virus-scan.yaml`** — Purpose: scan published release artifacts with VirusTotal. Triggers: published GitHub releases. Details: downloads release assets, extracts the inner extension zip, scans both the outer release zip and the inner extension zip, and appends the results to the GitHub release body.
+- **`zizmor.yaml`** — Purpose: scan the repository's GitHub Actions workflows for insecure patterns and risky configurations. Triggers: manual runs, pushes to `main`, and pull requests. Details: runs Zizmor, produces SARIF output, and uploads the findings to GitHub code scanning.
+
+## Agentic Workflow Inventory
+
+These workflows are built with [GitHub Agent Workflows (`gh-aw`)](https://github.com/github/gh-aw). Their behavior is authored in Markdown files and compiled into `*.lock.yml` workflows.
+
+- **`code-simplifier.md` / `code-simplifier.lock.yml`** — Purpose: review recently modified code for readability and maintainability simplifications. Triggers: manual execution. Details: analyzes recent commits or pull requests and may open a refactoring pull request.
+- **`daily-file-diet.md` / `daily-file-diet.lock.yml`** — Purpose: detect oversized files that should be split up. Triggers: manual execution. Details: opens an issue suggesting file-size reduction work.
+- **`daily-malicious-code-scan.md` / `daily-malicious-code-scan.lock.yml`** — Purpose: review recent code changes for suspicious or malicious patterns. Triggers: manual execution. Details: produces security-oriented findings using the agent workflow toolchain.
+- **`daily-secrets-analysis.md` / `daily-secrets-analysis.lock.yml`** — Purpose: review how workflows and automation handle secrets and environment variables. Triggers: manual execution. Details: opens a discussion when it finds issues worth maintainer review.
+- **`duplicate-code-detector.md` / `duplicate-code-detector.lock.yml`** — Purpose: find duplicated or near-duplicated code that should be consolidated. Triggers: manual execution. Details: opens an issue describing the duplicated areas and suggested cleanup direction.
+- **`agentics-maintenance.yml`** — Purpose: close expired artifacts created by the agentic workflows. Triggers: scheduled runs and manual execution. Details: automatically manages expired issues, discussions, and pull requests created by workflows that declare `expires` values in safe outputs.
+
+## Shared Agentic Workflow Inputs
+
+The `.github/workflows/shared/` folder contains reusable prompt fragments imported by the agentic workflow source files.
+
+- `mood.md`
+- `reporting.md`
+- `safe-output-app.md`
+
+If an agentic workflow needs behavior or wording changes, check whether the relevant text lives in one of these shared files before editing the individual `.md` workflow source.
+
+## Maintainer Notes
+
+- Do not edit `*.lock.yml` files directly unless you are intentionally debugging the compiler output and are prepared to regenerate them.
+- When workflow hardening work starts, update the hand-authored YAML first, then run Zizmor against the full workflow set.
+- If Zizmor or other checks flag generated workflows, fix the issue in the `.md` source, shared prompt fragments, or `.github/aw/actions-lock.json`, then recompile.
