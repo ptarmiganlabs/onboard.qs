@@ -14,7 +14,7 @@ All workflows in this repository are hand-authored and edited directly:
 
 ## Core GitHub Actions Workflows
 
-These are the hand-authored workflows used for release automation and security checks.
+These are the hand-authored workflows used for release automation, security checks, and Copilot agent setup.
 
 - **`ci.yaml`** — Purpose: automate release creation, production packaging, and release artifact upload. Triggers: `workflow_dispatch` and pushes to `main`. Details: runs Release Please, builds the production package, assembles the outer release zip, generates a CycloneDX SBOM, and uploads the release artifacts.
 - **`codeql-analysis.yaml`** — Purpose: run GitHub CodeQL static analysis on the JavaScript codebase. Triggers: manual runs, pushes to `main`, pull requests against `main`, and a weekly schedule. Details: initializes CodeQL, autobuilds the project, and uploads results to GitHub code scanning.
