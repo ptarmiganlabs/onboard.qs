@@ -7,7 +7,7 @@ For **installation and usage**, see the main [README](../README.md).
 
 ## Prerequisites
 
-- Node.js ≥ 18.10 and npm
+- Node.js ≥ 24.15 and npm
 - Git
 
 ## Getting the Source
