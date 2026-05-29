@@ -12,6 +12,8 @@ All workflows in this repository are hand-authored and edited directly:
 - `virus-scan.yaml`
 - `zizmor.yaml`
 
+Some legacy gh-aw/Copilot agent guidance in the repository may still mention generated `*.lock.yml` files, but those references are historical only and are not the source of truth for the workflows above.
+
 ## Core GitHub Actions Workflows
 
 These are the hand-authored workflows used for release automation, security checks, and Copilot agent setup.
