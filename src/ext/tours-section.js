@@ -609,13 +609,12 @@ export function toursSection() {
                                                                 /**
                                                                  * Determine visibility of this property panel item.
                                                                  *
-                                                                 * Returns true if the dialog size should be shown (selectorType is 'none').
+                                                                 * Returns true because dialog sizing is available for all step types.
                                                                  *
-                                                                 * @param {object} data - Current property data row.
+                                                                 * @param {object} _data - Current property data row.
                                                                  * @returns {boolean} True if item should be shown.
                                                                  */
-                                                                show: (data) =>
-                                                                    data.selectorType === 'none',
+                                                                show: (_data) => true,
                                                             },
                                                             customDialogWidth: {
                                                                 ref: 'customDialogWidth',
@@ -632,7 +631,6 @@ export function toursSection() {
                                                                  * @returns {boolean} True if item should be shown.
                                                                  */
                                                                 show: (data) =>
-                                                                    data.selectorType === 'none' &&
                                                                     data.dialogSize === 'custom',
                                                             },
                                                             customDialogHeight: {
@@ -650,7 +648,6 @@ export function toursSection() {
                                                                  * @returns {boolean} True if item should be shown.
                                                                  */
                                                                 show: (data) =>
-                                                                    data.selectorType === 'none' &&
                                                                     data.dialogSize === 'custom',
                                                             },
                                                             disableInteraction: {

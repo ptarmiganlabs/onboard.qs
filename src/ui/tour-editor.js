@@ -1104,18 +1104,18 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                             </select>
                         </label>
                     </div>
-                    <label class="onboard-qs-editor__field" style="${selectorType !== 'none' ? 'display:none' : ''}">
-                        <span>Dialog Size ${infoIcon('Fixed dimensions for the standalone dialog. Only applies when Target type is "Standalone Dialog".')}</span>
+                    <label class="onboard-qs-editor__field">
+                        <span>Dialog Size ${infoIcon('Choose a preset dialog size or keep it dynamic so driver.js decides the best fit.')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-dialog-size">
-                            <option value="dynamic" ${step.dialogSize === 'dynamic' ? 'selected' : ''}>Dynamic (fit content)</option>
+                            <option value="dynamic" ${step.dialogSize === 'dynamic' || (!step.dialogSize && selectorType !== 'none') ? 'selected' : ''}>Dynamic (fit content)</option>
                             <option value="small" ${step.dialogSize === 'small' ? 'selected' : ''}>Small (320 × 220)</option>
-                            <option value="medium" ${step.dialogSize === 'medium' || !step.dialogSize ? 'selected' : ''}>Medium (480 × 320)</option>
+                            <option value="medium" ${step.dialogSize === 'medium' || (!step.dialogSize && selectorType === 'none') ? 'selected' : ''}>Medium (480 × 320)</option>
                             <option value="large" ${step.dialogSize === 'large' ? 'selected' : ''}>Large (640 × 420)</option>
                             <option value="x-large" ${step.dialogSize === 'x-large' ? 'selected' : ''}>Extra large (800 × 520)</option>
                             <option value="custom" ${step.dialogSize === 'custom' ? 'selected' : ''}>Custom…</option>
                         </select>
                     </label>
-                    <div class="onboard-qs-editor__field-row" style="${selectorType !== 'none' || step.dialogSize !== 'custom' ? 'display:none' : ''}">
+                    <div class="onboard-qs-editor__field-row" style="${step.dialogSize !== 'custom' ? 'display:none' : ''}">
                         <label class="onboard-qs-editor__field">
                             <span>Width (px)</span>
                             <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
