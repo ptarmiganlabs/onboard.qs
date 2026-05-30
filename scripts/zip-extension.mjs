@@ -1,6 +1,6 @@
 import { createWriteStream } from 'node:fs';
 import { access, readFile } from 'node:fs/promises';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 
 /**
  * Create a ZIP archive of the extension for distribution.
@@ -11,7 +11,7 @@ async function main() {
     const pkg = JSON.parse(await readFile('package.json', 'utf-8'));
     const zipName = `${pkg.name}.zip`;
     const output = createWriteStream(zipName);
-    const archive = archiver('zip', {
+    const archive = new ZipArchive({
         zlib: { level: 9 },
     });
 
@@ -35,8 +35,9 @@ async function main() {
     archive.pipe(output);
 
     // Append files from the extension directory
+    const extDir = `${pkg.name}-ext/`;
     archive.glob('**/*', {
-        cwd: 'onboard-qs-ext/',
+        cwd: extDir,
         ignore: ['.*', '**/.*'],
     });
 
