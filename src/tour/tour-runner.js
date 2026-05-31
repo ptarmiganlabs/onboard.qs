@@ -7,10 +7,72 @@ import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
 import { extensionState } from '../util/extension-state';
 
+const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 'custom']);
+
 /**
  * Tour runner — builds driver.js step configurations from the extension
  * layout and manages tour execution.
  */
+
+/**
+ * Return the configured dialog size for a step.
+ *
+ * Standalone dialogs keep the historical default of "medium" when unset.
+ * Attached popovers default to "dynamic" to preserve existing sizing.
+ *
+ * @param {object} step - Step configuration from tour config.
+ * @returns {string} Safe dialog size name.
+ */
+function getStepDialogSize(step) {
+    const size = typeof step?.dialogSize === 'string' ? step.dialogSize : '';
+    if (DIALOG_SIZES.has(size)) return size;
+    return step?.selectorType === 'none' ? 'medium' : 'dynamic';
+}
+
+/**
+ * Clamp a custom dialog dimension to a safe integer pixel value.
+ *
+ * @param {number|string} value - Candidate pixel value.
+ * @param {number} fallback - Default if value is invalid.
+ * @param {number} min - Minimum allowed value.
+ * @param {number} max - Maximum allowed value.
+ * @returns {number} Sanitized pixel value.
+ */
+function clampDialogDimension(value, fallback, min, max) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return fallback;
+    return Math.min(max, Math.max(min, Math.round(numeric)));
+}
+
+/**
+ * Build dialog size settings for a step popover.
+ *
+ * @param {object} step - Step configuration from tour config.
+ * @returns {{popoverClass: string, onPopoverRender?: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
+ */
+function getStepDialogSettings(step) {
+    const size = getStepDialogSize(step);
+    const settings = {
+        popoverClass: `onboard-qs-popover onboard-qs-dialog-${size}`,
+    };
+    if (size === 'custom') {
+        const width = clampDialogDimension(step.customDialogWidth, 500, 200, 1200);
+        const height = clampDialogDimension(step.customDialogHeight, 350, 100, 900);
+        /**
+         * Apply custom size to the rendered driver.js popover.
+         *
+         * @param {{wrapper?: HTMLElement}} popover - The rendered popover object.
+         */
+        settings.onPopoverRender = (popover) => {
+            if (popover?.wrapper) {
+                popover.wrapper.style.width = `${width}px`;
+                popover.wrapper.style.maxWidth = `${width}px`;
+                popover.wrapper.style.minHeight = `${height}px`;
+            }
+        };
+    }
+    return settings;
+}
 
 /**
  * Build driver.js steps from a tour configuration.
@@ -43,34 +105,17 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
              * @returns {object} A driver.js DriveStep object.
              */
             .map((step) => {
+                const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
                 // Standalone dialog — no element, driver.js shows a centered modal
                 if (step.selectorType === 'none') {
-                    const size = step.dialogSize || 'medium';
-                    const sizeClass = `onboard-qs-dialog-${size}`;
                     const popoverConfig = {
                         title: stripHtml(step.popoverTitle || ''),
                         description: markdownToHtml(step.popoverDescription || '', options),
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
-                        popoverClass: `onboard-qs-popover ${sizeClass}`,
+                        popoverClass,
                     };
-                    // For custom size, apply inline dimensions via onPopoverRender
-                    if (size === 'custom') {
-                        const w = step.customDialogWidth || 500;
-                        const h = step.customDialogHeight || 350;
-                        /**
-                         * Apply custom width and height to the popover wrapper element.
-                         *
-                         * @param {object} popover - The driver.js popover object.
-                         */
-                        popoverConfig.onPopoverRender = (popover) => {
-                            if (popover?.wrapper) {
-                                popover.wrapper.style.width = `${w}px`;
-                                popover.wrapper.style.maxWidth = `${w}px`;
-                                popover.wrapper.style.minHeight = `${h}px`;
-                            }
-                        };
-                    }
+                    if (onPopoverRender) popoverConfig.onPopoverRender = onPopoverRender;
                     return { popover: popoverConfig };
                 }
 
@@ -110,6 +155,8 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         description: markdownToHtml(step.popoverDescription || '', options),
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
+                        popoverClass,
+                        ...(onPopoverRender ? { onPopoverRender } : {}),
                     },
                     disableActiveInteraction: step.disableInteraction !== false,
                     // Custom metadata — used by onNextClick/onPrevClick to
@@ -280,29 +327,13 @@ export async function runTour(tourConfig, options = {}) {
  * @returns {object | null} The driver.js instance, or null if element not found.
  */
 export function highlightStep(step, platformType, codePath) {
+    const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
     // Standalone dialog — no element to highlight
     if (step.selectorType === 'none') {
-        const size = step.dialogSize || 'medium';
-        const sizeClass = `onboard-qs-dialog-${size}`;
         const driverConfig = {
-            popoverClass: `onboard-qs-popover ${sizeClass}`,
+            popoverClass,
         };
-        if (size === 'custom') {
-            const w = step.customDialogWidth || 500;
-            const h = step.customDialogHeight || 350;
-            /**
-             * Apply custom width and height to the popover wrapper element.
-             *
-             * @param {object} popover - The driver.js popover object.
-             */
-            driverConfig.onPopoverRender = (popover) => {
-                if (popover?.wrapper) {
-                    popover.wrapper.style.width = `${w}px`;
-                    popover.wrapper.style.maxWidth = `${w}px`;
-                    popover.wrapper.style.minHeight = `${h}px`;
-                }
-            };
-        }
+        if (onPopoverRender) driverConfig.onPopoverRender = onPopoverRender;
         const driverObj = driver(driverConfig);
         driverObj.highlight({
             popover: {
@@ -339,9 +370,10 @@ export function highlightStep(step, platformType, codePath) {
                     `retrying with async wait for ${cssSelector}`
             );
             const driverObj = driver({
-                popoverClass: 'onboard-qs-popover',
+                popoverClass,
                 stagePadding: 8,
                 stageRadius: 5,
+                ...(onPopoverRender ? { onPopoverRender } : {}),
             });
 
             // Fire-and-forget: wait for element, then highlight
@@ -372,9 +404,10 @@ export function highlightStep(step, platformType, codePath) {
     }
 
     const driverObj = driver({
-        popoverClass: 'onboard-qs-popover',
+        popoverClass,
         stagePadding: 8,
         stageRadius: 5,
+        ...(onPopoverRender ? { onPopoverRender } : {}),
     });
 
     driverObj.highlight({

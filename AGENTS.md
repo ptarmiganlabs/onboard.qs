@@ -82,11 +82,13 @@ When you skip a test, add a TODO item so it's not forgotten:
 
 <!-- gitnexus:start -->
 
-# GitNexus — Code Intelligence
+## GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **onboard.qs**. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **onboard.qs** (1133 symbols, 1818 relationships, 84 execution flows). Prefer the GitNexus MCP tools when they are exposed in the current chat. If they are unavailable, use the GitNexus CLI to understand code, assess impact, and navigate safely.
 
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
+> In this multi-repo workspace, always include `-r onboard.qs` on GitNexus CLI commands.
+>
+> Start by checking index freshness with `npx gitnexus status -r onboard.qs`. If the index is stale, rebuild it with `npx gitnexus analyze -r onboard.qs` before relying on impact analysis or graph queries.
 
 ## Always Do
 
@@ -102,6 +104,15 @@ This project is indexed by GitNexus as **onboard.qs**. Use the GitNexus MCP tool
 - NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
 - NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
 - NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
+
+## CLI Fallback
+
+Use these commands when GitNexus MCP tools are not available in the current chat:
+
+- `npx gitnexus impact -r onboard.qs <symbolName>`
+- `npx gitnexus context -r onboard.qs <symbolName> -f src/path/file.js`
+- `npx gitnexus query -r onboard.qs "concept or behavior"`
+- `npx gitnexus detect-changes -r onboard.qs --scope all`
 
 ## Resources
 
@@ -122,5 +133,10 @@ This project is indexed by GitNexus as **onboard.qs**. Use the GitNexus MCP tool
 | Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
 | Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
 | Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
+| Work in the Ui area (69 symbols)             | `.claude/skills/generated/ui/SKILL.md`                      |
+| Work in the Tour area (33 symbols)           | `.claude/skills/generated/tour/SKILL.md`                    |
+| Work in the Util area (20 symbols)           | `.claude/skills/generated/util/SKILL.md`                    |
+| Work in the Platform area (17 symbols)       | `.claude/skills/generated/platform/SKILL.md`                |
+| Work in the Ext area (16 symbols)            | `.claude/skills/generated/ext/SKILL.md`                     |
 
 <!-- gitnexus:end -->

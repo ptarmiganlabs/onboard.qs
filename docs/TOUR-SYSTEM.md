@@ -355,9 +355,9 @@ flowchart TD
     B -- Add to Existing --> E[Append all imports<br/>with new tourIds]
 ```
 
-### Standalone dialog sizes
+### Tour step dialog sizes
 
-When a step targets no element (`selectorType: 'none'`), the dialog size can be configured:
+Each tour step can choose a predefined dialog size, or stay dynamic so driver.js decides the best fit:
 
 | Size             | CSS class                   | Dimensions                                                    |
 | ---------------- | --------------------------- | ------------------------------------------------------------- |
@@ -368,7 +368,8 @@ When a step targets no element (`selectorType: 'none'`), the dialog size can be 
 | Extra Large      | `onboard-qs-dialog-x-large` | 800 × 520 px                                                  |
 | Custom           | `onboard-qs-dialog-custom`  | User-specified via `customDialogWidth` / `customDialogHeight` |
 
-Custom dimensions are applied via `onPopoverRender` as inline styles on the popover wrapper.
+Custom dimensions are applied via `onPopoverRender` as inline styles on the popover wrapper. Existing attached
+steps remain dynamic by default for backwards compatibility, while standalone dialogs still default to medium.
 
 ## Markdown support in descriptions
 

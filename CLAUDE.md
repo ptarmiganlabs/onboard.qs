@@ -2,7 +2,7 @@
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **onboard.qs**. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **onboard.qs** (1133 symbols, 1818 relationships, 84 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -40,5 +40,10 @@ This project is indexed by GitNexus as **onboard.qs**. Use the GitNexus MCP tool
 | Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
 | Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
 | Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
+| Work in the Ui area (69 symbols)             | `.claude/skills/generated/ui/SKILL.md`                      |
+| Work in the Tour area (33 symbols)           | `.claude/skills/generated/tour/SKILL.md`                    |
+| Work in the Util area (20 symbols)           | `.claude/skills/generated/util/SKILL.md`                    |
+| Work in the Platform area (17 symbols)       | `.claude/skills/generated/platform/SKILL.md`                |
+| Work in the Ext area (16 symbols)            | `.claude/skills/generated/ext/SKILL.md`                     |
 
 <!-- gitnexus:end -->
