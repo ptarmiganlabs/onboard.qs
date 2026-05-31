@@ -29,6 +29,18 @@ If any check fails, fix the issues and run checks again.
 - The Supernova entry point is `src/index.js`. The property panel is defined in `src/ext.js`.
 - The extension supports **both Qlik Cloud and Qlik Sense Enterprise on Windows (client-managed)**.
 
+## GitNexus Code Intelligence
+
+- This repo is indexed in GitNexus as `onboard.qs`.
+- Prefer GitNexus MCP tools when they are exposed in the current chat. If they are unavailable, use the GitNexus CLI.
+- In this multi-repo workspace, always include `-r onboard.qs` on GitNexus CLI commands.
+- Start by checking index freshness with `npx gitnexus status -r onboard.qs`. If the index is stale, rebuild it with `npx gitnexus analyze -r onboard.qs` before relying on impact analysis.
+- Before modifying a function, class, or method, run upstream impact analysis with `npx gitnexus impact -r onboard.qs <symbolName>` and report the blast radius to the user. Warn before editing if the risk is HIGH or CRITICAL.
+- If a symbol is ambiguous, inspect it with `npx gitnexus context -r onboard.qs <symbolName> -f src/path/file.js`.
+- For unfamiliar flows, query the graph before broad grepping: `npx gitnexus query -r onboard.qs "concept or behavior"`.
+- Before finalizing a broad refactor or commit, verify scope with `npx gitnexus detect-changes -r onboard.qs --scope all`.
+- For the full GitNexus workflow, resource URIs, and skill tables, see `AGENTS.md` or `CLAUDE.md` at the repository root.
+
 ## How to Build & Deploy
 
 - Install deps: `npm ci`
