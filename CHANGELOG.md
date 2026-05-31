@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.9.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.2...onboard-qs-v1.9.0) (2026-05-31)
+
+
+### Features
+
+* Add GitNexus documentation and CLI skills for code intelligence ([0232323](https://github.com/ptarmiganlabs/onboard.qs/commit/0232323c7fb8b66a8c15c5b44ae378a2ca526716))
+* add Lui icon support to the Onboard.qs start button ([61d723a](https://github.com/ptarmiganlabs/onboard.qs/commit/61d723a06142471ef35272a21c40e84ad693a106))
+* add Lui icon support to the Onboard.qs start button ([9bf16bd](https://github.com/ptarmiganlabs/onboard.qs/commit/9bf16bd93f3e6954960fc689fdfe914a83bc287e))
+* add project-wide todo list section to AGENTS.md for follow-up items ([d62a29e](https://github.com/ptarmiganlabs/onboard.qs/commit/d62a29e5a1471a04d5f977b0a10f0546bd504619))
+* Add SBOM creation to build process ([4bb9091](https://github.com/ptarmiganlabs/onboard.qs/commit/4bb90911ca22edcb89122e70f1cec8ff3e041a4b))
+* Improve build stability and security by upgrading CI and agentic workflows ([495fde8](https://github.com/ptarmiganlabs/onboard.qs/commit/495fde816a52d3b87f66b1a67f4fe04fae92f95b))
+* replace buttonIcon text input with curated Lui icon dropdown ([102393b](https://github.com/ptarmiganlabs/onboard.qs/commit/102393bad59ae68cd48646967b0e2308cc98dad0))
+
+
+### Bug Fixes
+
+* Add missing permissions section and update checkout action version ([23fb7dc](https://github.com/ptarmiganlabs/onboard.qs/commit/23fb7dc43019d43d72cf1dd1f37d54d1e92fd962))
+* escapeAttr for aria-label injection; wrap no-icon label in span for flex gap ([01c2522](https://github.com/ptarmiganlabs/onboard.qs/commit/01c2522cc20e4ac68cbcc950e71ed6415c89e27c))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump fast-uri from 3.1.0 to 3.1.2 ([a9d1f73](https://github.com/ptarmiganlabs/onboard.qs/commit/a9d1f73ab5c2e21f4e57b6321c3254f68aaaa961))
+* **deps-dev:** bump fast-uri from 3.1.0 to 3.1.2 ([1bdd1af](https://github.com/ptarmiganlabs/onboard.qs/commit/1bdd1afb8bfa4756a8fd485b17639e0bc877743e))
+* **deps:** bump actions/github-script from 8.0.0 to 9.0.0 ([7e697b7](https://github.com/ptarmiganlabs/onboard.qs/commit/7e697b739b7d9ee09c20e0b8ed862bf6683d0897))
+* **deps:** bump actions/github-script from 8.0.0 to 9.0.0 ([7feb6f5](https://github.com/ptarmiganlabs/onboard.qs/commit/7feb6f5933dd4a3a8499237bbb025d98ef176b19))
+* **deps:** bump actions/upload-artifact from 7.0.0 to 7.0.1 ([58cb59e](https://github.com/ptarmiganlabs/onboard.qs/commit/58cb59e90bf53987851b87a273f3b08ecb653ddd))
+* **deps:** bump actions/upload-artifact from 7.0.0 to 7.0.1 ([03ef37a](https://github.com/ptarmiganlabs/onboard.qs/commit/03ef37a242e0dae0fa346f5205d98006de39b77e))
+* **deps:** bump basic-ftp from 5.2.0 to 5.2.2 ([d5a7dff](https://github.com/ptarmiganlabs/onboard.qs/commit/d5a7dff9a6fa2afc2efc7f4fbe8a5a94b9cd4a3b))
+* **deps:** bump basic-ftp from 5.2.0 to 5.2.2 ([e64bef6](https://github.com/ptarmiganlabs/onboard.qs/commit/e64bef6da576a994ffe3aa3d6c209edca2b6fdb4))
+* **deps:** bump follow-redirects from 1.15.11 to 1.16.0 ([b1149dd](https://github.com/ptarmiganlabs/onboard.qs/commit/b1149dd390176e852644adaa2950a823eaec66fb))
+* **deps:** bump follow-redirects from 1.15.11 to 1.16.0 ([d7803d9](https://github.com/ptarmiganlabs/onboard.qs/commit/d7803d929e073506cd210a41f6a8b3310b1a33a5))
+* **deps:** bump github/codeql-action from 4.35.1 to 4.35.2 ([359cee4](https://github.com/ptarmiganlabs/onboard.qs/commit/359cee415b08d27c37860783055cb7af99431b0c))
+* **deps:** bump github/codeql-action from 4.35.1 to 4.35.2 ([3fd1b79](https://github.com/ptarmiganlabs/onboard.qs/commit/3fd1b7942eedf704e88a9f51845ee88e137ac334))
+* **deps:** bump github/codeql-action from 4.35.5 to 4.36.0 ([3fda888](https://github.com/ptarmiganlabs/onboard.qs/commit/3fda8883c35d3869c5321e03b084755ed858ca2d))
+* **deps:** bump github/codeql-action from 4.35.5 to 4.36.0 ([b84d61e](https://github.com/ptarmiganlabs/onboard.qs/commit/b84d61ed9970bc88937a027e08e3f0734c7499b3))
+* **deps:** bump github/gh-aw from 0.65.0 to 0.68.3 ([41bbc0f](https://github.com/ptarmiganlabs/onboard.qs/commit/41bbc0f62aac89aef001e483d0530da99f621411))
+* **deps:** bump github/gh-aw from 0.65.0 to 0.68.3 ([2b0bcde](https://github.com/ptarmiganlabs/onboard.qs/commit/2b0bcde7b7ff0ba9128591a5bba26d5e4d51eb49))
+* **deps:** bump googleapis/release-please-action from 4.4.0 to 4.4.1 ([62e156b](https://github.com/ptarmiganlabs/onboard.qs/commit/62e156bdbd61040b1277e5d008b8477c608b3822))
+* **deps:** bump googleapis/release-please-action from 4.4.0 to 4.4.1 ([534def6](https://github.com/ptarmiganlabs/onboard.qs/commit/534def675e9bf1f3313d21c25bc953cf341123ea))
+* **deps:** bump ip-address from 10.1.0 to 10.2.0 ([763c7de](https://github.com/ptarmiganlabs/onboard.qs/commit/763c7de2d26d80f090c58de4253c1f48b1b474ff))
+* **deps:** bump ip-address from 10.1.0 to 10.2.0 ([f14cd7a](https://github.com/ptarmiganlabs/onboard.qs/commit/f14cd7a77b956e6ef0f4b7f56f1fe9900b65b18f))
+* **deps:** bump postcss from 8.5.8 to 8.5.10 ([4d24453](https://github.com/ptarmiganlabs/onboard.qs/commit/4d24453dc1f6268bce3be38e1a596bbffd8d685f))
+* **deps:** bump postcss from 8.5.8 to 8.5.10 ([dee5a1a](https://github.com/ptarmiganlabs/onboard.qs/commit/dee5a1a741ab31a08f9875cd396c0869f515a070))
+* update dependencies to latest versions ([0485478](https://github.com/ptarmiganlabs/onboard.qs/commit/0485478ba9c0aae1118c60d0da8d692df4f004c4))
+* update eslint to version 10.4.1 in package.json and package-lock.json ([70d7a01](https://github.com/ptarmiganlabs/onboard.qs/commit/70d7a0197d8769d858ab042d7f491670cd8ea3cf))
+* Upgrade extension to build using Node 24 ([9c24caf](https://github.com/ptarmiganlabs/onboard.qs/commit/9c24caf6aadada4f0509db87048cb6dd3ca75b73))
+
+
+### Refactoring
+
+* modify zip-extension script to use new archiver API ([9c24caf](https://github.com/ptarmiganlabs/onboard.qs/commit/9c24caf6aadada4f0509db87048cb6dd3ca75b73))
+
 ## [1.8.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.1...onboard-qs-v1.8.2) (2026-04-08)
 
 ### Bug Fixes
