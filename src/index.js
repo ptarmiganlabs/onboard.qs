@@ -182,11 +182,10 @@ export default function supernova(galaxy) {
                         nextTour = { ...nextTour, tourId: generateUUID() };
                     }
 
-                    if (Array.isArray(tour.steps)) {
                         const steps = tour.steps.map((step) => {
                             if (DIALOG_SIZES.has(step?.dialogSize)) return step;
                             needsUpdate = true;
-                            return { ...step, dialogSize: 'dynamic' };
+                            return { ...(step && typeof step === 'object' ? step : {}), dialogSize: 'dynamic' };
                         });
                         if (steps.some((step, index) => step !== tour.steps[index])) {
                             nextTour = { ...nextTour, steps };
