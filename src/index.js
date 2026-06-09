@@ -25,6 +25,8 @@ import './style.css';
 // shadow DOM / iframe scoping issues in Qlik Sense
 import driverCSS from 'driver.js/dist/driver.css';
 
+const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 'custom']);
+
 // ── Shared context-menu MutationObserver ──────────────────────────────
 // A single MutationObserver on `document.body` is shared across all
 // extension instances that have `hideContextMenu` enabled.  Each
@@ -168,15 +170,30 @@ export default function supernova(galaxy) {
             }, []);
 
             // Ensure each tour has an ID (for tours created via property panel without the modal editor)
+            // and migrate legacy step dialog sizes that predate the dialog-size property.
             useEffect(() => {
                 if (!layout.tours) return;
                 let needsUpdate = false;
                 const tours = layout.tours.map((tour) => {
+                    let nextTour = tour;
+
                     if (!tour.tourId) {
                         needsUpdate = true;
-                        return { ...tour, tourId: generateUUID() };
+                        nextTour = { ...nextTour, tourId: generateUUID() };
                     }
-                    return tour;
+
+                    if (Array.isArray(tour.steps)) {
+                        const steps = tour.steps.map((step) => {
+                            if (DIALOG_SIZES.has(step?.dialogSize)) return step;
+                            needsUpdate = true;
+                            return { ...step, dialogSize: 'dynamic' };
+                        });
+                        if (steps.some((step, index) => step !== tour.steps[index])) {
+                            nextTour = { ...nextTour, steps };
+                        }
+                    }
+
+                    return nextTour;
                 });
                 if (needsUpdate) {
                     model.getProperties().then((props) => {

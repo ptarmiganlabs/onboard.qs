@@ -17,8 +17,8 @@ const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 
 /**
  * Return the configured dialog size for a step.
  *
- * Standalone dialogs keep the historical default of "medium" when unset.
- * Attached popovers default to "dynamic" to preserve existing sizing.
+ * Steps without a saved dialog size are treated as "dynamic" so older
+ * extension instances keep their previous behavior until migrated.
  *
  * @param {object} step - Step configuration from tour config.
  * @returns {string} Safe dialog size name.
@@ -26,7 +26,7 @@ const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 
 function getStepDialogSize(step) {
     const size = typeof step?.dialogSize === 'string' ? step.dialogSize : '';
     if (DIALOG_SIZES.has(size)) return size;
-    return step?.selectorType === 'none' ? 'medium' : 'dynamic';
+    return 'dynamic';
 }
 
 /**

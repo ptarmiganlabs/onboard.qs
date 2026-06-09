@@ -84,6 +84,9 @@ export default {
                     popoverSide: 'bottom',
                     popoverAlign: 'center',
                     disableInteraction: true,
+                    dialogSize: 'medium',
+                    customDialogWidth: 500,
+                    customDialogHeight: 350,
                 },
                 {
                     selectorType: 'css',

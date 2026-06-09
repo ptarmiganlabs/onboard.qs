@@ -577,7 +577,7 @@ export function toursSection() {
                                                                 type: 'string',
                                                                 label: 'Dialog size',
                                                                 description:
-                                                                    'Fixed dimensions for the standalone dialog. Only applies when Target type is "Standalone Dialog".',
+                                                                    'Preset size for this step. New steps default to Medium; legacy steps without a saved size are migrated to Dynamic when the extension renders.',
                                                                 component: 'dropdown',
                                                                 defaultValue: 'medium',
                                                                 options: [

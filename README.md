@@ -186,16 +186,18 @@ All color properties use the native Qlik color-picker component. When you switch
 | Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                              |
 | Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                            |
 
-### Standalone Dialog Size (when Target type = Standalone Dialog)
+### Step Dialog Size
 
-| Size        | Dimensions                    |
-| ----------- | ----------------------------- |
-| Dynamic     | Fit content                   |
-| Small       | 320 × 220 px                  |
-| Medium      | 480 × 320 px (default)        |
-| Large       | 640 × 420 px                  |
-| Extra Large | 800 × 520 px                  |
-| Custom      | User-specified width × height |
+| Size        | Dimensions                           |
+| ----------- | ------------------------------------ |
+| Dynamic     | Fit content                          |
+| Small       | 320 × 220 px                         |
+| Medium      | 480 × 320 px (default for new steps) |
+| Large       | 640 × 420 px                         |
+| Extra Large | 800 × 520 px                         |
+| Custom      | User-specified width × height        |
+
+If an older step has no saved dialog size, Onboard.qs treats it as **Dynamic** when the extension renders and automatically migrates the saved property to `dynamic` for backwards compatibility.
 
 When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
 
