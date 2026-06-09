@@ -1044,8 +1044,9 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
 
     if (step && stepIndex >= 0) {
         const selectorType = step.selectorType || 'object';
-        const selectedDialogSize =
-            step.dialogSize || (selectorType === 'none' ? 'medium' : 'dynamic');
+        const selectedDialogSize = DIALOG_SIZE_OPTIONS.some(({ value }) => value === step?.dialogSize)
+            ? step.dialogSize
+            : 'dynamic';
         const objectOptions = sheetObjects
             .map(
                 (obj) => `
