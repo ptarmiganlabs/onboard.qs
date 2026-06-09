@@ -6,28 +6,12 @@ import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
 import { extensionState } from '../util/extension-state';
-
-const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 'custom']);
+import { getDialogSize } from '../util/dialog-size';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
  * layout and manages tour execution.
  */
-
-/**
- * Return the configured dialog size for a step.
- *
- * Steps without a saved dialog size are treated as "dynamic" so older
- * extension instances keep their previous behavior until migrated.
- *
- * @param {object} step - Step configuration from tour config.
- * @returns {string} Safe dialog size name.
- */
-function getStepDialogSize(step) {
-    const size = typeof step?.dialogSize === 'string' ? step.dialogSize : '';
-    if (DIALOG_SIZES.has(size)) return size;
-    return 'dynamic';
-}
 
 /**
  * Clamp a custom dialog dimension to a safe integer pixel value.
@@ -51,7 +35,7 @@ function clampDialogDimension(value, fallback, min, max) {
  * @returns {{popoverClass: string, onPopoverRender?: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
  */
 function getStepDialogSettings(step) {
-    const size = getStepDialogSize(step);
+    const size = getDialogSize(step);
     const settings = {
         popoverClass: `onboard-qs-popover onboard-qs-dialog-${size}`,
     };

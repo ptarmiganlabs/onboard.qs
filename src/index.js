@@ -19,13 +19,12 @@ import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/re
 import logger, { PACKAGE_VERSION, BUILD_DATE } from './util/logger';
 import { extensionState } from './util/extension-state';
 import { buildTabContainerMap } from './util/tab-switcher';
+import { isValidDialogSize } from './util/dialog-size';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
 // shadow DOM / iframe scoping issues in Qlik Sense
 import driverCSS from 'driver.js/dist/driver.css';
-
-const DIALOG_SIZES = new Set(['dynamic', 'small', 'medium', 'large', 'x-large', 'custom']);
 
 // ── Shared context-menu MutationObserver ──────────────────────────────
 // A single MutationObserver on `document.body` is shared across all
@@ -182,10 +181,14 @@ export default function supernova(galaxy) {
                         nextTour = { ...nextTour, tourId: generateUUID() };
                     }
 
+                    if (Array.isArray(tour.steps)) {
                         const steps = tour.steps.map((step) => {
-                            if (DIALOG_SIZES.has(step?.dialogSize)) return step;
+                            if (isValidDialogSize(step?.dialogSize)) return step;
                             needsUpdate = true;
-                            return { ...(step && typeof step === 'object' ? step : {}), dialogSize: 'dynamic' };
+                            return {
+                                ...(step && typeof step === 'object' ? step : {}),
+                                dialogSize: 'dynamic',
+                            };
                         });
                         if (steps.some((step, index) => step !== tour.steps[index])) {
                             nextTour = { ...nextTour, steps };

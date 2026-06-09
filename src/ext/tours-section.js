@@ -1,6 +1,7 @@
 import logger from '../util/logger';
 import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
 import { extensionState } from '../util/extension-state';
+import { DIALOG_SIZE_OPTIONS } from '../util/dialog-size';
 
 /**
  * Get the list of objects on the current sheet for dropdown population.
@@ -580,32 +581,7 @@ export function toursSection() {
                                                                     'Preset size for this step. New steps default to Medium; legacy steps without a saved size are migrated to Dynamic when the extension renders.',
                                                                 component: 'dropdown',
                                                                 defaultValue: 'medium',
-                                                                options: [
-                                                                    {
-                                                                        value: 'dynamic',
-                                                                        label: 'Dynamic (fit content)',
-                                                                    },
-                                                                    {
-                                                                        value: 'small',
-                                                                        label: 'Small (320 × 220)',
-                                                                    },
-                                                                    {
-                                                                        value: 'medium',
-                                                                        label: 'Medium (480 × 320)',
-                                                                    },
-                                                                    {
-                                                                        value: 'large',
-                                                                        label: 'Large (640 × 420)',
-                                                                    },
-                                                                    {
-                                                                        value: 'x-large',
-                                                                        label: 'Extra large (800 × 520)',
-                                                                    },
-                                                                    {
-                                                                        value: 'custom',
-                                                                        label: 'Custom…',
-                                                                    },
-                                                                ],
+                                                                options: DIALOG_SIZE_OPTIONS,
                                                                 /**
                                                                  * Determine visibility of this property panel item.
                                                                  *
