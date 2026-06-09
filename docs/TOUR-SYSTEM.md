@@ -359,17 +359,18 @@ flowchart TD
 
 Each tour step can choose a predefined dialog size, or stay dynamic so driver.js decides the best fit:
 
-| Size             | CSS class                   | Dimensions                                                    |
-| ---------------- | --------------------------- | ------------------------------------------------------------- |
-| Dynamic          | `onboard-qs-dialog-dynamic` | Fit content                                                   |
-| Small            | `onboard-qs-dialog-small`   | 320 × 220 px                                                  |
-| Medium (default) | `onboard-qs-dialog-medium`  | 480 × 320 px                                                  |
-| Large            | `onboard-qs-dialog-large`   | 640 × 420 px                                                  |
-| Extra Large      | `onboard-qs-dialog-x-large` | 800 × 520 px                                                  |
-| Custom           | `onboard-qs-dialog-custom`  | User-specified via `customDialogWidth` / `customDialogHeight` |
+| Size                           | CSS class                   | Dimensions                                                    |
+| ------------------------------ | --------------------------- | ------------------------------------------------------------- |
+| Dynamic                        | `onboard-qs-dialog-dynamic` | Fit content                                                   |
+| Small                          | `onboard-qs-dialog-small`   | 320 × 220 px                                                  |
+| Medium (default for new steps) | `onboard-qs-dialog-medium`  | 480 × 320 px                                                  |
+| Large                          | `onboard-qs-dialog-large`   | 640 × 420 px                                                  |
+| Extra Large                    | `onboard-qs-dialog-x-large` | 800 × 520 px                                                  |
+| Custom                         | `onboard-qs-dialog-custom`  | User-specified via `customDialogWidth` / `customDialogHeight` |
 
 Custom dimensions are applied via `onPopoverRender` as inline styles on the popover wrapper. Existing attached
-steps remain dynamic by default for backwards compatibility, while standalone dialogs still default to medium.
+or standalone steps that predate the dialog-size property are treated as dynamic when the extension renders, and
+their saved `dialogSize` is automatically migrated to `dynamic`. Newly created steps default to medium.
 
 ## Markdown support in descriptions
 
