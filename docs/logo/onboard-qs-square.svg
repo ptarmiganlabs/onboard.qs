@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="t">
+  <title id="t">Onboard.qs — interactive onboarding tours for Qlik Sense apps</title>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EFFAF3"/>
+      <stop offset="100%" stop-color="#E1F5E8"/>
+    </linearGradient>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00B050"/>
+      <stop offset="100%" stop-color="#007A38"/>
+    </linearGradient>
+  </defs>
+  <!-- Square post, for the networks that crop a wide card to a square and cut
+       the tagline off. Everything sits in the middle third. -->
+  <rect width="1200" height="1200" fill="url(#bgGrad)"/>
+
+  <!-- 364 wide at 2.2 is 801; (1200-801)/2 is 200. -->
+  <g transform="translate(206 430) scale(2.2)">
+    <g transform="translate(10 18) scale(1.03) translate(-26 -18)">
+      <path d="M42 46 V78 C42 89 57.5 96 70 96 C82.5 96 98 89 98 78 V46 Z"
+            fill="url(#iconGrad)"/>
+      <rect x="102.8" y="46" width="2.4" height="30" rx="1.2" fill="url(#iconGrad)"/>
+      <circle cx="104" cy="78" r="3.8" fill="url(#iconGrad)"/>
+      <path d="M70 18 L114 43.5 L70 63.5 L26 43.5 Z" fill="url(#iconGrad)"/>
+    </g>
+    <text x="120" y="73" text-anchor="start"
+          font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="42" font-weight="600" fill="#007A38">Onboard.qs</text>
+  </g>
+
+  <text x="600" y="760" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="42" font-weight="400" fill="#007A38">Interactive onboarding tours</text>
+  <text x="600" y="816" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="42" font-weight="400" fill="#007A38">for Qlik Sense apps</text>
+
+  <rect x="0" y="1188" width="1200" height="12" fill="url(#iconGrad)"/>
+</svg>

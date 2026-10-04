@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">Onboard.qs</title>
+  <defs>
+    <!-- Card: pale, diagonal. Two stops, light top-left to slightly deeper
+         bottom-right. The diagonal is what makes a row of these read as a
+         family even when the hues are unrelated. -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EFFAF3"/>
+      <stop offset="100%" stop-color="#E1F5E8"/>
+    </linearGradient>
+    <!-- Glyph: vertical, light top to dark bottom. One flat shape. -->
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00B050"/>
+      <stop offset="100%" stop-color="#007A38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Card background. Do not change this geometry: it is the family. -->
+  <rect x="4" y="4" width="132" height="132" rx="16" ry="16" fill="url(#bgGrad)"/>
+
+  <!-- ============================ GLYPH ============================
+       A graduation cap: mortarboard, crown, tassel. Onboard.qs walks a user
+       through a Sense app the first time they open it, and the cap is the
+       moment that ends — the point of an onboarding tour is to stop needing
+       one. It is also the only shape in the family that is not a rectangle,
+       a disc or a document, which is what keeps it separable at 16 px from
+       Persona's framed portrait 30 degrees away in hue.
+
+       Three shapes, one gradient. The crown is drawn first and the board on
+       top of it, so the board's lower edges cut a V across the crown. That V
+       is the whole form: it is what makes the shape a cap seen from slightly
+       above rather than a diamond resting on a bowl. Because iconGrad is an
+       objectBoundingBox gradient, each shape ramps across its own box, so the
+       board arrives dark exactly where the crown restarts light and the V
+       holds without a knocked-out gap. The committed 140 px PNG got the same
+       V from two flat tones; this gets it from the family's gradient. -->
+  <path d="M42 46 V78 C42 89 57.5 96 70 96 C82.5 96 98 89 98 78 V46 Z"
+        fill="url(#iconGrad)"/>
+  <rect x="102.8" y="46" width="2.4" height="30" rx="1.2" fill="url(#iconGrad)"/>
+  <circle cx="104" cy="78" r="3.8" fill="url(#iconGrad)"/>
+  <path d="M70 18 L114 43.5 L70 63.5 L26 43.5 Z" fill="url(#iconGrad)"/>
+  <!-- ========================== end GLYPH ========================== -->
+
+  <!-- Wordmark. 12 px, weight 600, centred, in the deep end of the hue.
+       y=112 here; 110 is also in the family. Do not change the font stack. -->
+  <text x="70" y="112" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="12" font-weight="600" fill="#007A38">
+    Onboard.qs
+  </text>
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="358" height="116" viewBox="0 0 358 116" role="img" aria-labelledby="t">
+  <title id="t">Onboard.qs</title>
+  <defs>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00B050"/>
+      <stop offset="100%" stop-color="#007A38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- No card behind the glyph, and no background rect at all: a lockup sits on
+       whatever the page already is. Horizontal, for blog headers and anything
+       wider than it is tall.
+
+       The width is sized to the name. 364 suits the placeholder and nothing
+       else; a wrong width silently pushes every social card off centre,
+       because -og, -social and -square derive their centring offsets from it.
+       Measure yours and set it. README.md, under "Sizing the lockup", has
+       the procedure and the formula. Do not guess from character count.
+
+       KNOWN LIMIT, inherited by every tool in the family: the wordmark here is
+       the deep end of the hue, which goes dim on a dark ground. There is no
+       dark lockup in the family yet — on dark surfaces use the on-dark card
+       instead. If you need a dark lockup, you are the one adding it to the
+       family, so add it to the style guide too.
+
+       ============================ GLYPH ============================
+       translate(x y) scale(s) translate(-glyphLeft -glyphTop) puts the glyph's
+       top-left corner at (x, y). This glyph: left 26, top 18. -->
+  <g transform="translate(10 18) scale(1.03) translate(-26 -18)">
+    <path d="M42 46 V78 C42 89 57.5 96 70 96 C82.5 96 98 89 98 78 V46 Z"
+          fill="url(#iconGrad)"/>
+    <rect x="102.8" y="46" width="2.4" height="30" rx="1.2" fill="url(#iconGrad)"/>
+    <circle cx="104" cy="78" r="3.8" fill="url(#iconGrad)"/>
+    <path d="M70 18 L114 43.5 L70 63.5 L26 43.5 Z" fill="url(#iconGrad)"/>
+  </g>
+  <!-- ========================== end GLYPH ========================== -->
+
+  <text x="120" y="73" text-anchor="start"
+        font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="42" font-weight="600" fill="#007A38">
+    Onboard.qs
+  </text>
+</svg>

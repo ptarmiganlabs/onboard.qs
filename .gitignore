@@ -148,3 +148,6 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Logo legibility contact sheet: a tool for looking at, not an asset to ship
+docs/logo/legibility-check.png
