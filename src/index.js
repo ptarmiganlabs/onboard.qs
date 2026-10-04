@@ -19,6 +19,7 @@ import { resolveTheme, buildPopoverThemeCSS, injectThemeStyle } from './theme/re
 import logger, { PACKAGE_VERSION, BUILD_DATE } from './util/logger';
 import { extensionState } from './util/extension-state';
 import { buildTabContainerMap } from './util/tab-switcher';
+import { isValidDialogSize } from './util/dialog-size';
 import './style.css';
 
 // Import driver.js CSS as a string — injected at runtime to avoid
@@ -168,15 +169,33 @@ export default function supernova(galaxy) {
             }, []);
 
             // Ensure each tour has an ID (for tours created via property panel without the modal editor)
+            // and migrate legacy step dialog sizes that predate the dialog-size property.
             useEffect(() => {
                 if (!layout.tours) return;
                 let needsUpdate = false;
                 const tours = layout.tours.map((tour) => {
+                    let nextTour = tour;
+
                     if (!tour.tourId) {
                         needsUpdate = true;
-                        return { ...tour, tourId: generateUUID() };
+                        nextTour = { ...nextTour, tourId: generateUUID() };
                     }
-                    return tour;
+
+                    if (Array.isArray(tour.steps)) {
+                        const steps = tour.steps.map((step) => {
+                            if (isValidDialogSize(step?.dialogSize)) return step;
+                            needsUpdate = true;
+                            return {
+                                ...(step && typeof step === 'object' ? step : {}),
+                                dialogSize: 'dynamic',
+                            };
+                        });
+                        if (steps.some((step, index) => step !== tour.steps[index])) {
+                            nextTour = { ...nextTour, steps };
+                        }
+                    }
+
+                    return nextTour;
                 });
                 if (needsUpdate) {
                     model.getProperties().then((props) => {
