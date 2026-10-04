@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+  <title id="t">Onboard.qs</title>
+  <defs>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00B050"/>
+      <stop offset="100%" stop-color="#007A38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- EDGE TO EDGE, AND NO ROUNDED CORNERS OF ITS OWN.
+       Every operating system masks app icons to its own shape — a squircle on
+       macOS and iOS, a circle on most Android launchers, a square on Windows.
+       Artwork that carries its own corner radius ends up visibly inset inside
+       the system's mask, with a sliver of nothing between the two curves. This
+       rect is deliberately square and deliberately fills the frame. -->
+  <rect width="512" height="512" fill="url(#iconGrad)"/>
+
+  <!-- Figure and ground swap here. At icon sizes a pale card with a small glyph
+       on it is a pale square; the hue has to be the tile for the icon to have
+       any colour at all at 32 px. So the hue becomes the ground and the glyph
+       is knocked out in white.
+
+       ============================ GLYPH ============================
+       The ground keeps the declared iconGrad rather than deepening it. White
+       on #00B050 is 2.87:1 and on #007A38 is 5.47:1, so the top stop sits a
+       shade under the 3:1 the family took as its floor when Textview.qs
+       deepened lime — but the contact sheet is the test, not the number, and
+       it shows no wash-out at any of the three sizes: the top of this mark is
+       the board, which is the boldest, widest thing in it, where lime's
+       problem was fine detail high in the frame. Deepening buys nothing
+       visible and costs the hue, so it is not done. Re-check if the glyph ever
+       grows fine detail near the top.
+
+       One departure from the logo's geometry, permitted here and only here.
+       On the card the V between board and crown comes from the two shapes'
+       own gradients, which costs nothing. Knocked out in a single colour they
+       would merge, and the merged silhouette does not read as a cap at all —
+       it reads as a house, at 32 px as plainly as at 16. So this is one path
+       with fill-rule="evenodd", and the board's overlap with the crown becomes
+       a hole. That hole is 76 units deep, about 2.4 px at 16 px: a real
+       feature rather than the sub-pixel slot Find.qs had to drop, which is why
+       the trap that caught Find.qs's rim breather does not catch this.
+
+       The tassel is kept, against the expectation that it would have to go.
+       At 16 px its cord is sub-pixel, but it is detached from the silhouette
+       and has nothing to smear across, so it fades to a soft tick on the right
+       rather than reading as damage — and it is fully legible at 24 and 32.
+       Dropped and kept were rendered side by side at all three sizes before
+       choosing. -->
+  <path fill="#ffffff" fill-rule="evenodd"
+        d="M134 208 V348 C134 396 202 426 256 426 C310 426 378 396 378 348 V208 Z
+           M256 86 L448 197 L256 284 L64 197 Z
+           M401 206 H423 V330 H401 Z
+           M412 347 m-24 0 a24 24 0 1 0 48 0 a24 24 0 1 0 -48 0 Z"/>
+  <!-- ========================== end GLYPH ========================== -->
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+  <title id="t">Onboard.qs</title>
+  <!-- One colour, no gradients, no opacity. Inherits currentColor where that
+       means something and falls back to black on its own: Safari pinned tab,
+       print, embroidery, rubber stamps.
+       
+       Everything is ONE compound path with fill-rule="evenodd", so interior
+       detail is knocked out of the shape rather than drawn on top of it. Two
+       stacked shapes would both be the same colour and would merge.
+
+       Detail that relied on tonal difference has to become a hole or go away.
+       Holes also need more space between them than coloured elements do: with
+       no colour to separate them, near-touching holes merge into one lozenge.
+
+       Here that costs the V. On the card the board and the crown are told
+       apart by their two gradients; in one flat colour they merge, and cutting
+       a slot to keep them apart would put a sub-pixel gap across the widest
+       part of the mark — the same trap -fullbleed.svg avoids. So the cap is
+       one merged silhouette, and the tassel comes back, which -fullbleed.svg
+       drops. It can: this file is used at stamp and print sizes far more than
+       at 16 px, and a detached bead simply fades as it shrinks rather than
+       smearing, because nothing it touches depends on it.
+
+       ============================ GLYPH ============================ -->
+  <path fill="currentColor" fill-rule="evenodd"
+        d="M134 208 V348 C134 396 202 426 256 426 C310 426 378 396 378 348 V208 Z
+           M256 86 L448 197 L256 284 L64 197 Z
+           M401 206 H423 V330 H401 Z
+           M412 347 m-24 0 a24 24 0 1 0 48 0 a24 24 0 1 0 -48 0 Z"/>
+  <!-- ========================== end GLYPH ========================== -->
+</svg>

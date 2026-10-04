@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140" role="img" aria-labelledby="mark-title">
+  <title id="mark-title">Onboard.qs</title>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EFFAF3"/>
+      <stop offset="100%" stop-color="#E1F5E8"/>
+    </linearGradient>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00B050"/>
+      <stop offset="100%" stop-color="#007A38"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="132" height="132" rx="16" ry="16" fill="url(#bgGrad)"/>
+
+  <!-- The same glyph as the logo, scaled about its own centre and re-centred in
+       the card. With no wordmark beneath it there is room, and a mark that kept
+       the logo's proportions sits visibly high. Adjust the scale to taste; the
+       translate pair is (centre of card) then (negative centre of glyph).
+
+       The glyph's vertical centre here is (18+96)/2 = 57.
+       ============================ GLYPH ============================ -->
+  <g transform="translate(70 70) scale(1.15) translate(-70 -57)">
+    <path d="M42 46 V78 C42 89 57.5 96 70 96 C82.5 96 98 89 98 78 V46 Z"
+          fill="url(#iconGrad)"/>
+    <rect x="102.8" y="46" width="2.4" height="30" rx="1.2" fill="url(#iconGrad)"/>
+    <circle cx="104" cy="78" r="3.8" fill="url(#iconGrad)"/>
+    <path d="M70 18 L114 43.5 L70 63.5 L26 43.5 Z" fill="url(#iconGrad)"/>
+  </g>
+  <!-- ========================== end GLYPH ========================== -->
+</svg>
