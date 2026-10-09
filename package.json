@@ -72,7 +72,7 @@
         "husky": "^9.1.7",
         "lint-staged": "^17.0.5",
         "md-to-pdf": "^5.2.5",
-        "prettier": "^3.8.3"
+        "prettier": "^3.8.4"
     },
     "peerDependencies": {
         "@nebula.js/stardust": ">=5.0.0"
