@@ -5,6 +5,7 @@ import { detectPlatformType } from '../platform/index';
 import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
+import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
 
 /**
  * Modal tour editor for edit mode.
@@ -1001,6 +1002,23 @@ function infoIcon(text) {
 }
 
 /**
+ * Build the dialog-size dropdown options for a step.
+ *
+ * Selects the size the tour runner will render the step with, so a step
+ * without a saved size shows its effective default.
+ *
+ * @param {object} step - The step being edited.
+ * @returns {string} HTML option elements.
+ */
+function buildDialogSizeOptionsHtml(step) {
+    const selected = getDialogSize(step);
+    return DIALOG_SIZE_OPTIONS.map(
+        ({ value, label }) =>
+            `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`
+    ).join('');
+}
+
+/**
  * Build the detail/editing panel (right).
  *
  * @param {object|null} tour - The selected tour object or null.
@@ -1107,12 +1125,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     <label class="onboard-qs-editor__field">
                         <span>Dialog Size ${infoIcon('Choose a preset dialog size or keep it dynamic so driver.js decides the best fit.')}</span>
                         <select class="onboard-qs-editor__select onboard-qs-editor__step-dialog-size">
-                            <option value="dynamic" ${step.dialogSize === 'dynamic' || (!step.dialogSize && selectorType !== 'none') ? 'selected' : ''}>Dynamic (fit content)</option>
-                            <option value="small" ${step.dialogSize === 'small' ? 'selected' : ''}>Small (320 × 220)</option>
-                            <option value="medium" ${step.dialogSize === 'medium' || (!step.dialogSize && selectorType === 'none') ? 'selected' : ''}>Medium (480 × 320)</option>
-                            <option value="large" ${step.dialogSize === 'large' ? 'selected' : ''}>Large (640 × 420)</option>
-                            <option value="x-large" ${step.dialogSize === 'x-large' ? 'selected' : ''}>Extra large (800 × 520)</option>
-                            <option value="custom" ${step.dialogSize === 'custom' ? 'selected' : ''}>Custom…</option>
+                            ${buildDialogSizeOptionsHtml(step)}
                         </select>
                     </label>
                     <div class="onboard-qs-editor__field-row" style="${step.dialogSize !== 'custom' ? 'display:none' : ''}">
