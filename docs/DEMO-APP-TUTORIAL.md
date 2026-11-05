@@ -174,6 +174,13 @@ tour that is already recorded. Three things follow from that:
 
 "Show once" only limits auto-start. Users can always start the tour again from the buttons.
 
+**A known problem with auto-start.** In Onboard.qs 1.8.2, an auto-start tour starts again each time its
+object gets a new layout, and that happens on every selection if any tour on the object contains an
+expression ([#285](https://github.com/ptarmiganlabs/onboard.qs/issues/285)). With "show once" off, the
+tour comes back after every selection. With it on, a selection made during the tour sends the user back
+to step 1. Until it's fixed, put auto-start tours on an Onboard.qs object whose tours have no
+expressions. Or keep "show once" on and block clicks while the tour runs, as the welcome tour does.
+
 **Pointing at Sense's own toolbar.** A step with **Custom CSS Selector** can highlight any element on the
 page. To find a selector, right-click the element in the browser, choose **Inspect**, and look for an
 attribute that is the same in every UI language: an `id`, a `data-tid`, a `data-testid` or a `tid`. In
@@ -491,6 +498,9 @@ selection.
 
 - **"Show once" is per browser.** It is stored in localStorage, not on the server. Raise the tour's
   version to show it again.
+- **Auto-start tours can restart on a selection** if any tour on the same object contains an expression
+  ([#285](https://github.com/ptarmiganlabs/onboard.qs/issues/285)). Keep auto-start tours on an object
+  without expressions.
 - **Expressions are evaluated when the tour starts**, not at each step
   ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280)).
 - **Step dialogs don't scroll.** Keep texts short, prefer _Dynamic (fit content)_, and cap image heights

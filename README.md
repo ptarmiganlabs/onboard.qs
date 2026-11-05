@@ -558,11 +558,12 @@ The **Custom CSS Selector** target type lets you highlight any DOM element on th
 | Target                                 | CSS Selector                                               |
 | -------------------------------------- | ---------------------------------------------------------- |
 | Help button (Ptarmigan Labs extension) | `#helpbutton-qs` or inspect the DOM for the exact selector |
-| Bookmark button                        | `.qs-toolbar .bookmark-button`                             |
+| Sheets button (client-managed)         | `[data-tid="assets-button-sheets"]`                        |
+| Bookmarks button (client-managed)      | `[data-tid="assets-button-bookmarks"]`                     |
 | Sheet title                            | `.sheet-title-container`                                   |
 | Any element by ID                      | `#my-custom-id`                                            |
 
-To find the right selector: right-click the element in the browser → **Inspect** → note the class or ID.
+To find the right selector: right-click the element in the browser → **Inspect** → look for an `id`, `data-tid`, `data-testid` or `tid` attribute. These are the same in every UI language. Avoid `title` attributes, which are translated, and generated classes such as `css-1x2y3z`, which can change with any Sense release. The [demo app tutorial](docs/DEMO-APP-TUTORIAL.md#techniques-worth-copying) shows the selectors its welcome tour uses for Sense's toolbar.
 
 ---
 
