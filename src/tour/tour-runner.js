@@ -1,7 +1,7 @@
 import { driver } from 'driver.js';
 import logger from '../util/logger';
 import { markdownToHtml, stripHtml } from '../util/markdown';
-import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
+import { getObjectSelectorSync, detectPlatformType, getPlatformAdapter } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
@@ -192,7 +192,36 @@ function safeCssColor(value, fallback) {
 }
 
 /**
- * Create and run a tour.
+ * The driver.js instance of the last tour started by runTour().
+ * driver.js keeps its configuration and state at module level, so starting
+ * a second tour replaces the running one instead of running alongside it.
+ *
+ * @type {object|null}
+ */
+let activeTour = null;
+
+/**
+ * The sheet that activeTour was started on.
+ *
+ * @type {string|null}
+ */
+let activeTourSheetId = null;
+
+/**
+ * Whether a tour started by runTour() is still running.
+ *
+ * @param {object} tourConfig - The tour about to be started, for the log message.
+ *
+ * @returns {boolean} True, after logging that the tour is not started, if another tour is running.
+ */
+function anotherTourRunning(tourConfig) {
+    if (!activeTour?.isActive()) return false;
+    logger.info(`Not starting tour "${tourConfig.tourName}": another tour is running`);
+    return true;
+}
+
+/**
+ * Create and run a tour, unless another tour is running.
  *
  * @param {object} tourConfig - Tour configuration from layout.
  * @param {object} [options] - Additional options.
@@ -200,9 +229,10 @@ function safeCssColor(value, fallback) {
  * @param {string} [options.senseVersion] - Sense version (informational, unused).
  * @param {string} [options.codePath] - Code-path name for selector lookup.
  * @param {string} [options.appId] - App ID for localStorage tracking.
- * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
+ * @param {string} [options.sheetId] - Sheet the tour belongs to. Also used for localStorage tracking.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
+ *
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
 export async function runTour(tourConfig, options = {}) {
@@ -215,6 +245,8 @@ export async function runTour(tourConfig, options = {}) {
         allowedUriPatterns,
         onComplete,
     } = options;
+
+    if (anotherTourRunning(tourConfig)) return null;
 
     // Ensure tab-container metadata is fully built before we create
     // driver.js steps — auto-start tours may fire before the async
@@ -231,8 +263,6 @@ export async function runTour(tourConfig, options = {}) {
         logger.warn('Tour has no valid steps, nothing to show');
         return null;
     }
-
-    logger.info(`Starting tour "${tourConfig.tourName}" with ${steps.length} steps`);
 
     const driverConfig = {
         steps,
@@ -313,7 +343,21 @@ export async function runTour(tourConfig, options = {}) {
         }
     }
 
+    // The awaits above can take a while on a large sheet. Check again with
+    // no await between here and drive(), so two tours started at the same
+    // moment can't both run, and a tour isn't shown on a sheet the user
+    // moved to in the meantime.
+    if (anotherTourRunning(tourConfig)) return null;
+    if (sheetId && getPlatformAdapter().getCurrentSheetId() !== sheetId) {
+        logger.info(`Not starting tour "${tourConfig.tourName}": its sheet is no longer open`);
+        return null;
+    }
+
+    logger.info(`Starting tour "${tourConfig.tourName}" with ${steps.length} steps`);
+
     const driverObj = driver(driverConfig);
+    activeTour = driverObj;
+    activeTourSheetId = sheetId || null;
     driverObj.drive();
     return driverObj;
 }
@@ -432,4 +476,20 @@ export function destroyTour(driverObj) {
     if (driverObj && driverObj.isActive()) {
         driverObj.destroy();
     }
+}
+
+/**
+ * Close the running tour if it was started on the given sheet.
+ *
+ * Called once the user has left that sheet. The tour overlay blocks most
+ * clicks, but a step can leave a button or link that goes to another sheet
+ * clickable, so a tour can still be running when its sheet goes away.
+ * Closing it this way counts as closing the tour, for "Show only once" too.
+ *
+ * @param {string} sheetId - The sheet the user has left.
+ */
+export function closeTourForSheet(sheetId) {
+    if (!sheetId || activeTourSheetId !== sheetId || !activeTour?.isActive()) return;
+    logger.info(`Closing the running tour: its sheet ${sheetId} is no longer open`);
+    destroyTour(activeTour);
 }

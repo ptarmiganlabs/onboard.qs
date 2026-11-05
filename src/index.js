@@ -12,6 +12,8 @@ import ext from './ext/index';
 import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
+import { endAutoStartVisit } from './tour/tour-helpers';
+import { closeTourForSheet } from './tour/tour-runner';
 import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
@@ -103,6 +105,9 @@ export default function supernova(galaxy) {
             const options = useOptions();
             const layoutRef = useRef(layout);
             const initRef = useRef(false);
+            // App and sheet of the last analysis-mode render, so the
+            // auto-start visit can be ended once the user leaves the sheet
+            const visitRef = useRef(null);
 
             // Store model reference so utility modules can persist property changes
             extensionState.model = model;
@@ -186,6 +191,26 @@ export default function supernova(galaxy) {
                 }
             }, [layout.tours]);
 
+            // On unmount, if the user has left the sheet, end its auto-start
+            // visit and close any tour still running on it, as happens when a
+            // step leaves a button that goes to another sheet clickable. Qlik
+            // also destroys and re-creates objects while the user stays on the
+            // sheet, which must do neither, so check the sheet once navigation
+            // has settled.
+            useEffect(
+                () => () => {
+                    const visited = visitRef.current;
+                    if (!visited) return;
+                    setTimeout(() => {
+                        if (getPlatformAdapter().getCurrentSheetId() !== visited.sheetId) {
+                            endAutoStartVisit(visited.appId, visited.sheetId);
+                            closeTourForSheet(visited.sheetId);
+                        }
+                    }, 0);
+                },
+                []
+            );
+
             // Main render effect
             useEffect(() => {
                 if (!element) return;
@@ -199,6 +224,13 @@ export default function supernova(galaxy) {
                     // Edit mode: show placeholder with "Edit Tours" button.
                     // No platform detection needed — render immediately.
                     renderEditPlaceholder(element, layout);
+
+                    // Returning to analysis mode counts as a new visit, so
+                    // auto-start tours can be checked after editing them
+                    endAutoStartVisit(
+                        app?.id || 'unknown',
+                        (adapter || getPlatformAdapter()).getCurrentSheetId()
+                    );
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
@@ -285,6 +317,7 @@ export default function supernova(galaxy) {
 
                 const sheetId = adapter.getCurrentSheetId();
                 const appId = app?.id || 'unknown';
+                visitRef.current = { appId, sheetId };
 
                 // Clean up previous render's event listeners
                 if (element._onboardCleanup) {
@@ -314,7 +347,7 @@ export default function supernova(galaxy) {
                     if (headerEl) headerEl.style.display = '';
                 }
 
-                renderWidget(element, layout, {
+                const cancelAutoStart = renderWidget(element, layout, {
                     appId,
                     sheetId,
                     platformType: platform.type,
@@ -453,12 +486,15 @@ export default function supernova(galaxy) {
                 initRef.current = true;
 
                 /**
-                 * Cleanup: remove context menu handler, shared observer
-                 * subscription, pending timer, hover menu hiding class,
-                 * and hidden-widget class when the effect re-runs or
-                 * the component unmounts.
+                 * Cleanup: cancel pending auto-starts, remove context menu
+                 * handler, shared observer subscription, pending timer,
+                 * hover menu hiding class, and hidden-widget class when
+                 * the effect re-runs or the component unmounts.
                  */
                 return () => {
+                    // A re-render schedules the auto-starts again, and
+                    // leaving the sheet must not start a tour on the next one
+                    if (cancelAutoStart) cancelAutoStart();
                     if (contextMenuHandler) {
                         qlikWrapper.removeEventListener('contextmenu', contextMenuHandler, true);
                         clearTimeout(rightClickTimer);

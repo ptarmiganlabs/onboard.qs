@@ -22,6 +22,8 @@ import { sanitizeIconName } from '../util/sanitize';
  * @param {string} context.platformType - 'client-managed' or 'cloud'.
  * @param {string} [context.senseVersion] - Sense version.
  * @param {string} [context.codePath] - Code-path name for selector lookup.
+ *
+ * @returns {(function(): void)|undefined} Cancels pending auto-starts, or undefined when no tour is visible.
  */
 export function renderWidget(element, layout, context) {
     const allTours = layout.tours || [];
@@ -50,8 +52,7 @@ export function renderWidget(element, layout, context) {
     if (!showButton) {
         // Invisible mode — only auto-start tours will run
         element.innerHTML = '<div class="onboard-qs-widget onboard-qs-widget--hidden"></div>';
-        handleAutoStart(tours, layout, context);
-        return;
+        return handleAutoStart(tours, layout, context);
     }
 
     // Build button UI
@@ -145,7 +146,7 @@ export function renderWidget(element, layout, context) {
     };
 
     // Handle auto-start tours
-    handleAutoStart(tours, layout, context);
+    return handleAutoStart(tours, layout, context);
 }
 
 /**

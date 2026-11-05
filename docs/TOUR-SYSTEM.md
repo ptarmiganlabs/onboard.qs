@@ -162,7 +162,9 @@ flowchart TD
     A[renderWidget called] --> B[handleAutoStart&#40;tours&#41;]
     B --> C{tour.autoStart?}
     C -- No --> D[Skip]
-    C -- Yes --> E{tour.showOnce?}
+    C -- Yes --> V{Auto-started already<br/>on this sheet visit?}
+    V -- Yes --> W[Skip — once per visit]
+    V -- No --> E{tour.showOnce?}
     E -- No --> G[Start tour after 500ms delay]
     E -- Yes --> F{hasSeenTour?}
     F -- Yes --> H[Skip — already seen]
@@ -170,6 +172,36 @@ flowchart TD
 ```
 
 The 500ms delay ensures Qlik objects have finished rendering before the tour overlay appears.
+
+`renderWidget()` runs again every time the object gets a new layout. If any of the object's
+properties is an expression, that happens on every selection, every **Clear all** and every step
+back or forward. So `tour-helpers.js` records the tours auto-started during the current visit to
+the sheet, and `handleAutoStart()` skips them. The record belongs to the sheet, not to the object,
+because Qlik can destroy and re-create an object while the user stays on the sheet, for example
+when a tab container switches tabs. A visit ends when the user switches to edit mode, or when an
+object unmounts and the URL shows another sheet. A tour that its show condition hides when the
+sheet opens auto-starts the first time it becomes visible.
+
+A re-render or unmount cancels the auto-starts that haven't fired yet, so a burst of layout changes
+gives one start, 500ms after the last of them.
+
+`runTour()` doesn't start a tour while another one is running. driver.js runs one tour at a time,
+and a second `drive()` would replace the running tour rather than add to it. `runTour()` checks on
+entry, and again just before `drive()` with no `await` in between, because waiting for the
+tab-container metadata can take a while on a large sheet. The second check also drops a tour whose
+sheet the user has left during that wait.
+
+A tour that is already running when its sheet goes away is closed. The tour overlay blocks most
+clicks, but a step can leave a button or link that goes to another sheet clickable. When an object
+unmounts and the URL shows another sheet, `closeTourForSheet()` closes the tour started on the old
+sheet, and that counts as closing it for **Show only once**. Otherwise the old tour would stay on screen, pointing at objects that
+are gone, and keep the new sheet's auto-start tour from starting.
+
+So only one auto-start tour runs per visit. When two are due at once, the first to fire runs (on
+one object, the first in its tour list) and the other is skipped for that visit. With **Show only
+once** on, the other one auto-starts on a later visit, once the first is marked as seen. With it
+off, the first one wins every time, so give a sheet only one auto-start tour with **Show only
+once** off.
 
 ## "Show once" gating (tour-storage.js)
 

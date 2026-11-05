@@ -17,7 +17,7 @@ This file tracks follow-up improvements for Onboard.qs.
 
 ## Follow-On Quality Improvements
 
-- [ ] Add automated tests for the most critical behaviors, especially platform detection, tour transformation, import and export flows, and show-once logic.
+- [ ] Add automated tests for the most critical behaviors, especially platform detection, tour transformation, import and export flows, show-once logic, and auto-start: once per sheet visit whatever happens to the layout, and one tour at a time (#285).
 - [ ] Add coverage reporting or another lightweight confidence signal for future test work so regressions are easier to spot.
 - [ ] Add bundle-size regression checks or CI alerts using the existing bundle analysis output.
 - [ ] Add automated accessibility checks for the tour editor, toolbar button, and driver.js popover flows.
