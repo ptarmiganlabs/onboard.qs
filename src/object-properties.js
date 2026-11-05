@@ -77,7 +77,7 @@ export default {
                 {
                     selectorType: 'css',
                     targetObjectId: '',
-                    customCssSelector: '.css-w8rxil',
+                    customCssSelector: '[data-testid="top-bar-app-center-name"]',
                     popoverTitle: 'CSS selectors supported',
                     popoverDescription:
                         'Any CSS selector can be used to define which UI element should be targeted in a step.',
@@ -88,7 +88,7 @@ export default {
                 {
                     selectorType: 'css',
                     targetObjectId: '',
-                    customCssSelector: '.css-1651u5c',
+                    customCssSelector: '[data-testid="back-to-hub-button"]',
                     popoverTitle: 'Open hub',
                     popoverDescription: 'Clicking here will open the **Qlik Sense Hub**',
                     popoverSide: 'bottom',
