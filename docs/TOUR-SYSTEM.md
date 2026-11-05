@@ -162,7 +162,9 @@ flowchart TD
     A[renderWidget called] --> B[handleAutoStart&#40;tours&#41;]
     B --> C{tour.autoStart?}
     C -- No --> D[Skip]
-    C -- Yes --> E{tour.showOnce?}
+    C -- Yes --> V{Auto-started already<br/>on this sheet visit?}
+    V -- Yes --> W[Skip — once per visit]
+    V -- No --> E{tour.showOnce?}
     E -- No --> G[Start tour after 500ms delay]
     E -- Yes --> F{hasSeenTour?}
     F -- Yes --> H[Skip — already seen]
@@ -170,6 +172,20 @@ flowchart TD
 ```
 
 The 500ms delay ensures Qlik objects have finished rendering before the tour overlay appears.
+
+`renderWidget()` runs again every time the object gets a new layout. If any of the object's
+properties is an expression, that happens on every selection, every **Clear all** and every step
+back or forward. So `index.js` keeps the IDs of the tours auto-started during the current sheet
+visit (`autoStartedRef`) and `handleAutoStart()` skips them. A visit ends when the user leaves the
+sheet, which unmounts the object, or switches to edit mode. A tour that its show condition hides
+when the sheet opens auto-starts the first time it becomes visible.
+
+A re-render or unmount cancels the auto-starts that haven't fired yet, so a burst of layout changes
+gives one start, 500ms after the last of them, and leaving the sheet early starts nothing.
+
+`runTour()` doesn't start a tour while another one is starting or running. driver.js runs one tour
+at a time, and a second `drive()` would replace the running tour rather than add to it. When two
+auto-start tours are due at once, the first to fire runs and the other waits for the next visit.
 
 ## "Show once" gating (tour-storage.js)
 

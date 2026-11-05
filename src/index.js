@@ -103,6 +103,12 @@ export default function supernova(galaxy) {
             const options = useOptions();
             const layoutRef = useRef(layout);
             const initRef = useRef(false);
+            // IDs of tours auto-started during this sheet visit. The main
+            // render effect re-runs on every new layout (every selection,
+            // when the object has expressions), so without this an
+            // auto-start tour would start again each time. Leaving the
+            // sheet unmounts the object, which starts a new visit.
+            const autoStartedRef = useRef(new Set());
 
             // Store model reference so utility modules can persist property changes
             extensionState.model = model;
@@ -199,6 +205,10 @@ export default function supernova(galaxy) {
                     // Edit mode: show placeholder with "Edit Tours" button.
                     // No platform detection needed — render immediately.
                     renderEditPlaceholder(element, layout);
+
+                    // Returning to analysis mode counts as a new visit, so
+                    // auto-start tours can be checked after editing them
+                    autoStartedRef.current.clear();
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
@@ -314,13 +324,14 @@ export default function supernova(galaxy) {
                     if (headerEl) headerEl.style.display = '';
                 }
 
-                renderWidget(element, layout, {
+                const cancelAutoStart = renderWidget(element, layout, {
                     appId,
                     sheetId,
                     platformType: platform.type,
                     senseVersion: platform.version,
                     codePath: platform.codePath,
                     allowedUriPatterns: layout.security?.allowedUriPatterns,
+                    autoStarted: autoStartedRef.current,
                 });
 
                 // --- Toolbar button injection ---
@@ -453,12 +464,15 @@ export default function supernova(galaxy) {
                 initRef.current = true;
 
                 /**
-                 * Cleanup: remove context menu handler, shared observer
-                 * subscription, pending timer, hover menu hiding class,
-                 * and hidden-widget class when the effect re-runs or
-                 * the component unmounts.
+                 * Cleanup: cancel pending auto-starts, remove context menu
+                 * handler, shared observer subscription, pending timer,
+                 * hover menu hiding class, and hidden-widget class when
+                 * the effect re-runs or the component unmounts.
                  */
                 return () => {
+                    // A re-render schedules the auto-starts again, and
+                    // leaving the sheet must not start a tour on the next one
+                    if (cancelAutoStart) cancelAutoStart();
                     if (contextMenuHandler) {
                         qlikWrapper.removeEventListener('contextmenu', contextMenuHandler, true);
                         clearTimeout(rightClickTimer);

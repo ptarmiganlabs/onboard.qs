@@ -192,7 +192,23 @@ function safeCssColor(value, fallback) {
 }
 
 /**
- * Create and run a tour.
+ * The driver.js instance of the last tour started by runTour().
+ * driver.js keeps its configuration and state at module level, so starting
+ * a second tour replaces the running one instead of running alongside it.
+ *
+ * @type {object|null}
+ */
+let activeTour = null;
+
+/**
+ * True while runTour() is preparing a tour and has not yet called drive().
+ *
+ * @type {boolean}
+ */
+let tourStarting = false;
+
+/**
+ * Create and run a tour, unless another tour is starting or running.
  *
  * @param {object} tourConfig - Tour configuration from layout.
  * @param {object} [options] - Additional options.
@@ -203,9 +219,43 @@ function safeCssColor(value, fallback) {
  * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
+ *
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
 export async function runTour(tourConfig, options = {}) {
+    // Checked and set before the first await, so two tours started at the
+    // same moment (e.g. two auto-start tours) can't both get through
+    if (tourStarting || activeTour?.isActive()) {
+        logger.info(`Not starting tour "${tourConfig.tourName}": another tour is running`);
+        return null;
+    }
+
+    tourStarting = true;
+    try {
+        const driverObj = await driveTour(tourConfig, options);
+        if (driverObj) activeTour = driverObj;
+        return driverObj;
+    } finally {
+        tourStarting = false;
+    }
+}
+
+/**
+ * Build the driver.js configuration for a tour and start it.
+ *
+ * @param {object} tourConfig - Tour configuration from layout.
+ * @param {object} options - Options as passed to runTour().
+ * @param {string} [options.platformType] - Platform type.
+ * @param {string} [options.senseVersion] - Sense version (informational, unused).
+ * @param {string} [options.codePath] - Code-path name for selector lookup.
+ * @param {string} [options.appId] - App ID for localStorage tracking.
+ * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
+ * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
+ * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
+ *
+ * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
+ */
+async function driveTour(tourConfig, options) {
     const {
         platformType = detectPlatformType(),
         senseVersion: _senseVersion,
