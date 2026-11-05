@@ -175,17 +175,27 @@ The 500ms delay ensures Qlik objects have finished rendering before the tour ove
 
 `renderWidget()` runs again every time the object gets a new layout. If any of the object's
 properties is an expression, that happens on every selection, every **Clear all** and every step
-back or forward. So `index.js` keeps the IDs of the tours auto-started during the current sheet
-visit (`autoStartedRef`) and `handleAutoStart()` skips them. A visit ends when the user leaves the
-sheet, which unmounts the object, or switches to edit mode. A tour that its show condition hides
-when the sheet opens auto-starts the first time it becomes visible.
+back or forward. So `tour-helpers.js` records the tours auto-started during the current visit to
+the sheet, and `handleAutoStart()` skips them. The record belongs to the sheet, not to the object,
+because Qlik can destroy and re-create an object while the user stays on the sheet, for example
+when a tab container switches tabs. A visit ends when the user switches to edit mode, or when an
+object unmounts and the URL shows another sheet. A tour that its show condition hides when the
+sheet opens auto-starts the first time it becomes visible.
 
 A re-render or unmount cancels the auto-starts that haven't fired yet, so a burst of layout changes
-gives one start, 500ms after the last of them, and leaving the sheet early starts nothing.
+gives one start, 500ms after the last of them.
 
-`runTour()` doesn't start a tour while another one is starting or running. driver.js runs one tour
-at a time, and a second `drive()` would replace the running tour rather than add to it. When two
-auto-start tours are due at once, the first to fire runs and the other waits for the next visit.
+`runTour()` doesn't start a tour while another one is running. driver.js runs one tour at a time,
+and a second `drive()` would replace the running tour rather than add to it. `runTour()` checks on
+entry, and again just before `drive()` with no `await` in between, because waiting for the
+tab-container metadata can take a while on a large sheet. The second check also drops a tour whose
+sheet the user has left during that wait.
+
+So only one auto-start tour runs per visit. When two are due at once, the first to fire runs (on
+one object, the first in its tour list) and the other is skipped for that visit. With **Show only
+once** on, the other one auto-starts on a later visit, once the first is marked as seen. With it
+off, the first one wins every time, so give a sheet only one auto-start tour with **Show only
+once** off.
 
 ## "Show once" gating (tour-storage.js)
 

@@ -20,28 +20,71 @@ export function startTour(tourConfig, context) {
 }
 
 /**
+ * The sheet visit that auto-start is tracking, and the IDs of the tours
+ * auto-started during it. Kept here rather than in each object, because
+ * Qlik can destroy and re-create an object while the user stays on the
+ * sheet (a tab container switching tabs, for example), and that must not
+ * count as a new visit.
+ *
+ * @type {{ key: string, autoStarted: Set<string> } | null}
+ */
+let visit = null;
+
+/**
+ * Get the IDs of the tours auto-started during the current visit to a
+ * sheet, starting a new visit when the sheet differs from the last one.
+ *
+ * @param {string} appId - App ID.
+ * @param {string} sheetId - Sheet ID.
+ *
+ * @returns {Set<string>} IDs of the tours auto-started during this visit.
+ */
+function visitAutoStarted(appId, sheetId) {
+    const key = `${appId}:${sheetId}`;
+    if (visit?.key !== key) {
+        visit = { key, autoStarted: new Set() };
+    }
+    return visit.autoStarted;
+}
+
+/**
+ * End the current visit to a sheet, so its auto-start tours start again
+ * the next time it renders. Does nothing if another sheet's visit has
+ * started since.
+ *
+ * @param {string} appId - App ID.
+ * @param {string} sheetId - Sheet ID.
+ */
+export function endAutoStartVisit(appId, sheetId) {
+    if (visit?.key === `${appId}:${sheetId}`) {
+        logger.debug(`Auto-start visit to sheet ${sheetId} ended`);
+        visit = null;
+    }
+}
+
+/**
  * Handle auto-starting tours that should trigger on sheet load.
  *
  * Called on every render, and the object renders again whenever its
  * layout changes (on every selection if any of its properties is an
  * expression). Each tour is therefore auto-started at most once per
- * sheet visit: tours listed in `context.autoStarted` are skipped, and
- * a tour is added to it when its delayed start fires.
+ * sheet visit: a tour is recorded for the visit when its delayed start
+ * fires, and skipped after that.
  *
  * @param {Array} tours - Visible tour configurations.
  * @param {object} layout - Extension layout.
  * @param {object} context - Context with appId, sheetId, etc.
- * @param {Set<string>} [context.autoStarted] - IDs of tours already auto-started during this sheet visit.
  *
  * @returns {function(): void} Cancels the auto-starts that have not fired yet.
  */
 export function handleAutoStart(tours, layout, context) {
+    const autoStarted = visitAutoStarted(context.appId, context.sheetId);
     const timers = [];
 
     tours.forEach((tour) => {
         if (!tour.autoStart) return;
 
-        if (context.autoStarted?.has(tour.tourId)) {
+        if (autoStarted.has(tour.tourId)) {
             logger.debug(`Tour "${tour.tourName}" already auto-started on this sheet visit`);
             return;
         }
@@ -62,7 +105,7 @@ export function handleAutoStart(tours, layout, context) {
         // Delay slightly to let Qlik objects finish rendering
         timers.push(
             setTimeout(() => {
-                context.autoStarted?.add(tour.tourId);
+                autoStarted.add(tour.tourId);
                 logger.info(`Auto-starting tour "${tour.tourName}"`);
                 startTour(tour, context);
             }, 500)

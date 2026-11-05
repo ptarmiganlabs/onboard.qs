@@ -22,7 +22,6 @@ import { sanitizeIconName } from '../util/sanitize';
  * @param {string} context.platformType - 'client-managed' or 'cloud'.
  * @param {string} [context.senseVersion] - Sense version.
  * @param {string} [context.codePath] - Code-path name for selector lookup.
- * @param {Set<string>} [context.autoStarted] - IDs of tours already auto-started during this sheet visit.
  *
  * @returns {(function(): void)|undefined} Cancels pending auto-starts, or undefined when no tour is visible.
  */

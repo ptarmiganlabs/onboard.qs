@@ -1,7 +1,7 @@
 import { driver } from 'driver.js';
 import logger from '../util/logger';
 import { markdownToHtml, stripHtml } from '../util/markdown';
-import { getObjectSelectorSync, detectPlatformType } from '../platform/index';
+import { getObjectSelectorSync, detectPlatformType, getPlatformAdapter } from '../platform/index';
 import { markTourSeen } from './tour-storage';
 import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
@@ -201,14 +201,20 @@ function safeCssColor(value, fallback) {
 let activeTour = null;
 
 /**
- * True while runTour() is preparing a tour and has not yet called drive().
+ * Whether a tour started by runTour() is still running.
  *
- * @type {boolean}
+ * @param {object} tourConfig - The tour about to be started, for the log message.
+ *
+ * @returns {boolean} True, after logging that the tour is not started, if another tour is running.
  */
-let tourStarting = false;
+function anotherTourRunning(tourConfig) {
+    if (!activeTour?.isActive()) return false;
+    logger.info(`Not starting tour "${tourConfig.tourName}": another tour is running`);
+    return true;
+}
 
 /**
- * Create and run a tour, unless another tour is starting or running.
+ * Create and run a tour, unless another tour is running.
  *
  * @param {object} tourConfig - Tour configuration from layout.
  * @param {object} [options] - Additional options.
@@ -216,46 +222,13 @@ let tourStarting = false;
  * @param {string} [options.senseVersion] - Sense version (informational, unused).
  * @param {string} [options.codePath] - Code-path name for selector lookup.
  * @param {string} [options.appId] - App ID for localStorage tracking.
- * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
+ * @param {string} [options.sheetId] - Sheet the tour belongs to. Also used for localStorage tracking.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
  *
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
  */
 export async function runTour(tourConfig, options = {}) {
-    // Checked and set before the first await, so two tours started at the
-    // same moment (e.g. two auto-start tours) can't both get through
-    if (tourStarting || activeTour?.isActive()) {
-        logger.info(`Not starting tour "${tourConfig.tourName}": another tour is running`);
-        return null;
-    }
-
-    tourStarting = true;
-    try {
-        const driverObj = await driveTour(tourConfig, options);
-        if (driverObj) activeTour = driverObj;
-        return driverObj;
-    } finally {
-        tourStarting = false;
-    }
-}
-
-/**
- * Build the driver.js configuration for a tour and start it.
- *
- * @param {object} tourConfig - Tour configuration from layout.
- * @param {object} options - Options as passed to runTour().
- * @param {string} [options.platformType] - Platform type.
- * @param {string} [options.senseVersion] - Sense version (informational, unused).
- * @param {string} [options.codePath] - Code-path name for selector lookup.
- * @param {string} [options.appId] - App ID for localStorage tracking.
- * @param {string} [options.sheetId] - Sheet ID for localStorage tracking.
- * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
- * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
- *
- * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
- */
-async function driveTour(tourConfig, options) {
     const {
         platformType = detectPlatformType(),
         senseVersion: _senseVersion,
@@ -265,6 +238,8 @@ async function driveTour(tourConfig, options) {
         allowedUriPatterns,
         onComplete,
     } = options;
+
+    if (anotherTourRunning(tourConfig)) return null;
 
     // Ensure tab-container metadata is fully built before we create
     // driver.js steps — auto-start tours may fire before the async
@@ -363,7 +338,18 @@ async function driveTour(tourConfig, options) {
         }
     }
 
+    // The awaits above can take a while on a large sheet. Check again with
+    // no await between here and drive(), so two tours started at the same
+    // moment can't both run, and a tour isn't shown on a sheet the user
+    // moved to in the meantime.
+    if (anotherTourRunning(tourConfig)) return null;
+    if (sheetId && getPlatformAdapter().getCurrentSheetId() !== sheetId) {
+        logger.info(`Not starting tour "${tourConfig.tourName}": its sheet is no longer open`);
+        return null;
+    }
+
     const driverObj = driver(driverConfig);
+    activeTour = driverObj;
     driverObj.drive();
     return driverObj;
 }
