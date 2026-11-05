@@ -481,10 +481,10 @@ export function destroyTour(driverObj) {
 /**
  * Close the running tour if it was started on the given sheet.
  *
- * Called once the user has left that sheet. The tour overlay blocks clicks
- * on the page but not the browser's Back button, so a tour can still be
- * running when its sheet goes away. Closing it this way counts as closing
- * the tour, for "Show only once" too.
+ * Called once the user has left that sheet. The tour overlay blocks most
+ * clicks, but a step can leave a button or link that goes to another sheet
+ * clickable, so a tour can still be running when its sheet goes away.
+ * Closing it this way counts as closing the tour, for "Show only once" too.
  *
  * @param {string} sheetId - The sheet the user has left.
  */

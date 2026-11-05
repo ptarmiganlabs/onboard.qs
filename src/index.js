@@ -192,10 +192,11 @@ export default function supernova(galaxy) {
             }, [layout.tours]);
 
             // On unmount, if the user has left the sheet, end its auto-start
-            // visit and close a tour still running on it (the browser's Back
-            // button gets past the tour overlay). Qlik also destroys and
-            // re-creates objects while the user stays on the sheet, which
-            // must do neither, so check the sheet once navigation has settled.
+            // visit and close any tour still running on it, as happens when a
+            // step leaves a button that goes to another sheet clickable. Qlik
+            // also destroys and re-creates objects while the user stays on the
+            // sheet, which must do neither, so check the sheet once navigation
+            // has settled.
             useEffect(
                 () => () => {
                     const visited = visitRef.current;
