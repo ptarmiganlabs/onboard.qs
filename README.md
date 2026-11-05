@@ -82,7 +82,7 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 
 ### Create Your First Tour
 
-1. With the extension on a sheet, click **Open Tour Editor** (or use the property panel).
+1. With the extension on a sheet, click **Edit Tours** (or use the property panel).
 2. Click **+ Add Tour**, give it a name.
 3. Click **+ Add Step**, select a target object from the dropdown (or switch to **Custom CSS Selector** for non-object elements).
 4. Enter a title and description (Markdown supported).
@@ -569,6 +569,7 @@ To find the right selector: right-click the element in the browser → **Inspect
 ## Documentation & Resources
 
 - [Release blog post](https://ptarmiganlabs.com/interactive-onboarding-tours-for-qlik-sense/) — overview and demo of Onboard.qs
+- [Tutorial](docs/DEMO-APP-TUTORIAL.md) — learn Onboard.qs from the demo apps, one sheet at a time
 - [CHANGELOG](CHANGELOG.md) — version history and release notes
 
 ### For Developers
