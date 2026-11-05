@@ -142,15 +142,15 @@ The tour's settings:
 
 And its steps:
 
-| #   | Target type         | Target                                                           | Title                             |
-| --- | ------------------- | ---------------------------------------------------------------- | --------------------------------- |
-| 1   | Standalone Dialog   |                                                                  | 👋 Welcome to the Onboard.qs demo |
-| 2   | Custom CSS Selector | `button[title="Show sheets"], button[title="Hide sheets"]`       | 📄 Sheets                         |
-| 3   | Custom CSS Selector | `button[title="Show bookmarks"], button[title="Hide bookmarks"]` | 🔖 Bookmarks                      |
-| 4   | Custom CSS Selector | `[tid="toggleGlobalSearchButton"]`                               | 🔍 Smart search                   |
-| 5   | Custom CSS Selector | `[data-testid="qs-sub-toolbar-selection-list"]`                  | Your selections                   |
-| 6   | Custom CSS Selector | `#oqs-toolbar-container`                                         | 🎓 More tours                     |
-| 7   | Standalone Dialog   |                                                                  | You're all set                    |
+| #   | Target type         | Target                                          | Title                             |
+| --- | ------------------- | ----------------------------------------------- | --------------------------------- |
+| 1   | Standalone Dialog   |                                                 | 👋 Welcome to the Onboard.qs demo |
+| 2   | Custom CSS Selector | `[data-tid="assets-button-sheets"]`             | 📄 Sheets                         |
+| 3   | Custom CSS Selector | `[data-tid="assets-button-bookmarks"]`          | 🔖 Bookmarks                      |
+| 4   | Custom CSS Selector | `[tid="toggleGlobalSearchButton"]`              | 🔍 Smart search                   |
+| 5   | Custom CSS Selector | `[data-testid="qs-sub-toolbar-selection-list"]` | Your selections                   |
+| 6   | Custom CSS Selector | `#oqs-toolbar-container`                        | 🎓 More tours                     |
+| 7   | Standalone Dialog   |                                                 | You're all set                    |
 
 Every step has **Disable interaction during step** on, so a click on the highlighted button doesn't open
 a panel halfway through the tour. The toolbar steps use **Popover position** _Bottom_ and **Popover
@@ -176,21 +176,29 @@ tour that is already recorded. Three things follow from that:
 
 **Pointing at Sense's own toolbar.** A step with **Custom CSS Selector** can highlight any element on the
 page. To find a selector, right-click the element in the browser, choose **Inspect**, and look for an
-attribute that is stable: an `id`, a `data-testid` or a `tid`. In the client-managed toolbar, Smart
-search (`[tid="toggleGlobalSearchButton"]`) and the selections bar
-(`[data-testid="qs-sub-toolbar-selection-list"]`) have one.
+attribute that is the same in every UI language: an `id`, a `data-tid`, a `data-testid` or a `tid`. In
+the client-managed toolbar, each of the Sense elements the welcome tour points at has one:
 
-The **Sheets** and **Bookmarks** buttons don't. The only attribute that tells them apart is `title`, and
-that is translated into the user's UI language and changes while the panel is open (_Show sheets_
-becomes _Hide sheets_). That's why the selector in step 2 lists both titles, separated by a comma,
-which in CSS means "either of these". For users with a Sense UI language the selector doesn't list, the
-step has nothing to highlight and shows as a dialog in the middle of the screen. The Swedish app adds
-the Swedish titles (see [below](#the-swedish-app-tours-in-another-language)). A language-independent
-way to target these buttons is requested in
-[ptarmiganlabs/onboard.qs#279](https://github.com/ptarmiganlabs/onboard.qs/issues/279).
+| Element        | Selector                                        |
+| -------------- | ----------------------------------------------- |
+| Sheets         | `[data-tid="assets-button-sheets"]`             |
+| Bookmarks      | `[data-tid="assets-button-bookmarks"]`          |
+| Smart search   | `[tid="toggleGlobalSearchButton"]`              |
+| Selections bar | `[data-testid="qs-sub-toolbar-selection-list"]` |
 
-Selectors like these depend on how Qlik builds its toolbar, which can change between Sense releases.
-Run your tours once after each Sense upgrade.
+Don't be tempted by the `title` attribute, even though it's often the easiest thing to spot in the
+inspector. It holds the button's tooltip, which is translated into the user's UI language and changes
+while a panel is open: _Show sheets_ becomes _Hide sheets_. A step whose selector matches nothing has
+nothing to highlight, so for users in another language it shows as a dialog in the middle of the
+screen. Steer clear of classes like `css-1x2y3z` as well: Sense generates them, and they can change with
+any release.
+
+To check a selector, run `document.querySelectorAll('[data-tid="assets-button-sheets"]').length` in the
+browser's console. It should return 1. If more than one element matches, the step highlights the first
+one on the page.
+
+None of these attributes is a documented Qlik API, so they can change between Sense releases. Run your
+tours once after each Sense upgrade.
 
 **Pointing at Onboard.qs's own button.** `#oqs-toolbar-container` is the container Onboard.qs adds to the
 Sense toolbar. Step 6 points at it to show users where to find more tours. If several objects on a
@@ -241,15 +249,11 @@ This rebuilds steps 1 to 3 of the welcome tour, and takes about five minutes.
 4. Click **+ Add Step**. Set **Target Type** to _Standalone Dialog (no target)_, and write a title and
    a few lines of welcome.
 5. Click **+ Add Step** again. Set **Target Type** to _Custom CSS Selector_ and **CSS Selector** to
-   `button[title="Show sheets"], button[title="Hide sheets"]`. Set **Popover Side** to _Bottom_ and
-   **Popover Align** to _Start_, and tell users what the sheet panel is for.
-6. Do the same for the Bookmarks button, with
-   `button[title="Show bookmarks"], button[title="Hide bookmarks"]`.
+   `[data-tid="assets-button-sheets"]`. Set **Popover Side** to _Bottom_ and **Popover Align** to
+   _Start_, and tell users what the sheet panel is for.
+6. Do the same for the Bookmarks button, with `[data-tid="assets-button-bookmarks"]`.
 7. In the tour's settings, turn on **Auto-start on sheet load** and **Show only once per user**.
 8. Click **Save** and leave edit mode. The tour starts.
-
-If your Sense UI isn't in English, use the button titles for your language instead: hover over the
-button to see its tooltip.
 
 ---
 
@@ -398,12 +402,10 @@ _Föregående_ and _Klar_ in the Swedish app. Use the words your users see in th
 step tells users to click _Clear all selections_, the Swedish text says _Rensa alla urval_, because
 that's what the button is called in a Swedish Sense.
 
-**Selectors that use translated titles.** The Swedish welcome tour lists both languages, so it works
-whichever language the user's Sense is in:
-
-```css
-button[title="Visa ark"], button[title="Dölj ark"], button[title="Show sheets"], button[title="Hide sheets"]
-```
+**What stays the same.** The selectors. Both welcome tours point at the toolbar buttons with the same
+`data-tid`, `data-testid` and `tid` attributes, which don't change with the user's UI language. Had the
+tours used the buttons' titles instead, each app would need every language's tooltip, both with the
+panel open and closed.
 
 **Number formats in expressions.** `Num()` format codes use the app's own separators, which the load
 script sets with `DecimalSep` and `ThousandSep`. The Swedish app uses a decimal comma and a space as the
@@ -493,9 +495,9 @@ selection.
   ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280)).
 - **Step dialogs don't scroll.** Keep texts short, prefer _Dynamic (fit content)_, and cap image heights
   ([#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)).
-- **Selectors for Sense's own UI can break** when the UI language or the Sense version changes. Prefer
-  `id`, `data-testid` and `tid` attributes over classes and titles, and run your tours after each Sense
-  upgrade ([#279](https://github.com/ptarmiganlabs/onboard.qs/issues/279)).
+- **Selectors for Sense's own UI can break.** Titles change with the UI language, and generated classes
+  with the Sense version. Use `id`, `data-tid`, `data-testid` and `tid` attributes, and run your tours
+  after each Sense upgrade.
 - **The progress text is English** ([#282](https://github.com/ptarmiganlabs/onboard.qs/issues/282)).
 - **Several objects on a sheet** share one toolbar button, which lists all their tours.
 
