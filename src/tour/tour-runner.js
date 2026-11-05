@@ -201,6 +201,13 @@ function safeCssColor(value, fallback) {
 let activeTour = null;
 
 /**
+ * The sheet that activeTour was started on.
+ *
+ * @type {string|null}
+ */
+let activeTourSheetId = null;
+
+/**
  * Whether a tour started by runTour() is still running.
  *
  * @param {object} tourConfig - The tour about to be started, for the log message.
@@ -256,8 +263,6 @@ export async function runTour(tourConfig, options = {}) {
         logger.warn('Tour has no valid steps, nothing to show');
         return null;
     }
-
-    logger.info(`Starting tour "${tourConfig.tourName}" with ${steps.length} steps`);
 
     const driverConfig = {
         steps,
@@ -348,8 +353,11 @@ export async function runTour(tourConfig, options = {}) {
         return null;
     }
 
+    logger.info(`Starting tour "${tourConfig.tourName}" with ${steps.length} steps`);
+
     const driverObj = driver(driverConfig);
     activeTour = driverObj;
+    activeTourSheetId = sheetId || null;
     driverObj.drive();
     return driverObj;
 }
@@ -468,4 +476,20 @@ export function destroyTour(driverObj) {
     if (driverObj && driverObj.isActive()) {
         driverObj.destroy();
     }
+}
+
+/**
+ * Close the running tour if it was started on the given sheet.
+ *
+ * Called once the user has left that sheet. The tour overlay blocks clicks
+ * on the page but not the browser's Back button, so a tour can still be
+ * running when its sheet goes away. Closing it this way counts as closing
+ * the tour, for "Show only once" too.
+ *
+ * @param {string} sheetId - The sheet the user has left.
+ */
+export function closeTourForSheet(sheetId) {
+    if (!sheetId || activeTourSheetId !== sheetId || !activeTour?.isActive()) return;
+    logger.info(`Closing the running tour: its sheet ${sheetId} is no longer open`);
+    destroyTour(activeTour);
 }

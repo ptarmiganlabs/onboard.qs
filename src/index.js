@@ -13,6 +13,7 @@ import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
 import { endAutoStartVisit } from './tour/tour-helpers';
+import { closeTourForSheet } from './tour/tour-runner';
 import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
@@ -190,10 +191,11 @@ export default function supernova(galaxy) {
                 }
             }, [layout.tours]);
 
-            // On unmount, end the auto-start visit if the user has left the
-            // sheet. Qlik also destroys and re-creates objects while the
-            // user stays on the sheet, which must not count as a new visit,
-            // so check the sheet once navigation has settled.
+            // On unmount, if the user has left the sheet, end its auto-start
+            // visit and close a tour still running on it (the browser's Back
+            // button gets past the tour overlay). Qlik also destroys and
+            // re-creates objects while the user stays on the sheet, which
+            // must do neither, so check the sheet once navigation has settled.
             useEffect(
                 () => () => {
                     const visited = visitRef.current;
@@ -201,6 +203,7 @@ export default function supernova(galaxy) {
                     setTimeout(() => {
                         if (getPlatformAdapter().getCurrentSheetId() !== visited.sheetId) {
                             endAutoStartVisit(visited.appId, visited.sheetId);
+                            closeTourForSheet(visited.sheetId);
                         }
                     }, 0);
                 },

@@ -191,6 +191,12 @@ entry, and again just before `drive()` with no `await` in between, because waiti
 tab-container metadata can take a while on a large sheet. The second check also drops a tour whose
 sheet the user has left during that wait.
 
+A tour that is already running when its sheet goes away is closed. The tour overlay blocks clicks
+on the page, but not the browser's Back button. When an object unmounts and the URL shows another
+sheet, `closeTourForSheet()` closes the tour started on the old sheet, and that counts as closing
+it for **Show only once**. Otherwise the old tour would stay on screen, pointing at objects that
+are gone, and keep the new sheet's auto-start tour from starting.
+
 So only one auto-start tour runs per visit. When two are due at once, the first to fire runs (on
 one object, the first in its tour list) and the other is skipped for that visit. With **Show only
 once** on, the other one auto-starts on a later visit, once the first is marked as seen. With it
