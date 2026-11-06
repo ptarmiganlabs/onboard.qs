@@ -1,0 +1,284 @@
+/**
+ * Tests for src/util/markdown.js, which turns a tour step's description into
+ * the HTML of its dialog.
+ *
+ * The real markdown.js is bundled with esbuild. DOMPurify needs a DOM, so
+ * test/support/dompurify-stub.js stands in for it and returns the HTML
+ * unchanged: these tests check the converter's own output, before it is
+ * sanitised.
+ *
+ * Run with `npm test`.
+ */
+import { test, before } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import * as esbuild from 'esbuild';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(here, '..');
+const markdownPath = path.join(root, 'src', 'util', 'markdown.js');
+const stubPath = path.join(here, 'support', 'dompurify-stub.js');
+
+let md;
+let readme;
+
+before(async () => {
+    const outfile = path.join(
+        await mkdtemp(path.join(os.tmpdir(), 'onboard-qs-test-')),
+        'markdown.mjs'
+    );
+    await esbuild.build({
+        entryPoints: [markdownPath],
+        bundle: true,
+        format: 'esm',
+        platform: 'node',
+        outfile,
+        logLevel: 'silent',
+        plugins: [
+            {
+                name: 'dompurify-stub',
+                setup(build) {
+                    build.onResolve({ filter: /^dompurify$/ }, () => ({ path: stubPath }));
+                },
+            },
+        ],
+    });
+    md = (await import(pathToFileURL(outfile).href)).markdownToHtml;
+    readme = await readFile(path.join(root, 'README.md'), 'utf8');
+});
+
+/**
+ * The first fenced code block after a heading in the README.
+ *
+ * @param {string} heading - The heading line, e.g. '### Raw HTML'.
+ * @param {string} language - The fence's language, e.g. 'html'.
+ * @returns {string} The block's content.
+ */
+function readmeExample(heading, language) {
+    const section = readme.slice(readme.indexOf(`\n${heading}\n`));
+    return section.split('```' + language + '\n')[1].split('\n```')[0];
+}
+
+// The demo apps' image step, as the tour has it
+const DEMO_IMG =
+    '<img src="https://raw.githubusercontent.com/ptarmiganlabs/onboard.qs/main/docs/screenshots/onboard-qs_developer-ux_5.png" alt="The Onboard.qs tour editor" style="display:block;max-width:100%;max-height:240px;margin:4px auto;border:1px solid #ddd;border-radius:4px" />';
+
+// Two rows of the SE demo app's profitability table, as the tour has it
+const DEMO_TABLE = [
+    '<table style="width:100%;border-collapse:collapse;margin:4px 0 8px">',
+    '<tr style="border-bottom:1px solid #ccc"><th style="text-align:left">Kategori</th><th style="text-align:right">Försäljning, MSEK</th><th style="text-align:right">Marginal</th></tr>',
+    '<tr><td>Programvarulicenser</td><td style="text-align:right">19,7</td><td style="text-align:right"><strong>59 %</strong></td></tr>',
+    '</table>',
+].join('\n');
+
+// Raw HTML blocks: #317
+
+test("the README's Raw HTML example comes out as written (#317)", () => {
+    const example = readmeExample('### Raw HTML', 'html');
+    const html = md(example);
+
+    assert.doesNotMatch(html, /<br>/);
+    // The div, the image, the table and the video, each exactly as written
+    for (const block of example.split('\n\n').filter((b) => !/^<(?:span|a)\b/.test(b))) {
+        assert.ok(html.includes(block), `missing or changed:\n${block}`);
+    }
+    // Only the lines that go on with text after their tag are paragraphs
+    assert.deepEqual(html.match(/<p>[\s\S]*?<\/p>/g), [
+        '<p><span style="color: red; font-weight: bold;">Important!</span></p>',
+        '<p><a href="https://help.qlik.com" target="_blank">Qlik Help →</a></p>',
+    ]);
+});
+
+test('an indented SVG keeps its shapes (#317)', () => {
+    const svg = [
+        '<svg width="200" height="40" viewBox="0 0 200 40">',
+        '  <rect x="0" y="0" width="120" height="40" fill="#2a9d8f"/>',
+        '  <rect x="120" y="0" width="80" height="40" fill="#e76f51"/>',
+        '</svg>',
+    ].join('\n');
+    assert.equal(md(svg), svg);
+});
+
+test('a blank line inside a flex container adds no paragraphs (#317)', () => {
+    assert.equal(
+        md('<div style="display:flex;gap:8px">\n<div>One</div>\n\n<div>Two</div>\n</div>'),
+        '<div style="display:flex;gap:8px">\n<div>One</div>\n<div>Two</div>\n</div>'
+    );
+});
+
+test('a <pre> block runs to its end tag, blank lines and all (#317)', () => {
+    const pre = '<pre>\nline 1\n\n  **not bold**\n</pre>';
+    assert.equal(md(pre), pre);
+});
+
+test('an HTML comment runs to its end, blank lines and all (#317)', () => {
+    assert.equal(md('<!-- one\n\ntwo -->\nText'), '<!-- one\n\ntwo -->\n<p>Text</p>');
+});
+
+test('Markdown between blank lines inside an HTML element is converted (#317)', () => {
+    assert.equal(
+        md('<div class="tip">\n\n- one\n- two\n\n</div>'),
+        '<div class="tip">\n<ul><li>one</li><li>two</li></ul>\n</div>'
+    );
+});
+
+test('Markdown block syntax straight inside an HTML block stays as written (#317)', () => {
+    assert.equal(
+        md('<div class="tip">\n- one\n- two\n</div>'),
+        '<div class="tip">\n- one\n- two\n</div>'
+    );
+});
+
+test('a block-level tag ends the paragraph above it, indented or not (#317)', () => {
+    assert.equal(
+        md('Our numbers:\n    <table>\n    <tr><td>1</td></tr>\n    </table>'),
+        '<p>Our numbers:</p>\n    <table>\n    <tr><td>1</td></tr>\n    </table>'
+    );
+});
+
+test('a line that starts with an indented tag gets no <br> before it (#317)', () => {
+    assert.equal(
+        md(
+            'Sales by region:\n  <svg width="10" height="10">\n  <rect width="10" height="10"/>\n  </svg>'
+        ),
+        '<p>Sales by region:\n  <svg width="10" height="10">\n  <rect width="10" height="10"/>\n  </svg></p>'
+    );
+});
+
+test("the README's Complete Example adds no <br> inside its <small> block (#317)", () => {
+    const html = md(readmeExample('### Complete Example', 'markdown'));
+    assert.ok(
+        html.endsWith(
+            '<hr>\n<small style="color: #888;">\n  Data source: SAP BW · Updated daily at 06:00 UTC\n</small>'
+        ),
+        html
+    );
+});
+
+test("the demo profitability tour's table comes out as written", () => {
+    const text = `Sett över hela perioden ser produktkategorierna ut så här:\n\n${DEMO_TABLE}\n\n*Tabellen är vanlig HTML: stegtexter kan blanda Markdown och HTML.*`;
+    assert.equal(
+        md(text),
+        `<p>Sett över hela perioden ser produktkategorierna ut så här:</p>\n${DEMO_TABLE}\n<p><em>Tabellen är vanlig HTML: stegtexter kan blanda Markdown och HTML.</em></p>`
+    );
+});
+
+test("the demo organisation tour's image line is an HTML block of its own", () => {
+    const text = [
+        'You can build your own the same way:',
+        '',
+        '1. In edit mode, drag **Onboard.qs** onto a sheet from *Custom objects*.',
+        '2. Click **Edit Tours** on the object to open the tour editor.',
+        '',
+        DEMO_IMG,
+        '',
+        'Tours can be exported to a file.',
+    ].join('\n');
+    assert.equal(
+        md(text),
+        [
+            '<p>You can build your own the same way:</p>',
+            '<ol><li>In edit mode, drag <strong>Onboard.qs</strong> onto a sheet from <em>Custom objects</em>.</li><li>Click <strong>Edit Tours</strong> on the object to open the tour editor.</li></ol>',
+            DEMO_IMG,
+            '<p>Tours can be exported to a file.</p>',
+        ].join('\n')
+    );
+});
+
+test('video and iframe embeds come out as written', () => {
+    const video =
+        '<video width="400" controls>\n    <source src="/content/Default/demo.mp4" type="video/mp4" />\n</video>';
+    const iframe =
+        '<iframe width="400" height="225" src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen>\n</iframe>';
+    assert.equal(md(`${video}\n\n${iframe}`), `${video}\n${iframe}`);
+});
+
+// Markdown that works as before
+
+test('a blank line starts a new paragraph, and a single newline is a <br>', () => {
+    assert.equal(
+        md('First paragraph.\n\nSecond paragraph.\nSame paragraph, new line.'),
+        '<p>First paragraph.</p>\n<p>Second paragraph.<br>Same paragraph, new line.</p>'
+    );
+});
+
+test('a line of spaces counts as a blank line', () => {
+    assert.equal(md('One.\n   \nTwo.'), '<p>One.</p>\n<p>Two.</p>');
+});
+
+test('headings are h3 to h6; # and ## stay text', () => {
+    assert.equal(
+        md('### h3\n#### h4\n##### h5\n###### h6\n## h2\n# h1'),
+        '<h3>h3</h3>\n<h4>h4</h4>\n<h5>h5</h5>\n<h6>h6</h6>\n<p>## h2<br># h1</p>'
+    );
+});
+
+test('adjacent quote lines merge into one blockquote', () => {
+    assert.equal(
+        md('> One line.\n> Another, with a [link](https://example.com).'),
+        '<blockquote>One line.<br>Another, with a <a href="https://example.com" target="_blank" rel="noopener">link</a>.</blockquote>'
+    );
+});
+
+test('---, *** and ___ are horizontal rules', () => {
+    assert.equal(md('---\n\n***\n\n___'), '<hr>\n<hr>\n<hr>');
+});
+
+test('the text after a rule is a paragraph, with no empty line above it', () => {
+    assert.equal(md('Before\n\n---\n\nAfter'), '<p>Before</p>\n<hr>\n<p>After</p>');
+    assert.equal(md('Text\n---\nMore'), '<p>Text</p>\n<hr>\n<p>More</p>');
+});
+
+test('- and * both start bullet items', () => {
+    assert.equal(md('- one\n* two'), '<ul><li>one</li><li>two</li></ul>');
+});
+
+test('a list can follow a paragraph line or a heading directly, as the demo tours do', () => {
+    assert.equal(
+        md(
+            'Appen har fyra ark, och varje ark har en egen guide:\n1. Försäljningsöversikt\n2. Organisation'
+        ),
+        '<p>Appen har fyra ark, och varje ark har en egen guide:</p>\n<ol><li>Försäljningsöversikt</li><li>Organisation</li></ol>'
+    );
+    assert.equal(
+        md('### This tour shows you\n- the buttons along the top\n- where to find more tours'),
+        '<h3>This tour shows you</h3>\n<ul><li>the buttons along the top</li><li>where to find more tours</li></ul>'
+    );
+});
+
+test('& is escaped unless it starts an entity', () => {
+    assert.equal(md('AT&T &copy; &#169;'), '<p>AT&amp;T &copy; &#169;</p>');
+});
+
+test('images keep their alt text, title and size limit', () => {
+    assert.equal(
+        md('![Sales](https://example.com/a.png "The chart")'),
+        '<p><img src="https://example.com/a.png" alt="Sales" title="The chart" style="max-width:100%;height:auto;" /></p>'
+    );
+});
+
+test('links open in a new tab', () => {
+    assert.equal(
+        md('[Qlik Community](https://community.qlik.com)'),
+        '<p><a href="https://community.qlik.com" target="_blank" rel="noopener">Qlik Community</a></p>'
+    );
+});
+
+test('inline code, bold and italics', () => {
+    assert.equal(
+        md('Run `npm test`, **then** _check_ the *result*.'),
+        '<p>Run <code>npm test</code>, <strong>then</strong> <em>check</em> the <em>result</em>.</p>'
+    );
+});
+
+test('Windows line endings work like \\n', () => {
+    assert.equal(md('One\r\nTwo\r\n\r\nThree'), '<p>One<br>Two</p>\n<p>Three</p>');
+});
+
+test('empty and blank descriptions give an empty string', () => {
+    assert.equal(md(''), '');
+    assert.equal(md(' \n\t\n'), '');
+});

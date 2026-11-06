@@ -328,7 +328,7 @@ Renders as a thin separator line, useful for dividing sections within a step des
 
 #### Paragraphs and Line Breaks
 
-- **Double newline** → new paragraph (with spacing)
+- **Blank line** → new paragraph (with spacing)
 - **Single newline** → `<br>` line break (no spacing)
 
 ```markdown
@@ -365,6 +365,19 @@ Since the converter preserves HTML tags, you can use **any HTML** directly in de
 <video width="300" controls>
     <source src="/content/Default/demo.mp4" type="video/mp4" />
 </video>
+```
+
+A line that starts with a block-level tag, such as `<div>`, `<table>` or `<p>`, starts an **HTML block**. So does a line that holds nothing but one tag, such as `<svg …>` or `<img … />`. The block runs to the next blank line. A `<pre>`, `<script>`, `<style>` or `<textarea>` block, and an `<!-- … -->` comment, run to their end instead. Inside an HTML block the converter adds no paragraphs and no line breaks, so the HTML can be indented and spread over as many lines as you like, as above. This is how [CommonMark](https://spec.commonmark.org/0.31.2/#html-blocks) treats HTML.
+
+A Markdown list, heading, quote or rule inside an HTML element needs a blank line before and after it, or it shows as plain text:
+
+```markdown
+<div style="background: #f0f8ff; padding: 8px;">
+
+- First point
+- Second point
+
+</div>
 ```
 
 ### Mixing Markdown and HTML
