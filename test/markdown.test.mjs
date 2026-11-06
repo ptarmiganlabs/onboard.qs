@@ -118,6 +118,14 @@ test('an HTML comment runs to its end, blank lines and all (#317)', () => {
     assert.equal(md('<!-- one\n\ntwo -->\nText'), '<!-- one\n\ntwo -->\n<p>Text</p>');
 });
 
+test('a comment can also end with --!>, as browsers accept', () => {
+    assert.equal(
+        md('<!-- one\n\ntwo --!>\n\n**Text**'),
+        '<!-- one\n\ntwo --!>\n<p><strong>Text</strong></p>'
+    );
+    assert.equal(md('A <!-- note --!> comment'), '<p>A <!-- note --!> comment</p>');
+});
+
 test('Markdown between blank lines inside an HTML element is converted (#317)', () => {
     assert.equal(
         md('<div class="tip">\n\n- one\n- two\n\n</div>'),

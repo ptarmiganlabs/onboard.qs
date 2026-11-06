@@ -54,7 +54,8 @@ const CLOSE_TAG = String.raw`<\/[A-Za-z][A-Za-z0-9-]*\s*>`;
 /**
  * The lines that start an HTML block, and the line that ends each kind
  * (CommonMark 0.31.2, section 4.6). A block without `end` runs until a blank
- * line. A line holding just one tag can't interrupt a paragraph.
+ * line. A line holding just one tag can't interrupt a paragraph. A comment
+ * ends at `-->`, or at `--!>`, which browsers accept too.
  */
 const HTML_BLOCKS = [
     {
@@ -62,7 +63,7 @@ const HTML_BLOCKS = [
         end: /<\/(?:pre|script|style|textarea)>/i,
         verbatim: true,
     },
-    { start: /^<!--/, end: /-->/, verbatim: true },
+    { start: /^<!--/, end: /--!?>/, verbatim: true },
     { start: new RegExp(String.raw`^<\/?(?:${BLOCK_TAGS})(?:\s|\/?>|$)`, 'i') },
     {
         start: new RegExp(
@@ -86,7 +87,7 @@ const ATOM = new RegExp(
     [
         String.raw`(?<!\x60)(\x60+)(?!\x60)([\s\S]*?[^\x60])\1(?!\x60)`,
         String.raw`<(pre|script|style|textarea)\b[^>]*>[\s\S]*?<\/\3\s*>`,
-        String.raw`<!--(?:-?>|[\s\S]*?-->)`,
+        String.raw`<!--(?:-?>|[\s\S]*?--!?>)`,
         OPEN_TAG,
         CLOSE_TAG,
     ].join('|'),
