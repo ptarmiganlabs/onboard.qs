@@ -866,7 +866,7 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Standalone dialog size presets — compound selectors override
+/* Step dialog size presets — compound selectors override
    both driver.js's max-width:300px and our base max-width:380px */
 .onboard-qs-popover.onboard-qs-dialog-dynamic {
     max-width: 480px;
