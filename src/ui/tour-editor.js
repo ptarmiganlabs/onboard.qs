@@ -1232,7 +1232,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                                value="${escapeAttr(tour.doneBtnText || 'Done')}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Progress text ${infoIcon('Progress counter shown in each popover. {{current}} is replaced by the step number and {{total}} by the number of steps.')}</span>
+                        <span>Progress text ${infoIcon('Progress counter shown in each popover. {{current}} becomes the step number and {{total}} the number of steps; each is filled in once. Supports expressions starting with =.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-progress-text"
                                value="${escapeAttr(tour.progressText || '{{current}} of {{total}}')}" />
                     </label>

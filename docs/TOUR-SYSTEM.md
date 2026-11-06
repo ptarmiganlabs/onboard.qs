@@ -476,18 +476,18 @@ The extension configures driver.js with the following settings. Some are configu
 
 ### Configurable per tour
 
-| Setting                | Default                      | Configured in                | Notes                                                                                                   |
-| ---------------------- | ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `showProgress`         | `true`                       | Property panel + Tour editor | "1 of 5" progress text                                                                                  |
-| `allowKeyboardControl` | `true`                       | Property panel + Tour editor | Arrow-key / Escape navigation                                                                           |
-| `overlayColor`         | `rgba(0,0,0,0.6)`            | Property panel + Tour editor | Semi-transparent backdrop                                                                               |
-| `overlayOpacity`       | `60` (%)                     | Property panel + Tour editor | Opacity percentage (0–100)                                                                              |
-| `stagePadding`         | `8`                          | Property panel + Tour editor | Padding around highlighted element (px)                                                                 |
-| `stageRadius`          | `5`                          | Property panel + Tour editor | Border radius of the highlight cutout (px)                                                              |
-| `nextBtnText`          | `'Next'`                     | Property panel + Tour editor | Label for the Next button (expression-enabled)                                                          |
-| `prevBtnText`          | `'Previous'`                 | Property panel + Tour editor | Label for the Previous button (expression-enabled)                                                      |
-| `doneBtnText`          | `'Done'`                     | Property panel + Tour editor | Label for the final step's button (expression-enabled)                                                  |
-| `progressText`         | `'{{current}} of {{total}}'` | Property panel + Tour editor | Progress counter template; `{{current}}` and `{{total}}` are replaced by driver.js (expression-enabled) |
+| Setting                | Default                      | Configured in                | Notes                                                                                                                |
+| ---------------------- | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `showProgress`         | `true`                       | Property panel + Tour editor | "1 of 5" progress text                                                                                               |
+| `allowKeyboardControl` | `true`                       | Property panel + Tour editor | Arrow-key / Escape navigation                                                                                        |
+| `overlayColor`         | `rgba(0,0,0,0.6)`            | Property panel + Tour editor | Semi-transparent backdrop                                                                                            |
+| `overlayOpacity`       | `60` (%)                     | Property panel + Tour editor | Opacity percentage (0–100)                                                                                           |
+| `stagePadding`         | `8`                          | Property panel + Tour editor | Padding around highlighted element (px)                                                                              |
+| `stageRadius`          | `5`                          | Property panel + Tour editor | Border radius of the highlight cutout (px)                                                                           |
+| `nextBtnText`          | `'Next'`                     | Property panel + Tour editor | Label for the Next button (expression-enabled)                                                                       |
+| `prevBtnText`          | `'Previous'`                 | Property panel + Tour editor | Label for the Previous button (expression-enabled)                                                                   |
+| `doneBtnText`          | `'Done'`                     | Property panel + Tour editor | Label for the final step's button (expression-enabled)                                                               |
+| `progressText`         | `'{{current}} of {{total}}'` | Property panel + Tour editor | Progress counter template; driver.js fills in the first `{{current}}` and the first `{{total}}` (expression-enabled) |
 
 ### Fixed (not user-configurable)
 

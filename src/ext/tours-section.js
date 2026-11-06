@@ -373,7 +373,7 @@ export function toursSection() {
                                         type: 'string',
                                         label: 'Progress text',
                                         description:
-                                            'Progress counter shown in each popover. {{current}} is replaced by the step number and {{total}} by the number of steps. Supports expressions for localization.',
+                                            'Progress counter shown in each popover. {{current}} becomes the step number and {{total}} the number of steps; each is filled in once. Supports expressions for localization.',
                                         defaultValue: '{{current}} of {{total}}',
                                         expression: 'optional',
                                         /**

@@ -145,6 +145,8 @@ customCssSelector"]
 | --------------------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
 | `tourName`, `nextBtnText`, `prevBtnText`, `doneBtnText`, `progressText`, `overlayColor` | `popoverTitle`, `customCssSelector` | `popoverDescription` (sanitised at render time via `markdownToHtml`) |
 
+Values that start with `=` are Qlik expressions and are imported unchanged. `stripHtml()` returns serialised HTML, so it would turn `&`, Qlik's string operator, into `&amp;` and break the expression. What an expression evaluates to goes through the render-time protection in the table above, as it does when the expression is typed into the property panel.
+
 **Export** files are plain JSON with no signing or encryption. See [Remaining risks — Export integrity](#export-file-integrity).
 
 ---

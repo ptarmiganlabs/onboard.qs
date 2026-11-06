@@ -207,16 +207,16 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. The text fields take expressions in both places, so one tour can switch language with a variable:
 
-| Property             | Type    | Default                    | Description                                                                                                                             |
-| -------------------- | ------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area                                                                                            |
-| Overlay opacity      | Integer | `60`                       | Opacity percentage (0–100)                                                                                                              |
-| Stage padding        | Integer | `8`                        | Padding around the highlighted element (px)                                                                                             |
-| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout (px)                                                                                              |
-| Next button text     | String  | `Next`                     | Label for the “Next” navigation button (expression-enabled)                                                                             |
-| Previous button text | String  | `Previous`                 | Label for the “Previous” navigation button (expression-enabled)                                                                         |
-| Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                       |
-| Progress text        | String  | `{{current}} of {{total}}` | Progress counter in each popover. `{{current}}` is replaced by the step number, `{{total}}` by the number of steps (expression-enabled) |
+| Property             | Type    | Default                    | Description                                                                                                                                              |
+| -------------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area                                                                                                             |
+| Overlay opacity      | Integer | `60`                       | Opacity percentage (0–100)                                                                                                                               |
+| Stage padding        | Integer | `8`                        | Padding around the highlighted element (px)                                                                                                              |
+| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout (px)                                                                                                               |
+| Next button text     | String  | `Next`                     | Label for the “Next” navigation button (expression-enabled)                                                                                              |
+| Previous button text | String  | `Previous`                 | Label for the “Previous” navigation button (expression-enabled)                                                                                          |
+| Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                                        |
+| Progress text        | String  | `{{current}} of {{total}}` | Progress counter in each popover. `{{current}}` becomes the step number and `{{total}}` the number of steps; each is filled in once (expression-enabled) |
 
 ---
 
