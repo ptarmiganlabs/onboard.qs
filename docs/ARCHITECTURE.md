@@ -129,7 +129,6 @@ Each arrow is an import. The map shows the main ones only: it leaves out most im
 | `index.js`                     | Nebula/Stardust supernova entry point. Hooks into Qlik lifecycle (`useLayout`, `useApp`, etc.), detects platform once, delegates rendering.                                                                                                                                                                |
 | `object-properties.js`         | Default QAE properties for new extension instances.                                                                                                                                                                                                                                                        |
 | `style.css`                    | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes, hover menu hiding.                                                                                                                                                                                                       |
-| `data.js`                      | Data targets: none, as Onboard.qs uses no hypercube. Nothing in `src/` imports it.                                                                                                                                                                                                                         |
 | `ext/index.js`                 | Qlik property panel definition, assembled from the section modules below. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                                      |
 | `ext/tours-section.js`         | Tours section: tours and their steps, the **Open tour editor** button, the **Edit in Markdown editor** button, and the **Target object** dropdown. Its `getObjectList()` also builds the tab-container map and labels objects inside tab containers.                                                       |
 | `ext/widget-section.js`        | Widget Appearance section: the start button's visibility, text, icon, style, alignment and size, the toolbar button, and the host UI toggles.                                                                                                                                                              |
@@ -282,7 +281,6 @@ src/
 ├── index.js                  # Supernova entry point
 ├── object-properties.js      # Default QAE properties
 ├── style.css                 # All CSS
-├── data.js                   # Data targets (empty)
 ├── meta.json                 # nebula sense metadata
 ├── ext/
 │   ├── index.js              # Property panel definition

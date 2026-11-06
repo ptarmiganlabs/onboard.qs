@@ -53,7 +53,6 @@ onboard.qs/
     ├── index.js              # Supernova entry point (hooks, lifecycle)
     ├── ext.js                # Property panel definition
     ├── object-properties.js  # Default object properties
-    ├── data.js               # Data targets (empty — no data binding)
     ├── meta.json             # Extension metadata (name, icon, type)
     ├── style.css             # All CSS: widget, editor, driver.js theme
     ├── platform/
