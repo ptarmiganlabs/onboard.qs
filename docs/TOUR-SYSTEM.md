@@ -202,7 +202,7 @@ flowchart TD
     C -- No --> D[Skip]
     C -- Yes --> V{Auto-started already<br/>on this sheet visit?}
     V -- Yes --> W[Skip — once per visit]
-    V -- No --> E{tour.showOnce?}
+    V -- No --> E{Show only once on?<br/>showOnce !== false}
     E -- No --> G[Start tour after 500ms delay]
     E -- Yes --> F{hasSeenTour?}
     F -- Yes --> H[Skip — already seen]
