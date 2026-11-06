@@ -46,15 +46,26 @@ onboard.qs/
 ├── nebula.config.cjs         # nebula.js / Rollup build configuration
 ├── eslint.config.js          # ESLint flat config
 ├── scripts/
-│   ├── build-date.cjs       # Shared build-date generator (CJS)
+│   ├── build-date.cjs        # Shared build-date generator (CJS)
 │   ├── post-build.mjs        # Token replacement (version, build type, build date)
+│   ├── generate-readme-pdf.mjs # README.md → README.pdf for the zip, Mermaid diagrams drawn
 │   └── zip-extension.mjs     # Zip builder for Sense deployment
+├── test/                     # Unit tests, run with `npm test` (node --test)
+│   └── support/              # Stand-ins for driver.js, DOMPurify, the DOM and Qlik-bound modules
 └── src/
     ├── index.js              # Supernova entry point (hooks, lifecycle)
-    ├── ext.js                # Property panel definition
     ├── object-properties.js  # Default object properties
     ├── meta.json             # Extension metadata (name, icon, type)
     ├── style.css             # All CSS: widget, editor, driver.js theme
+    ├── ext/
+    │   ├── index.js          # Property panel definition
+    │   ├── tours-section.js  # Tours section, Target object dropdown
+    │   ├── widget-section.js # Widget Appearance section
+    │   ├── theme-section.js  # Theme & Styling section
+    │   ├── theme-helpers.js  # Color keys and preset helpers for the theme section
+    │   ├── security-section.js # Security section (URI allowlist)
+    │   ├── about-section.js  # About section
+    │   └── lui-icons.js      # Lui icons for the button icon picker
     ├── platform/
     │   ├── index.js          # Platform detection + selector helper
     │   ├── selectors.js      # Versioned CSS selector registry
@@ -62,21 +73,31 @@ onboard.qs/
     │   └── cloud.js          # Qlik Cloud adapter
     ├── tour/
     │   ├── tour-runner.js    # driver.js integration: build steps, run/highlight/destroy
+    │   ├── tour-helpers.js   # startTour(), auto-start and sheet visits
     │   ├── tour-storage.js   # localStorage "show once" tracking
     │   └── tour-io.js        # Tour import/export (JSON serialization, merge modes)
     ├── theme/
     │   ├── resolve.js        # Theme resolver (preset + overrides → CSS vars)
     │   └── presets.js        # Built-in theme presets (4 presets)
     ├── ui/
-    │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
-    │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
+    │   ├── widget-renderer.js # Analysis mode: start button and tour dropdown
+    │   ├── toolbar-injector.js # Tour button in the Sense toolbar
+    │   ├── tour-editor.js    # Full-screen modal editor (3-panel layout)
+    │   ├── confirm-discard.js # Unsaved-changes confirmation dialog
+    │   ├── markdown-editor-dialog.js # Property panel's Markdown editor dialog
+    │   └── markdown-toolbar.js # Tabbed Write/Preview Markdown editor
     └── util/
+        ├── css-selector.js   # Checks for step CSS selectors
+        ├── dialog-size.js    # Dialog-size presets for steps
         ├── expressions.js    # Qlik expression values (=expr ↔ qStringExpression)
         ├── extension-state.js # Shared state (model and app refs, tabContainerMap)
         ├── logger.js         # Build-type-aware console logger
         ├── markdown.js       # Mini Markdown-to-HTML converter
+        ├── markdown-shortcuts.js # Markdown keyboard shortcuts
+        ├── sanitize.js       # Lui icon name sanitizer
         ├── tab-switcher.js   # Tab container auto-switching
-        └── uuid.js           # UUID v4 generator
+        ├── uuid.js           # UUID v4 generator
+        └── visibility.js     # Show conditions of tours and steps
 ```
 
 ---
