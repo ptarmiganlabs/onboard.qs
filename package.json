@@ -32,7 +32,7 @@
     "scripts": {
         "build": "cross-env BUILD_TYPE=development nebula build --config nebula.config.cjs --sourcemap false --mode development",
         "build:dist": "cross-env BUILD_TYPE=production nebula build --config nebula.config.cjs --sourcemap false",
-        "test": "node --test test/tour-runner.test.mjs test/tours-section.test.mjs test/expressions.test.mjs test/markdown.test.mjs test/markdown-shortcuts.test.mjs",
+        "test": "node --test test/tour-runner.test.mjs test/tours-section.test.mjs test/expressions.test.mjs test/markdown.test.mjs test/markdown.browser.test.mjs test/markdown-shortcuts.test.mjs",
         "lint": "eslint src scripts",
         "lint:fix": "eslint src scripts --fix",
         "format": "prettier --write \"./**/*.{js,mjs,css,json,yaml,md}\"",

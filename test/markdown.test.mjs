@@ -9,9 +9,9 @@
  *
  * Run with `npm test`.
  */
-import { test, before } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -24,12 +24,11 @@ const stubPath = path.join(here, 'support', 'dompurify-stub.js');
 
 let md;
 let readme;
+let bundleDir;
 
 before(async () => {
-    const outfile = path.join(
-        await mkdtemp(path.join(os.tmpdir(), 'onboard-qs-test-')),
-        'markdown.mjs'
-    );
+    bundleDir = await mkdtemp(path.join(os.tmpdir(), 'onboard-qs-test-'));
+    const outfile = path.join(bundleDir, 'markdown.mjs');
     await esbuild.build({
         entryPoints: [markdownPath],
         bundle: true,
@@ -49,6 +48,8 @@ before(async () => {
     md = (await import(pathToFileURL(outfile).href)).markdownToHtml;
     readme = await readFile(path.join(root, 'README.md'), 'utf8');
 });
+
+after(() => bundleDir && rm(bundleDir, { recursive: true, force: true }));
 
 /**
  * The first fenced code block after a heading in the README.
