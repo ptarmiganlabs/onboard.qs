@@ -21,7 +21,7 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 ---
 
 <p align="center">
-  <img src="docs/screenshots/onboard-qs_enduser_1.gif" alt="Onboard.qs tour in action" width="700" />
+  <img src="docs/screenshots/onboard-qs_readme.webp" alt="Onboard.qs in a Qlik Sense app: a welcome tour that starts by itself, a data story whose figures are Qlik expressions, a step that follows selections on a map, and the tour editor" width="900" />
 </p>
 
 ---
