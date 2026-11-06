@@ -181,6 +181,20 @@ function safeCssColor(value, fallback) {
 }
 
 /**
+ * Read a numeric setting, keeping 0 and falling back only when the value is
+ * missing or not a number.
+ *
+ * @param {number|string|null|undefined} value - Candidate value.
+ * @param {number} fallback - Default if value is missing or not a number.
+ * @returns {number} The value as a number, or the fallback.
+ */
+function numberOr(value, fallback) {
+    if (value === null || value === undefined || value === '') return fallback;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+/**
  * Build the driver.js button labels and progress text for a tour.
  *
  * @param {object} tourConfig - Tour configuration from layout.
@@ -364,8 +378,8 @@ export async function runTour(tourConfig, options = {}) {
         showButtons: ['next', 'previous', 'close'],
         overlayColor: safeCssColor(tourConfig.overlayColor, 'rgba(0, 0, 0, 0.6)'),
         overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
-        stagePadding: tourConfig.stagePadding || 8,
-        stageRadius: tourConfig.stageRadius || 5,
+        stagePadding: numberOr(tourConfig.stagePadding, 8),
+        stageRadius: numberOr(tourConfig.stageRadius, 5),
         popoverClass: 'onboard-qs-popover',
         ...getTourTexts(tourConfig),
         /**
