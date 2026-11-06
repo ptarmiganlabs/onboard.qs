@@ -72,7 +72,8 @@ onboard.qs/
     │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
     │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
     └── util/
-        ├── extension-state.js # Shared state (model ref, tabContainerMap)
+        ├── expressions.js    # Qlik expression values (=expr ↔ qStringExpression)
+        ├── extension-state.js # Shared state (model and app refs, tabContainerMap)
         ├── logger.js         # Build-type-aware console logger
         ├── markdown.js       # Mini Markdown-to-HTML converter
         ├── tab-switcher.js   # Tab container auto-switching

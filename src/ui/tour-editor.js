@@ -1,7 +1,7 @@
 import logger from '../util/logger';
 import { generateUUID } from '../util/uuid';
 import { highlightStep, destroyTour } from '../tour/tour-runner';
-import { detectPlatformType } from '../platform/index';
+import { detectPlatformType, getPlatformAdapter } from '../platform/index';
 import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
@@ -103,6 +103,36 @@ function overlayExpressions(editorTours, propTours) {
 
 let currentHighlight = null;
 let activePreviewCleanup = null;
+
+/**
+ * Open the tour editor for an Onboard.qs object, with the objects on the
+ * current sheet to choose step targets from. Used by the object's own Edit
+ * Tours button and by the property panel.
+ *
+ * @param {object} params - Parameters.
+ * @param {object} params.app - Enigma app.
+ * @param {object} params.model - Enigma model of the Onboard.qs object.
+ * @param {object} [params.layout] - The object's current layout. Read from the model when not given.
+ * @returns {Promise<void>} Resolves once the editor is open.
+ */
+export async function openTourEditorFor({ app, model, layout }) {
+    const [sheetObjects, currentLayout] = await Promise.all([
+        getPlatformAdapter().getSheetObjects(app),
+        layout ?? model.getLayout(),
+    ]);
+    await openTourEditor({
+        layout: currentLayout,
+        model,
+        app,
+        sheetObjects,
+        /**
+         * Callback when the tour editor is closed.
+         */
+        onClose: () => {
+            logger.debug('Tour editor closed');
+        },
+    });
+}
 
 /**
  * Open the tour editor modal.

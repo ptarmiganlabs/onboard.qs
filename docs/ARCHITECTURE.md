@@ -231,7 +231,8 @@ src/
 │   ├── widget-renderer.js    # Analysis mode widget
 │   └── tour-editor.js        # Edit mode modal editor
 └── util/
-    ├── extension-state.js    # Shared state (model ref, tabContainerMap)
+    ├── expressions.js        # Qlik expression values (=expr ↔ qStringExpression)
+    ├── extension-state.js    # Shared state (model and app refs, tabContainerMap)
     ├── logger.js             # Build-aware logging
     ├── markdown.js           # Minimal MD→HTML
     ├── tab-switcher.js       # Tab container auto-switching

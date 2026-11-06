@@ -11,7 +11,7 @@ import {
 import ext from './ext/index';
 import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
-import { openTourEditor } from './ui/tour-editor';
+import { openTourEditorFor } from './ui/tour-editor';
 import { endAutoStartVisit } from './tour/tour-helpers';
 import { closeTourForSheet, refreshRunningTour } from './tour/tour-runner';
 import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
@@ -109,8 +109,10 @@ export default function supernova(galaxy) {
             // auto-start visit can be ended once the user leaves the sheet
             const visitRef = useRef(null);
 
-            // Store model reference so utility modules can persist property changes
+            // Store model and app references so utility modules can persist
+            // property changes
             extensionState.model = model;
+            extensionState.app = app;
 
             /**
              * Get this object's current layout, so a running tour can read
@@ -291,22 +293,12 @@ export default function supernova(galaxy) {
                         /**
                          * Handle click on "Edit Tours" button to open the tour editor.
                          */
-                        editBtn.addEventListener('click', async () => {
-                            // Ensure adapter is available before opening editor
-                            const currentAdapter = adapter || getPlatformAdapter();
-                            const sheetObjects = await currentAdapter.getSheetObjects(app);
-                            await openTourEditor({
-                                layout: layoutRef.current,
-                                model,
-                                app,
-                                sheetObjects,
-                                /**
-                                 * Callback when the tour editor is closed.
-                                 */
-                                onClose: () => {
-                                    logger.debug('Tour editor closed');
-                                },
-                            });
+                        editBtn.addEventListener('click', () => {
+                            openTourEditorFor({ app, model, layout: layoutRef.current }).catch(
+                                (err) => {
+                                    logger.warn('Failed to open the tour editor:', err);
+                                }
+                            );
                         });
                     }
                     initRef.current = true;

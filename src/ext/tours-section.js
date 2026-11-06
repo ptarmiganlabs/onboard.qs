@@ -3,8 +3,7 @@ import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
 import { extensionState } from '../util/extension-state';
 import { DIALOG_SIZE_OPTIONS } from '../util/dialog-size';
 import { extractExpression, wrapIfExpression } from '../util/expressions';
-import { openTourEditor } from '../ui/tour-editor';
-import { getPlatformAdapter } from '../platform/index';
+import { openTourEditorFor } from '../ui/tour-editor';
 
 /**
  * Get the list of objects on the current sheet for dropdown population.
@@ -173,11 +172,12 @@ export function toursSection() {
                 /**
                  * Open the tour editor for the object this panel belongs to.
                  *
-                 * @param {object} _data - The object's properties.
+                 * @param {object} data - The object's properties.
                  * @param {object} [handler] - The property panel's handler.
+                 * @returns {Promise<void>} Resolves once the editor is open, or given up.
                  */
-                action(_data, handler) {
-                    openTourEditorFromPanel(handler);
+                action(data, handler) {
+                    return openTourEditorFromPanel(data, handler);
                 },
             },
             toursList: {
@@ -728,31 +728,33 @@ async function getPanelModel(handler) {
 /**
  * Open the tour editor for the object a property panel belongs to.
  *
+ * Without a handler from the panel, the object rendered last is used if it
+ * is the panel's object. Otherwise the user is told to use the object's own
+ * Edit Tours button.
+ *
+ * @param {object} data - The object's properties, as the panel passes them.
  * @param {object} [handler] - The property panel's handler.
  * @returns {Promise<void>} Resolves once the editor is open, or given up.
  */
-async function openTourEditorFromPanel(handler) {
+async function openTourEditorFromPanel(data, handler) {
     try {
-        const model = await getPanelModel(handler);
-        if (!model) {
+        let app = handler?.app;
+        let model = await getPanelModel(handler);
+        if (!model && extensionState.model?.id && extensionState.model.id === data?.qInfo?.qId) {
+            model = extensionState.model;
+            app = extensionState.app;
+        }
+        if (!model || !app) {
             logger.warn('Cannot open the tour editor — the property panel passed no object');
+            alert(
+                'The tour editor could not be opened from the property panel. Use the Edit Tours button on the object instead.'
+            );
             return;
         }
-        const sheetObjects = await getPlatformAdapter().getSheetObjects(handler.app);
-        await openTourEditor({
-            layout: await model.getLayout(),
-            model,
-            app: handler.app,
-            sheetObjects,
-            /**
-             * Callback when the tour editor is closed.
-             */
-            onClose: () => {
-                logger.debug('Tour editor closed');
-            },
-        });
+        await openTourEditorFor({ app, model });
     } catch (err) {
         logger.warn('Failed to open the tour editor:', err);
+        alert(`The tour editor could not be opened: ${err?.message || err}`);
     }
 }
 
