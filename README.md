@@ -42,10 +42,10 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 - **Qlik property panel integration** — everything is also accessible from the standard Qlik Sense property panel in edit mode (tours, steps, settings).
 - **Lightweight** — small footprint with only two runtime dependencies: [driver.js](https://driverjs.com/) (~5 KB gzip) for tour rendering and [DOMPurify](https://github.com/cure53/DOMPurify) (~7 KB gzip) for HTML sanitisation.
 
-|                                                                                            |                                                                                                               |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| <img src="docs/screenshots/onboard-qs_developer-ux_5.png" alt="Tour editor" width="400" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_4.png" alt="Tour step highlighting an object" width="400" /> |
-| _Tour editor — build tours without leaving the app_                                        | _A tour step highlighting a sheet object_                                                                     |
+|                                                                                                                                                                                                                                                    |                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="docs/screenshots/onboard-qs_developer-ux_tour-editor.png" alt="The tour editor: the coffee demo app's three tours, the one step of Origin profiles, and that tour's settings with Update expressions at each step ticked" width="400" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_step-on-object.png" alt="A tour step beside a bar chart of green coffee by origin. The step lists the top five origins, with bars and tonnes worked out by Qlik expressions" width="400" /> |
+| _Tour editor — build tours without leaving the app_                                                                                                                                                                                                | _A tour step on a chart, its figures worked out by Qlik expressions_                                                                                                                                                                         |
 
 ---
 
@@ -88,6 +88,18 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 4. Enter a title and description (Markdown supported).
 5. Click **Save**. Switch to analysis mode and click **Start Tour**.
 
+The numbers in the pictures match the steps. Step 1 is in edit mode:
+
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_developer-ux_edit-tours-button_annotated.png" alt="Sense in edit mode with the Onboard.qs object selected: badge 1 on the object's Edit Tours button, and badge 1 on Open tour editor at the top of the property panel's Tours section" width="560" />
+</p>
+
+Steps 2 to 5 are in the tour editor:
+
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_developer-ux_first-tour_annotated.png" alt="The tour editor with a step open: badge 2 on + Add Tour, badge 3 on + Add Step and on the Target Type list, badge 4 on the Popover Title and Popover Description fields, badge 5 on Save" width="800" />
+</p>
+
 ---
 
 ## Platform Support
@@ -117,7 +129,19 @@ This ordering is stable regardless of which extension was added to the sheet fir
 
 ### Multiple instances on the same sheet
 
-It is valid to place several Onboard.qs extension objects on the same sheet (e.g. different objects defining different tours). All visible tours are **merged** into a single toolbar button / dropdown. Duplicate tours (same tour ID or name) are shown only once. When an object is removed or its "Show toolbar button" toggle is turned off, its tours are unregistered and the button rebuilds from the remaining objects.
+It is valid to place several Onboard.qs extension objects on the same sheet (e.g. different objects defining different tours). All visible tours are **merged** into a single toolbar button / dropdown. Duplicate tours (the same tour ID, or the same name for a tour without an ID) are shown only once. When an object is removed or its "Show toolbar button" toggle is turned off, its tours are unregistered and the button rebuilds from the remaining objects.
+
+```mermaid
+flowchart LR
+    A[Onboard.qs object A] -- its visible tours --> L[One list, in the order<br/>the objects registered]
+    B[Onboard.qs object B] -- its visible tours --> L
+    L --> D[A tour already in the list is left out:<br/>the same tour ID, or the same name<br/>for a tour without an ID]
+    D --> N{How many tours?}
+    N -- one --> S[The toolbar button starts it]
+    N -- more --> M[The toolbar button opens a menu]
+```
+
+Only objects with **Show toolbar button** on take part. The button's text and colours come from the first object in the list.
 
 ---
 
@@ -173,6 +197,67 @@ All color properties use the native Qlik color-picker component. When you switch
 | Allow keyboard                  | Boolean | `true`     | Enable arrow-key / Escape navigation                                                                                                                                                                                                                                           |
 | Update expressions at each step | Boolean | `false`    | Evaluate step titles, descriptions, show conditions and the button and progress texts again during the tour, so they follow selections made during it: in the step on screen, and at each move to another step. When off, expressions are evaluated once, when the tour starts |
 
+#### When a tour starts by itself
+
+A tour with **Auto-start** on starts half a second after its sheet has loaded in analysis mode, unless one of these stops it:
+
+```mermaid
+flowchart TD
+    A([Sheet loads in analysis mode]) --> B{Tour's show condition<br/>is not 0?}
+    B -- no --> X1[Not listed]
+    B -- yes --> C{Auto-start on?}
+    C -- no --> X2[Starts only from the button<br/>or the toolbar]
+    C -- yes --> D{Already started by itself<br/>on this visit?}
+    D -- yes --> X3[Doesn't start]
+    D -- no --> E{Show only once on, and a<br/>seen flag stored for this<br/>tour version?}
+    E -- yes --> X4[Doesn't start]
+    E -- no --> G{After 500 ms: another<br/>tour already running?}
+    G -- yes --> X5[Doesn't start]
+    G -- no --> R[Tour runs]
+    R --> T[(When it ends, by Done, close, Esc<br/>or leaving the sheet: seen flag<br/>stored for this tour version)]
+```
+
+The seen flag is kept in the browser's `localStorage`, under `onboard-qs:<appId>:<sheetId>:<tourId>:v<version>`. Raising **Tour version** gives the tour a new key, so it starts by itself again for everyone. A tour started from the button is marked as seen when it ends, too. When more than one tour on a sheet starts by itself, the first to start runs and the others don't start on that visit.
+
+#### Update expressions at each step
+
+With **Update expressions at each step** on, a step's title and description follow the selections made during the tour. In the coffee demo app, the tour _Origin profiles_ is one step on the map. Click an origin, and the step becomes that origin's profile:
+
+|                                                                                                                                                                                                                      |                                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <img src="docs/screenshots/onboard-qs_enduser-ux_update-expressions_1.png" alt="The Origin profiles step with nothing selected: it asks you to click an origin on the map, and lists the ten origins" width="400" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_update-expressions_2.png" alt="The same step after clicking Ethiopia: Ethiopia's flavour notes, altitude, process, cupping score, share of the coffee, price and shipping" width="400" /> |
+| _Nothing selected_                                                                                                                                                                                                   | _After clicking Ethiopia on the map_                                                                                                                                                                                                       |
+
+When the expressions are evaluated, with the setting off and on:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Tour as Onboard.qs tour
+    participant Engine as Qlik engine
+
+    User->>Tour: Start the tour
+    Tour->>Engine: Evaluate titles, descriptions,<br/>show conditions and texts
+    Engine-->>Tour: The values for every step
+    Tour->>User: First step
+    alt Update expressions at each step: off
+        User->>Engine: Make a selection
+        Note over Tour: The step on screen stays as it is
+        User->>Tour: Next
+        Tour->>User: Next step, with the values from the start
+    else Update expressions at each step: on
+        User->>Engine: Make a selection
+        Engine-->>Tour: New values for the Onboard.qs object
+        Tour->>User: Step on screen redrawn, if its<br/>title or description changed
+        User->>Tour: Next
+        Tour->>Engine: Read the values again
+        Engine-->>Tour: Current values and show conditions
+        Tour->>User: Next step whose show condition is not 0
+    end
+```
+
+Some settings stay as they were when the tour started, with the setting on too: the tour's own show condition, the overlay and stage settings, and whether keyboard navigation and the progress counter are on.
+
 ### Step Settings
 
 | Property            | Type              | Default        | Description                                                                               |
@@ -221,11 +306,26 @@ The following per-tour properties are configured in both the **property panel** 
 | Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                                        |
 | Progress text        | String  | `{{current}} of {{total}}` | Progress counter in each popover. `{{current}}` becomes the step number and `{{total}}` the number of steps; each is filled in once (expression-enabled) |
 
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_enduser-ux_overlay-and-navigation_annotated.png" alt="A tour step on a bar chart, with five numbered badges: 1 on the darkened sheet, 2 on the gap around the chart, 3 on a corner of the highlight, 4 on the step counter, 5 on the Previous and Next buttons" width="720" />
+</p>
+
+1. **Overlay color** and **Overlay opacity**: the shade over everything but the highlighted object
+2. **Stage padding**: the space between the object and the edge of the highlight
+3. **Stage border radius**: how round the highlight's corners are
+4. **Progress text**: the step counter, here `{{current}} of {{total}}`
+5. **Previous button text**, **Next button text** and, on the last step, **Done button text**
+
 ---
 
 ## Markdown & HTML in Step Descriptions
 
 Step descriptions support **Markdown**, **raw HTML**, and **a mix of both**. The text you enter is processed by a built-in mini Markdown-to-HTML converter ([src/util/markdown.js](src/util/markdown.js)) before being injected into the driver.js popover. Since driver.js renders description content as HTML, raw HTML tags pass through and render natively.
+
+|                                                                                                                                                                                                                 |                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="docs/screenshots/onboard-qs_developer-ux_markdown-source.png" alt="The tour editor's Popover Description field, holding a line with bold text and a numbered list written in Markdown" width="540" /> | <img src="docs/screenshots/onboard-qs_enduser-ux_markdown-rendered.png" alt="The step that description gives: the bold words in bold, and the list as a numbered list" width="222" /> |
+| _A description as typed in the tour editor..._                                                                                                                                                                  | _...and the step it gives_                                                                                                                                                            |
 
 ### Supported Markdown Syntax
 
@@ -537,6 +637,10 @@ Clicking the **Export** button in the Tour Editor opens a dialog where you can s
 
 If your dashboard includes customized theme or widget styling, an **Include theme & widget settings** checkbox will appear. This allows you to bundle styling with your tours, making it easier to migrate visual configurations between apps perfectly alongside the content.
 
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_developer-ux_export-dialog.png" alt="The Export Tours dialog: Select all, a checkbox for each of three tours with its number of steps, and Include theme & widget settings" width="420" />
+</p>
+
 ### Import Merge Modes
 
 | Mode             | Behaviour                                                                                         |
@@ -565,6 +669,12 @@ Not every tour step needs to point at a specific element. **Standalone Dialog** 
 3. Enter a title and description (Markdown/HTML supported).
 4. The step will appear as a centered modal during the tour.
 
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_enduser-ux_standalone-step.png" alt="A standalone dialog in the middle of a darkened sheet: Welcome to Ptarmigan Coffee, with a strip of 10 origins, 27 days at sea, Gothenburg and 10 cafés, step 1 of 4" width="800" />
+</p>
+
+_The coffee demo app's welcome tour starts by itself on a first visit, with a standalone dialog. The figures in its strip are Qlik expressions._
+
 ### Example Tour Structure
 
 A typical onboarding tour mixing standalone and targeted steps:
@@ -591,9 +701,35 @@ The **Custom CSS Selector** target type lets you highlight any DOM element on th
 | Sheet title                            | `.sheet-title-container`                                   |
 | Any element by ID                      | `#my-custom-id`                                            |
 
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_enduser-ux_css-selector-step.png" alt="A tour step pointing at the Sense toolbar's Sheets button, which is highlighted. The step's text lists the app's three sheets" width="560" />
+</p>
+
+_A step on Sense's own Sheets button, with the selector `[data-tid="assets-button-sheets"]`._
+
 To find the right selector: right-click the element in the browser → **Inspect** → look for an `id`, `data-tid`, `data-testid` or `tid` attribute. These are the same in every UI language. Avoid `title` attributes, which are translated, and generated classes such as `css-1x2y3z`, which can change with any Sense release. The [demo app tutorial](docs/DEMO-APP-TUTORIAL.md#techniques-worth-copying) shows the selectors its welcome tour uses for Sense's toolbar.
 
 A step whose selector matches nothing is shown as a dialog in the middle of the screen. So is a step whose selector isn't valid CSS: a typo, a selector that ends in `>`, or an ID that starts with a digit, such as `#2024` from a formula. The property panel and the tour editor warn about a selector they can't parse. A selector built by a formula can only be checked when the tour runs.
+
+How a step finds what it points at, for each target type:
+
+```mermaid
+flowchart TD
+    S([A step is shown]) --> T{Target type}
+    T -- Sheet Object --> O[Look for the object<br/>on the sheet]
+    O --> TC{In a tab container?}
+    TC -- yes --> SW[Switch to its tab,<br/>wait up to 2 s]
+    SW --> F{Found?}
+    TC -- no --> F
+    T -- Custom CSS Selector --> V{Valid CSS?}
+    V -- yes --> Q[Look for the first<br/>element it matches] --> F
+    V -- no --> C
+    T -- Standalone Dialog --> C[Dialog in the middle<br/>of the screen]
+    F -- yes --> H[Highlight it, with<br/>the step beside it]
+    F -- no --> C
+```
+
+A step with no target at all, a sheet object step with no object chosen or a CSS step with an empty selector, is left out of the tour.
 
 ---
 
