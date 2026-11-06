@@ -411,6 +411,30 @@ test("an image title can be in single quotes, as in the README's example", () =>
     );
 });
 
+test('a bare & in HTML the author wrote is escaped, as in text', () => {
+    // Unescaped, the browser would read `&copy-2` in the URL as "©-2"
+    assert.equal(
+        md('See <a href="/x?a=1&copy-2&amp;b=3">this</a>'),
+        '<p>See <a href="/x?a=1&amp;copy-2&amp;b=3">this</a></p>'
+    );
+    assert.equal(md('<pre>\nAT&T &copy;\n</pre>'), '<pre>\nAT&amp;T &copy;\n</pre>');
+    // In a style, a script or a comment, & means nothing special
+    const style = '<style>\n.a { &:hover { color: red } }\n</style>';
+    assert.equal(md(style), style);
+    assert.equal(md('<!-- a & b -->'), '<!-- a & b -->');
+});
+
+test("an image's alt text and title, and a link's URL, are plain text", () => {
+    assert.equal(
+        md('![<span class="a">x</span> and `a"b`](a.png "the `t`")'),
+        '<p><img src="a.png" alt="x and a&quot;b" title="the t" style="max-width:100%;height:auto;" /></p>'
+    );
+    assert.equal(
+        md('[docs](https://example.com/`v2`)'),
+        '<p><a href="https://example.com/v2" target="_blank" rel="noopener">docs</a></p>'
+    );
+});
+
 test('a quote in generated attributes is escaped', () => {
     assert.equal(
         md('![Say "hi"](a.png)'),

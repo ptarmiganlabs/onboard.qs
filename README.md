@@ -406,7 +406,7 @@ Key things to note:
 
 ### What Gets Escaped
 
-The parser escapes `&` when it isn't part of an HTML entity, and `<` when it doesn't start an HTML tag (`<name …>`, `</name>`) or comment (`<!-- … -->`). This means:
+The parser escapes `&` when it isn't part of an HTML entity, in your own HTML's attributes too (but not in a `<style>`, a `<script>` or a comment). It escapes `<` when it doesn't start an HTML tag (`<name …>`, `</name>`) or comment (`<!-- … -->`). This means:
 
 | Input                   | Result                                          |
 | ----------------------- | ----------------------------------------------- |

@@ -128,6 +128,9 @@ const charBefore = (s, i) => {
     return c > 0xffff ? String.fromCodePoint(c) : (s[i - 1] ?? ' ');
 };
 
+// A & that doesn't start an entity such as &copy; or &#169;
+const BARE_AMP = /&(?!#?\w+;)/g;
+
 /**
  * Escape text for element content.
  *
@@ -136,6 +139,17 @@ const charBefore = (s, i) => {
  */
 const escapeHtml = (text) =>
     text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * Escape a bare & in HTML the author wrote, as in text, so that `&copy-2` in
+ * a URL stays as typed instead of turning into "©-2". Comments, scripts and
+ * styles are left as they are: & means nothing special in them.
+ *
+ * @param {string} html - HTML the author wrote.
+ * @returns {string} The HTML with bare & escaped.
+ */
+const escapeAuthored = (html) =>
+    /^\s*<(?:!--|script\b|style\b)/i.test(html) ? html : html.replace(BARE_AMP, '&amp;');
 
 /**
  * Quote Markdown text, in which & and < are escaped already, for an
@@ -234,9 +248,11 @@ function inline(text, breaks) {
      * @param {string} html - The HTML.
      * @param {string} [mark] - "h" for HTML the author wrote, "b" for a block-level tag the
      *   author wrote, and nothing for HTML this converter made.
+     * @param {string} [text] - Its plain text, escaped, for use in an attribute value.
      * @returns {string} The placeholder that stands for it.
      */
-    const keep = (html, mark = '') => `\uFFFC${mark}${kept.push(html) - 1}\uFFFC`;
+    const keep = (html, mark = '', text = '') =>
+        `\uFFFC${mark}${kept.push({ html, text }) - 1}\uFFFC`;
 
     /**
      * Put the HTML that was set aside back, including HTML inside it.
@@ -244,7 +260,16 @@ function inline(text, breaks) {
      * @param {string} s - Text with placeholders.
      * @returns {string} The text with the HTML back in place.
      */
-    const restore = (s) => s.replace(KEPT, (_, _mark, n) => restore(kept[n]));
+    const restore = (s) => s.replace(KEPT, (_, _mark, n) => restore(kept[n].html));
+
+    /**
+     * Put plain text back for the HTML that was set aside, for an attribute
+     * value: a tag gives nothing, and code gives its text.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The plain text.
+     */
+    const plain = (s) => s.replace(KEPT, (_, _mark, n) => plain(kept[n].text));
 
     /**
      * Apply emphasis, one line and one block-level element at a time, and
@@ -269,26 +294,32 @@ function inline(text, breaks) {
     };
 
     text = text.replace(ATOM, (match, ticks, code) => {
-        if (!ticks) return keep(match, BLOCK_TAG.test(match) ? 'b' : 'h');
+        if (!ticks) return keep(escapeAuthored(match), BLOCK_TAG.test(match) ? 'b' : 'h');
         // As in CommonMark: line endings become spaces, and one space is
         // stripped from each end of code that has a space at both ends
         code = code.replace(/\n/g, ' ');
         if (/^ [\s\S]*[^ ][\s\S]* $/.test(code)) code = code.slice(1, -1);
-        return keep(`<code>${escapeHtml(code)}</code>`);
+        const escaped = escapeHtml(code);
+        return keep(`<code>${escaped}</code>`, '', escaped);
     });
 
     // What is left is text. Escape & unless it starts an entity, and every
     // <: one that starts a tag or a comment has been set aside above
-    text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt;');
+    text = text.replace(BARE_AMP, '&amp;').replace(/</g, '&lt;');
 
-    // Images: ![alt](src "title"), with an optional title in "" or ''
+    // Images: ![alt](src "title"), with an optional title in "" or ''. The
+    // alt text, title and URL are plain text, as in CommonMark, so that HTML
+    // or code in them can't end the attribute.
     text = text.replace(
         /!\[([^\]]*)\]\(([^)\s]+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\)/g,
         (_, alt, src, title1, title2) => {
-            const title = title1 ?? title2;
+            const altText = plain(alt);
+            const title = plain(title1 ?? title2 ?? '');
             const titleAttr = title ? ` title="${attr(title)}"` : '';
             return keep(
-                `<img src="${attr(src)}" alt="${attr(alt)}"${titleAttr} style="max-width:100%;height:auto;" />`
+                `<img src="${attr(plain(src))}" alt="${attr(altText)}"${titleAttr} style="max-width:100%;height:auto;" />`,
+                '',
+                altText
             );
         }
     );
@@ -296,7 +327,11 @@ function inline(text, breaks) {
     // Links: [text](url). The text gets its emphasis on its own, as in
     // CommonMark, so that emphasis can't cross the link's edge.
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
-        keep(`<a href="${attr(href)}" target="_blank" rel="noopener">${format(label)}</a>`)
+        keep(
+            `<a href="${attr(plain(href))}" target="_blank" rel="noopener">${format(label)}</a>`,
+            '',
+            plain(label)
+        )
     );
 
     return restore(format(text));
@@ -356,7 +391,7 @@ function renderBlocks(md) {
             if (block.end) while (!block.end.test(lines[i]) && i + 1 < lines.length) i++;
             else while (i + 1 < lines.length && lines[i + 1].trim()) i++;
             const raw = lines.slice(first, i + 1).join('\n');
-            html.push(block.verbatim ? raw : inline(raw, false));
+            html.push(block.verbatim ? escapeAuthored(raw) : inline(raw, false));
         } else if (RULE.test(line)) {
             endParagraph();
             html.push('<hr>');
