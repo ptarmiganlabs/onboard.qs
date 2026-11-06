@@ -255,6 +255,7 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
                     showOnce: true,
                     showProgress: true,
                     allowKeyboard: true,
+                    reevaluateEachStep: false,
                     overlayColor: 'rgba(0, 0, 0, 0.6)',
                     overlayOpacity: 60,
                     stagePadding: 8,
@@ -634,6 +635,13 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         if (keyboardCheck) {
             keyboardCheck.addEventListener('change', (e) => {
                 tour.allowKeyboard = e.target.checked;
+            });
+        }
+
+        const reevaluateCheck = overlay.querySelector('.onboard-qs-editor__tour-reevaluate');
+        if (reevaluateCheck) {
+            reevaluateCheck.addEventListener('change', (e) => {
+                tour.reevaluateEachStep = e.target.checked;
             });
         }
 
@@ -1189,6 +1197,10 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-keyboard" ${tour.allowKeyboard !== false ? 'checked' : ''} />
                         <span>Allow keyboard navigation ${infoIcon('Let users navigate steps with arrow keys and close the tour with Escape.')}</span>
+                    </label>
+                    <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
+                        <input type="checkbox" class="onboard-qs-editor__tour-reevaluate" ${tour.reevaluateEachStep === true ? 'checked' : ''} />
+                        <span>Update expressions at each step ${infoIcon('Evaluate step titles, descriptions and show conditions, and the button and progress texts, again each time the user moves to another step, so they follow selections made during the tour. Steps can then appear or disappear, which changes the step count. When off, they are evaluated once, when the tour starts.')}</span>
                     </label>
                 </div>
                 <div class="onboard-qs-editor__section">

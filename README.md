@@ -162,15 +162,16 @@ All color properties use the native Qlik color-picker component. When you switch
 
 ### Tour Settings
 
-| Property       | Type    | Default    | Description                                                                           |
-| -------------- | ------- | ---------- | ------------------------------------------------------------------------------------- |
-| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                             |
-| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).          |
-| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                            |
-| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)      |
-| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                      |
-| Show progress  | Boolean | `true`     | Display an "X of Y" progress counter in popovers; its wording is set by Progress text |
-| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                                  |
+| Property                        | Type    | Default    | Description                                                                                                                                                                                                                                          |
+| ------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tour name                       | String  | `New Tour` | Display name shown in multi-tour dropdown                                                                                                                                                                                                            |
+| Show condition                  | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).                                                                                                                                                                         |
+| Auto-start                      | Boolean | `false`    | Start the tour automatically on sheet load                                                                                                                                                                                                           |
+| Show only once                  | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)                                                                                                                                                                     |
+| Tour version                    | Integer | `1`        | Increment to reset the "seen" flag for all users                                                                                                                                                                                                     |
+| Show progress                   | Boolean | `true`     | Display an "X of Y" progress counter in popovers; its wording is set by Progress text                                                                                                                                                                |
+| Allow keyboard                  | Boolean | `true`     | Enable arrow-key / Escape navigation                                                                                                                                                                                                                 |
+| Update expressions at each step | Boolean | `false`    | Evaluate step titles, descriptions, show conditions and the button and progress texts again each time the user moves to another step, so they follow selections made during the tour. When off, expressions are evaluated once, when the tour starts |
 
 ### Step Settings
 

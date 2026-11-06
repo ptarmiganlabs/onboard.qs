@@ -39,6 +39,7 @@ classDiagram
         +boolean showOnce
         +boolean allowKeyboard
         +boolean showProgress
+        +boolean reevaluateEachStep
         +string overlayColor
         +number overlayOpacity
         +number stagePadding
@@ -116,6 +117,7 @@ sequenceDiagram
     participant DJ as driver.js
     participant TS as tour-storage.js
     participant LS as localStorage
+    participant QE as Qlik engine
 
     User->>WR: Clicks "Start Tour"
     WR->>TR: runTour(tourConfig, {platformType, codePath, appId, sheetId})
@@ -143,9 +145,15 @@ sequenceDiagram
     loop User navigates steps
         User->>DJ: Next / Previous / Close
         DJ->>TR: onNextClick / onPrevClick callback
+        opt reevaluateEachStep is on
+            TR->>QE: getLayout() of the tour's object
+            QE-->>TR: Tours evaluated with the current selections
+            TR->>TR: buildDriverSteps(current tour), find the step to move to
+            TR->>DJ: setConfig({...config, steps, button and progress texts})
+        end
         TR->>TB: ensureTabVisible(nextStep.objectId) [if in tab container]
         Note over TB: Switch tab + wait for element before advancing
-        TR->>DJ: moveNext() / movePrevious()
+        TR->>DJ: moveTo(index of the step to move to)
         DJ->>DJ: Lazy element resolution via () => document.querySelector(css)
     end
 
@@ -153,6 +161,25 @@ sequenceDiagram
     TR->>TS: markTourSeen(appId, sheetId, tourId, tourVersion)
     TS->>LS: Set key with timestamp
 ```
+
+### Updating expressions at each step
+
+Step titles, descriptions and show conditions, and the tour's button and progress texts, can be Qlik expressions. The engine evaluates them in the extension's layout, so `runTour()` receives them already evaluated, with the selections that were active when the tour started. By default the tour keeps those values to the end.
+
+With the tour's **Update expressions at each step** setting (`reevaluateEachStep`) on, `onNextClick` and `onPrevClick` read the tour again before every move, so a step that invites the user to make a selection can be followed by steps that respond to it:
+
+1. They call `getLayout()` on the object the tour belongs to, and find the tour in it by `tourId`. `index.js` passes that function to `renderWidget()` and to `registerToolbarTours()`, so tours started from the toolbar button read the object they came from. The call goes to the engine directly instead of waiting for the object to render again, because a user can click **Next** before that render arrives.
+2. They build the steps again with `buildDriverSteps()`, which leaves out the steps whose show condition is now false. Each step carries `_configIndex`, its position in the tour's step list, and the step moved to is the first visible step after the one being left (or the last one before it, for **Previous**).
+3. They give driver.js the new steps with `setConfig()`, not `setSteps()`, which would clear the state of the running tour. driver.js reads its steps array each time it shows a step, so the progress counter, the **Done** label and the disabled **Previous** button follow the new list.
+
+Some cases are decided when a step is shown, not when the user leaves it:
+
+- **Done** ends the tour, even if a selection made during the last step has made a later step visible.
+- **Next** on a step whose later steps have all been hidden by a selection ends the tour. The button said **Next** because it was drawn before the selection.
+- **Previous** stays on the current step if every earlier step has been hidden.
+- The step on screen doesn't change while it is shown. Its text is updated the next time it is shown.
+
+If the layout can't be read, or no longer has the tour, the tour keeps the steps it had. The tour's own show condition is not checked again: a running tour isn't closed because it would now be hidden.
 
 ## Auto-start tours
 
@@ -476,18 +503,19 @@ The extension configures driver.js with the following settings. Some are configu
 
 ### Configurable per tour
 
-| Setting                | Default                      | Configured in                | Notes                                                                                                                |
-| ---------------------- | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `showProgress`         | `true`                       | Property panel + Tour editor | "1 of 5" progress text                                                                                               |
-| `allowKeyboardControl` | `true`                       | Property panel + Tour editor | Arrow-key / Escape navigation                                                                                        |
-| `overlayColor`         | `rgba(0,0,0,0.6)`            | Property panel + Tour editor | Semi-transparent backdrop                                                                                            |
-| `overlayOpacity`       | `60` (%)                     | Property panel + Tour editor | Opacity percentage (0–100)                                                                                           |
-| `stagePadding`         | `8`                          | Property panel + Tour editor | Padding around highlighted element (px)                                                                              |
-| `stageRadius`          | `5`                          | Property panel + Tour editor | Border radius of the highlight cutout (px)                                                                           |
-| `nextBtnText`          | `'Next'`                     | Property panel + Tour editor | Label for the Next button (expression-enabled)                                                                       |
-| `prevBtnText`          | `'Previous'`                 | Property panel + Tour editor | Label for the Previous button (expression-enabled)                                                                   |
-| `doneBtnText`          | `'Done'`                     | Property panel + Tour editor | Label for the final step's button (expression-enabled)                                                               |
-| `progressText`         | `'{{current}} of {{total}}'` | Property panel + Tour editor | Progress counter template; driver.js fills in the first `{{current}}` and the first `{{total}}` (expression-enabled) |
+| Setting                | Default                      | Configured in                | Notes                                                                                                                                  |
+| ---------------------- | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `showProgress`         | `true`                       | Property panel + Tour editor | "1 of 5" progress text                                                                                                                 |
+| `allowKeyboardControl` | `true`                       | Property panel + Tour editor | Arrow-key / Escape navigation                                                                                                          |
+| `reevaluateEachStep`   | `false`                      | Property panel + Tour editor | Not a driver.js setting: read the tour again at each move, see [Updating expressions at each step](#updating-expressions-at-each-step) |
+| `overlayColor`         | `rgba(0,0,0,0.6)`            | Property panel + Tour editor | Semi-transparent backdrop                                                                                                              |
+| `overlayOpacity`       | `60` (%)                     | Property panel + Tour editor | Opacity percentage (0–100)                                                                                                             |
+| `stagePadding`         | `8`                          | Property panel + Tour editor | Padding around highlighted element (px)                                                                                                |
+| `stageRadius`          | `5`                          | Property panel + Tour editor | Border radius of the highlight cutout (px)                                                                                             |
+| `nextBtnText`          | `'Next'`                     | Property panel + Tour editor | Label for the Next button (expression-enabled)                                                                                         |
+| `prevBtnText`          | `'Previous'`                 | Property panel + Tour editor | Label for the Previous button (expression-enabled)                                                                                     |
+| `doneBtnText`          | `'Done'`                     | Property panel + Tour editor | Label for the final step's button (expression-enabled)                                                                                 |
+| `progressText`         | `'{{current}} of {{total}}'` | Property panel + Tour editor | Progress counter template; driver.js fills in the first `{{current}}` and the first `{{total}}` (expression-enabled)                   |
 
 ### Fixed (not user-configurable)
 

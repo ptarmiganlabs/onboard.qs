@@ -90,6 +90,9 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
              */
             .map((step) => {
                 const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
+                // The step's position in the tour, which stays the same when
+                // steps around it are shown or hidden. Steps have no ID.
+                const configIndex = tourConfig.steps.indexOf(step);
                 // Standalone dialog — no element, driver.js shows a centered modal
                 if (step.selectorType === 'none') {
                     const popoverConfig = {
@@ -100,7 +103,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         popoverClass,
                     };
                     if (onPopoverRender) popoverConfig.onPopoverRender = onPopoverRender;
-                    return { popover: popoverConfig };
+                    return { popover: popoverConfig, _configIndex: configIndex };
                 }
 
                 const cssSelector =
@@ -144,9 +147,11 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                     },
                     disableActiveInteraction: step.disableInteraction !== false,
                     // Custom metadata — used by onNextClick/onPrevClick to
-                    // pre-switch tabs before the step transition.
+                    // pre-switch tabs before the step transition, and to find
+                    // the step to move to when the steps are built again.
                     _targetObjectId: objectId,
                     _cssSelector: cssSelector,
+                    _configIndex: configIndex,
                 };
             })
     );
@@ -173,6 +178,44 @@ function safeCssColor(value, fallback) {
         return cleaned;
     }
     return fallback;
+}
+
+/**
+ * Build the driver.js button labels and progress text for a tour.
+ *
+ * @param {object} tourConfig - Tour configuration from layout.
+ *
+ * @returns {{progressText: string, nextBtnText: string, prevBtnText: string, doneBtnText: string}} driver.js text settings.
+ */
+function getTourTexts(tourConfig) {
+    return {
+        progressText: stripHtml(tourConfig.progressText || '{{current}} of {{total}}'),
+        nextBtnText: stripHtml(tourConfig.nextBtnText || 'Next'),
+        prevBtnText: stripHtml(tourConfig.prevBtnText || 'Previous'),
+        doneBtnText: stripHtml(tourConfig.doneBtnText || 'Done'),
+    };
+}
+
+/**
+ * Read a running tour again from the current layout of the object it
+ * belongs to. The engine evaluates the layout's expressions with the
+ * selections in place now.
+ *
+ * @param {() => Promise<object>} getLayout - Gets the layout of the tour's object.
+ * @param {object} tourConfig - The tour as it was when it started.
+ *
+ * @returns {Promise<object|null>} The tour as it evaluates now, or null if it can't be read.
+ */
+async function readCurrentTour(getLayout, tourConfig) {
+    try {
+        const layout = await getLayout();
+        const tour = (layout?.tours || []).find((t) => t.tourId === tourConfig.tourId);
+        if (tour) return tour;
+        logger.debug(`Tour "${tourConfig.tourName}" is no longer in its object's layout`);
+    } catch (err) {
+        logger.warn(`Could not read the layout of tour "${tourConfig.tourName}":`, err);
+    }
+    return null;
 }
 
 /**
@@ -215,6 +258,8 @@ function anotherTourRunning(tourConfig) {
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet the tour belongs to. Also used for localStorage tracking.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
+ * @param {() => Promise<object>} [options.getLayout] - Gets the current layout of the object the
+ *   tour belongs to. Needed for the tour's "Update expressions at each step" setting.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
  *
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
@@ -227,6 +272,7 @@ export async function runTour(tourConfig, options = {}) {
         appId,
         sheetId,
         allowedUriPatterns,
+        getLayout,
         onComplete,
     } = options;
 
@@ -239,7 +285,8 @@ export async function runTour(tourConfig, options = {}) {
         await extensionState.tabContainerMapReady;
     }
 
-    const steps = buildDriverSteps(tourConfig, platformType, codePath, {
+    // Replaced at each move when the tour's expressions are evaluated again
+    let steps = buildDriverSteps(tourConfig, platformType, codePath, {
         allowedUriPatterns,
     });
 
@@ -248,6 +295,65 @@ export async function runTour(tourConfig, options = {}) {
         return null;
     }
 
+    const reevaluateEachStep =
+        tourConfig.reevaluateEachStep === true &&
+        typeof getLayout === 'function' &&
+        Boolean(tourConfig.tourId);
+
+    /**
+     * Find the step to move to. When the tour's "Update expressions at each
+     * step" setting is on, read the tour again first and give driver.js the
+     * steps built from it, so that the step moved to has text, and is shown
+     * or skipped, according to the selections made since the tour started.
+     * driver.js reads its steps array each time it shows a step, so the step
+     * count and progress text follow too.
+     *
+     * @param {object} driverInstance - The running driver.js instance.
+     * @param {number} activeIdx - Index of the step being left.
+     * @param {number} direction - 1 to move forward, -1 to move back.
+     *
+     * @returns {Promise<number>} Index of the step to move to; out of range when the tour ends.
+     */
+    const findTargetIndex = async (driverInstance, activeIdx, direction) => {
+        const targetIdx = activeIdx + direction;
+        // Moving past either end does what it did when the step was shown:
+        // "Done" ends the tour even if a selection made during the last step
+        // has made a later step visible
+        if (!reevaluateEachStep || targetIdx < 0 || targetIdx >= steps.length) return targetIdx;
+
+        const currentTour = await readCurrentTour(getLayout, tourConfig);
+        if (!currentTour) return targetIdx;
+
+        const currentSteps = buildDriverSteps(currentTour, platformType, codePath, {
+            allowedUriPatterns,
+        });
+        const leaving = steps[activeIdx]._configIndex;
+        // Steps are in tour order, so the last step before the one being
+        // left is at the number of steps before it, minus one
+        const currentIdx =
+            direction > 0
+                ? currentSteps.findIndex((step) => step._configIndex > leaving)
+                : currentSteps.filter((step) => step._configIndex < leaving).length - 1;
+
+        if (currentIdx === -1) {
+            // No later step is visible now, so Next ends the tour. Previous
+            // stays on the step being left.
+            return direction > 0 ? steps.length : activeIdx;
+        }
+
+        steps = currentSteps;
+        driverInstance.setConfig({
+            ...driverInstance.getConfig(),
+            ...getTourTexts(currentTour),
+            steps,
+        });
+        return currentIdx;
+    };
+
+    // Next and Previous wait for the engine, and a second click meanwhile
+    // must not move a second time
+    let moving = false;
+
     const driverConfig = {
         steps,
         animate: true,
@@ -255,35 +361,41 @@ export async function runTour(tourConfig, options = {}) {
         allowClose: true,
         allowKeyboardControl: tourConfig.allowKeyboard !== false,
         showProgress: tourConfig.showProgress !== false,
-        progressText: stripHtml(tourConfig.progressText || '{{current}} of {{total}}'),
         showButtons: ['next', 'previous', 'close'],
         overlayColor: safeCssColor(tourConfig.overlayColor, 'rgba(0, 0, 0, 0.6)'),
         overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
         stagePadding: tourConfig.stagePadding || 8,
         stageRadius: tourConfig.stageRadius || 5,
         popoverClass: 'onboard-qs-popover',
-        nextBtnText: stripHtml(tourConfig.nextBtnText || 'Next'),
-        prevBtnText: stripHtml(tourConfig.prevBtnText || 'Previous'),
-        doneBtnText: stripHtml(tourConfig.doneBtnText || 'Done'),
+        ...getTourTexts(tourConfig),
         /**
          * Pre-switch tab containers when navigating forward.
          * This fires INSTEAD of the default next behavior, so we must
-         * call driverObj.moveNext() ourselves after the tab switch.
+         * move to the next step ourselves after the tab switch.
          *
          * @param {Element|undefined} _element - Current highlighted element.
          * @param {object} _step - Current step config.
          * @param {{ driver: object }} opts - Driver options containing the driver instance.
          */
         onNextClick: async (_element, _step, { driver: driverInstance }) => {
-            const activeIdx = driverInstance.getActiveIndex();
-            const nextIdx = activeIdx + 1;
-            if (nextIdx < steps.length) {
-                const nextStep = steps[nextIdx];
-                if (nextStep._targetObjectId && getTabInfo(nextStep._targetObjectId)) {
-                    await ensureTabVisible(nextStep._targetObjectId, platformType, codePath);
+            if (moving) return;
+            moving = true;
+            try {
+                const activeIdx = driverInstance.getActiveIndex();
+                const nextIdx = await findTargetIndex(driverInstance, activeIdx, 1);
+                if (nextIdx < steps.length) {
+                    const nextStep = steps[nextIdx];
+                    if (nextStep._targetObjectId && getTabInfo(nextStep._targetObjectId)) {
+                        await ensureTabVisible(nextStep._targetObjectId, platformType, codePath);
+                    }
                 }
+                // The user can close the tour while the awaits above run
+                if (!driverInstance.isActive()) return;
+                // Past the last step, driver.js ends the tour
+                driverInstance.moveTo(nextIdx);
+            } finally {
+                moving = false;
             }
-            driverInstance.moveNext();
         },
         /**
          * Pre-switch tab containers when navigating backward.
@@ -293,15 +405,23 @@ export async function runTour(tourConfig, options = {}) {
          * @param {{ driver: object }} opts - Driver options containing the driver instance.
          */
         onPrevClick: async (_element, _step, { driver: driverInstance }) => {
-            const activeIdx = driverInstance.getActiveIndex();
-            const prevIdx = activeIdx - 1;
-            if (prevIdx >= 0) {
-                const prevStep = steps[prevIdx];
-                if (prevStep._targetObjectId && getTabInfo(prevStep._targetObjectId)) {
-                    await ensureTabVisible(prevStep._targetObjectId, platformType, codePath);
+            if (moving) return;
+            moving = true;
+            try {
+                const activeIdx = driverInstance.getActiveIndex();
+                const prevIdx = await findTargetIndex(driverInstance, activeIdx, -1);
+                if (prevIdx >= 0) {
+                    const prevStep = steps[prevIdx];
+                    if (prevStep._targetObjectId && getTabInfo(prevStep._targetObjectId)) {
+                        await ensureTabVisible(prevStep._targetObjectId, platformType, codePath);
+                    }
                 }
+                if (!driverInstance.isActive()) return;
+                // Before the first step, driver.js ends the tour
+                driverInstance.moveTo(prevIdx);
+            } finally {
+                moving = false;
             }
-            driverInstance.movePrevious();
         },
         /**
          * Callback invoked when the driver.js tour is destroyed.

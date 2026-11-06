@@ -112,6 +112,14 @@ export default function supernova(galaxy) {
             // Store model reference so utility modules can persist property changes
             extensionState.model = model;
 
+            /**
+             * Get this object's current layout, so a running tour can read
+             * its tours again with the selections made since it started.
+             *
+             * @returns {Promise<object>} The object's layout.
+             */
+            const getLayout = () => model.getLayout();
+
             // Platform detection: async, resolved once then cached in state.
             // useState (not useRef) ensures a re-render when detection completes.
             const [platform, setPlatform] = useState(null);
@@ -234,7 +242,14 @@ export default function supernova(galaxy) {
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
-                        registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, app?.id);
+                        registerToolbarTours(
+                            layout.qInfo.qId,
+                            layout,
+                            adapter,
+                            platform,
+                            app?.id,
+                            getLayout
+                        );
                     } else {
                         unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                     }
@@ -354,12 +369,20 @@ export default function supernova(galaxy) {
                     senseVersion: platform.version,
                     codePath: platform.codePath,
                     allowedUriPatterns: layout.security?.allowedUriPatterns,
+                    getLayout,
                 });
 
                 // --- Toolbar button injection ---
                 const showToolbarButton = layout.widget?.showToolbarButton === true;
                 if (showToolbarButton) {
-                    registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, appId);
+                    registerToolbarTours(
+                        layout.qInfo.qId,
+                        layout,
+                        adapter,
+                        platform,
+                        appId,
+                        getLayout
+                    );
                 } else {
                     unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                 }

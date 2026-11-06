@@ -6,7 +6,8 @@ import logger from '../util/logger';
  * Start a specific tour.
  *
  * @param {object} tourConfig - Tour configuration.
- * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId.
+ * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId,
+ *   and getLayout for the object the tour belongs to.
  */
 export function startTour(tourConfig, context) {
     runTour(tourConfig, {
@@ -16,6 +17,7 @@ export function startTour(tourConfig, context) {
         appId: context.appId,
         sheetId: context.sheetId,
         allowedUriPatterns: context.allowedUriPatterns,
+        getLayout: context.getLayout,
     });
 }
 

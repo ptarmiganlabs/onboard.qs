@@ -85,9 +85,9 @@ let activeMenuCloseHandler = null;
 
 /**
  * Registry of tours contributed by each Onboard.qs extension object.
- * Key = object ID (layout.qInfo.qId), value = { tours, layout }.
+ * Key = object ID (layout.qInfo.qId), value = { tours, layout, getLayout }.
  *
- * @type {Map<string, { tours: Array, layout: object }>}
+ * @type {Map<string, { tours: Array, layout: object, getLayout?: () => Promise<object> }>}
  */
 const tourRegistry = new Map();
 
@@ -100,8 +100,9 @@ const tourRegistry = new Map();
  * @param {object} adapter - Platform adapter module.
  * @param {{ type: string, codePath: string, version: string | null }} platform - Platform detection result.
  * @param {string} [appId] - Application ID from the app context.
+ * @param {() => Promise<object>} [getLayout] - Gets the object's current layout, for a running tour.
  */
-export function registerToolbarTours(objectId, layout, adapter, platform, appId) {
+export function registerToolbarTours(objectId, layout, adapter, platform, appId, getLayout) {
     const allTours = layout.tours || [];
     const tours = allTours.filter((t) => isVisible(t.showCondition));
 
@@ -111,7 +112,7 @@ export function registerToolbarTours(objectId, layout, adapter, platform, appId)
         return;
     }
 
-    tourRegistry.set(objectId, { tours, layout });
+    tourRegistry.set(objectId, { tours, layout, getLayout });
 
     // Store adapter/platform/appId so we can rebuild without
     // needing every instance to call again
@@ -164,15 +165,18 @@ function rebuildToolbarButton() {
  * @param {string} [appId] - Application ID from the app context.
  */
 function injectToolbarButton(adapter, platform, appId) {
-    // Merge tours from all registered objects
+    // Merge tours from all registered objects, remembering which object's
+    // layout each one comes from
     const mergedTours = [];
+    const layoutGetters = new Map();
     const seenNames = new Set();
-    for (const { tours } of tourRegistry.values()) {
+    for (const { tours, getLayout } of tourRegistry.values()) {
         for (const tour of tours) {
             const key = tour.tourId || tour.tourName || JSON.stringify(tour);
             if (!seenNames.has(key)) {
                 seenNames.add(key);
                 mergedTours.push(tour);
+                layoutGetters.set(tour, getLayout);
             }
         }
     }
@@ -241,25 +245,32 @@ function injectToolbarButton(adapter, platform, appId) {
     // Build context for starting tours
     const sheetId = adapter.getCurrentSheetId();
     const resolvedAppId = appId || 'unknown';
-    const context = {
+    /**
+     * Build the context for starting a tour.
+     *
+     * @param {object} tour - The tour to start.
+     * @returns {object} Tour start context.
+     */
+    const contextFor = (tour) => ({
         platformType: platform.type,
         senseVersion: platform.version,
         codePath: platform.codePath,
         appId: resolvedAppId,
         sheetId,
         allowedUriPatterns: layout.security?.allowedUriPatterns,
-    };
+        getLayout: layoutGetters.get(tour),
+    });
 
     // -- Click handler --
     if (tours.length === 1) {
         btn.addEventListener('click', () => {
-            startTour(tours[0], context);
+            startTour(tours[0], contextFor(tours[0]));
         });
     } else {
         btn.setAttribute('aria-haspopup', 'true');
         btn.setAttribute('aria-expanded', 'false');
         btn.addEventListener('click', () => {
-            showToolbarMenu(btn, tours, context, cssVars);
+            showToolbarMenu(btn, tours, contextFor, cssVars);
         });
     }
 
@@ -479,10 +490,10 @@ function watchForRemoval() {
  *
  * @param {HTMLElement} trigger - The toolbar button element.
  * @param {Array} tours - Visible tour configurations.
- * @param {object} context - Tour start context.
+ * @param {(tour: object) => object} contextFor - Builds the start context for a tour.
  * @param {object} cssVars - Resolved theme CSS variables.
  */
-function showToolbarMenu(trigger, tours, context, cssVars) {
+function showToolbarMenu(trigger, tours, contextFor, cssVars) {
     // Toggle off if already open
     const existing = document.getElementById('oqs-toolbar-menu');
     if (existing) {
@@ -515,7 +526,7 @@ function showToolbarMenu(trigger, tours, context, cssVars) {
             menu.remove();
             trigger.setAttribute('aria-expanded', 'false');
             removeMenuCloseHandler();
-            startTour(tour, context);
+            startTour(tour, contextFor(tour));
         });
         menu.appendChild(item);
     });
