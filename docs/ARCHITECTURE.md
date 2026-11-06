@@ -50,7 +50,7 @@ graph TD
         end
 
         subgraph "Configuration"
-            EX[ext.js<br/>Property Panel]
+            EX[ext/index.js<br/>Property Panel]
             OP[object-properties.js<br/>Default QAE Properties]
             ST[style.css<br/>All CSS]
         end
@@ -95,7 +95,7 @@ graph TD
 | `tour/tour-io.js`            | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing).                                                                         |
 | `ui/widget-renderer.js`      | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic.                                                                                                                                                    |
 | `ui/tour-editor.js`          | Full-screen modal editor for creating/editing tours and steps in edit mode.                                                                                                                                                                  |
-| `ext.js`                     | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                  |
+| `ext/index.js`               | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                  |
 | `object-properties.js`       | Default QAE properties for new extension instances.                                                                                                                                                                                          |
 | `util/logger.js`             | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`.                                                                                                                                           |
 | `util/markdown.js`           | Minimal Markdown-to-HTML converter for tour step descriptions, with raw HTML blocks as in CommonMark.                                                                                                                                        |
@@ -116,16 +116,16 @@ sequenceDiagram
     participant DJ as driver.js
 
     QS->>EP: component() called
+    EP->>PI: getPlatformAdapter()
+    PI-->>EP: adapter module
     EP->>PI: detectPlatform()
     PI->>AD: getSenseVersion() [client-managed only]
     AD-->>PI: { version, releaseLabel }
     PI-->>EP: { type, version, codePath }
-    EP->>PI: getPlatformAdapter()
-    PI-->>EP: adapter module
     EP->>AD: injectCSS(driverCSS)
-    EP->>AD: getCurrentSheetId()
     EP->>TB: buildTabContainerMap(app, adapter)
     Note over TB: Scan sheet for sn-tabbed-container objects,<br/>populate extensionState.tabContainerMap
+    EP->>AD: getCurrentSheetId()
     EP->>WR: renderWidget(element, layout, context)
     Note over WR: User clicks "Start Tour"
     WR->>TR: runTour(tourConfig, options)
@@ -160,7 +160,8 @@ sequenceDiagram
     Note over TE: Show import dialog (merge mode + theme toggle)
     TE->>IO: mergeTours(existing, imported, mode)
     IO-->>TE: Merged tours array
-    TE->>MD: model.setProperties(updated)
+    Note over TE: Editor shows the merged tours,<br/>nothing is saved yet
+    TE->>MD: model.setProperties(updated) [when Save is clicked]
 ```
 
 ## Data flow: edit mode
@@ -176,12 +177,13 @@ sequenceDiagram
 
     QS->>EP: component() [readOnly=false]
     EP->>WR: renderEditPlaceholder(element, layout)
-    Note over WR: User clicks "Edit Tours"
-    WR->>AD: getSheetObjects(app)
-    AD-->>WR: [{id, title, type}, ...]
-    WR->>TE: openTourEditor({layout, model, sheetObjects})
+    Note over EP: User clicks "Edit Tours"<br/>(the click handler is in index.js)
+    EP->>TE: openTourEditorFor({app, model, layout})
+    TE->>AD: getSheetObjects(app)
+    AD-->>TE: [{id, title, type}, ...]
+    TE->>TE: openTourEditor({layout, model, app, sheetObjects})
     Note over TE: User edits tours/steps
-    TE->>MD: model.setProperties(updatedProps)
+    TE->>MD: model.getProperties(), then setProperties(updatedProps)
     MD-->>QS: Layout updated → component re-renders
 ```
 
@@ -190,31 +192,43 @@ sequenceDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Loading: Extension mounted
-    Loading --> PlatformDetected: detectPlatform() resolves
-    PlatformDetected --> EditMode: options.readOnly === false
-    PlatformDetected --> AnalysisMode: options.readOnly === true
+    Loading --> EditMode: options.readOnly === false, rendered at once
+    Loading --> PlatformDetected: options.readOnly === true, detectPlatform() resolves
+    PlatformDetected --> AnalysisMode
 
     EditMode --> EditPlaceholder: renderEditPlaceholder()
     EditPlaceholder --> TourEditor: "Edit Tours" clicked
     TourEditor --> EditPlaceholder: Modal closed
 
     AnalysisMode --> Widget: renderWidget()
-    Widget --> AutoStart: tour.autoStart && !seen
+    Widget --> AutoStart: autoStart, not yet auto-started this visit, showOnce off or not seen
     Widget --> TourRunning: User clicks button
-    AutoStart --> TourRunning: After 500ms delay
+    AutoStart --> TourRunning: After 500ms, unless another tour is running
     TourRunning --> Widget: Tour completed/closed
 ```
+
+Edit mode doesn't wait for platform detection: `index.js` renders the placeholder straight away. When `options.readOnly` isn't set yet, an `/edit` URL counts as edit mode.
+
+The auto-start rule in full: a tour with **Auto-start** on starts by itself at most once per visit to the sheet. With **Show only once** off it does so on every visit, and with it on only until the user has seen the tour's current version. See [When a tour starts by itself](../README.md#when-a-tour-starts-by-itself) in the README, and [Auto-start tours](TOUR-SYSTEM.md#auto-start-tours) for how a visit is tracked.
 
 ## File tree
 
 ```
 src/
 ├── index.js                  # Supernova entry point
-├── ext.js                    # Property panel definition
 ├── object-properties.js      # Default QAE properties
 ├── style.css                 # All CSS
 ├── data.js                   # Data targets (empty)
 ├── meta.json                 # nebula sense metadata
+├── ext/
+│   ├── index.js              # Property panel definition
+│   ├── tours-section.js      # Tours section, target-object dropdown (getObjectList)
+│   ├── widget-section.js     # Widget Appearance section
+│   ├── theme-section.js      # Theme & Styling section
+│   ├── theme-helpers.js      # Color keys and preset helpers for the theme section
+│   ├── security-section.js   # Security section (URI allowlist)
+│   ├── about-section.js      # About section
+│   └── lui-icons.js          # Lui icons for the button icon picker
 ├── platform/
 │   ├── index.js              # Platform detection & routing
 │   ├── client-managed.js     # Client-managed adapter
@@ -222,6 +236,7 @@ src/
 │   └── selectors.js          # CSS selector registry
 ├── tour/
 │   ├── tour-runner.js        # driver.js integration
+│   ├── tour-helpers.js       # startTour(), auto-start and sheet visits
 │   ├── tour-storage.js       # localStorage tracking
 │   └── tour-io.js            # Tour import/export (JSON, merge modes)
 ├── theme/
@@ -229,12 +244,21 @@ src/
 │   └── presets.js            # Built-in theme presets (4)
 ├── ui/
 │   ├── widget-renderer.js    # Analysis mode widget
-│   └── tour-editor.js        # Edit mode modal editor
+│   ├── toolbar-injector.js   # Tour button in the Sense toolbar
+│   ├── tour-editor.js        # Edit mode modal editor
+│   ├── confirm-discard.js    # Unsaved-changes confirmation dialog
+│   ├── markdown-editor-dialog.js # Property panel's Markdown editor dialog
+│   └── markdown-toolbar.js   # Tabbed Write/Preview Markdown editor
 └── util/
+    ├── css-selector.js       # Checks for step CSS selectors
+    ├── dialog-size.js        # Dialog-size presets for steps
     ├── expressions.js        # Qlik expression values (=expr ↔ qStringExpression)
     ├── extension-state.js    # Shared state (model and app refs, tabContainerMap)
     ├── logger.js             # Build-aware logging
     ├── markdown.js           # Minimal MD→HTML
+    ├── markdown-shortcuts.js # Markdown keyboard shortcuts
+    ├── sanitize.js           # Lui icon name sanitizer
     ├── tab-switcher.js       # Tab container auto-switching
-    └── uuid.js               # UUID v4 generator
+    ├── uuid.js               # UUID v4 generator
+    └── visibility.js         # Show conditions of tours and steps
 ```
