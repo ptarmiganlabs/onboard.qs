@@ -3,7 +3,8 @@ import { hasSeenTour } from './tour-storage';
 import logger from '../util/logger';
 
 /**
- * Start a specific tour.
+ * Start a specific tour. A tour that fails to start is logged, not left as
+ * an unhandled rejection.
  *
  * @param {object} tourConfig - Tour configuration.
  * @param {object} context - Context with platformType, senseVersion, codePath, appId, sheetId,
@@ -19,6 +20,8 @@ export function startTour(tourConfig, context) {
         allowedUriPatterns: context.allowedUriPatterns,
         objectId: context.objectId,
         getLayout: context.getLayout,
+    }).catch((err) => {
+        logger.error(`Tour "${tourConfig.tourName}" could not be started:`, err);
     });
 }
 

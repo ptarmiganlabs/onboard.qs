@@ -7,6 +7,7 @@ import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
 import { extensionState } from '../util/extension-state';
 import { getDialogSize } from '../util/dialog-size';
+import { isValidCssSelector } from '../util/css-selector';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
@@ -71,6 +72,27 @@ function getStepDialogSettings(step) {
 }
 
 /**
+ * Selectors already reported as invalid. A tour that updates its expressions
+ * builds its steps again at every move, and should warn about each once.
+ *
+ * @type {Set<string>}
+ */
+const reportedInvalidSelectors = new Set();
+
+/**
+ * Warn, once per selector, that a step's selector can't be parsed.
+ *
+ * @param {string} selector - The invalid selector.
+ */
+function reportInvalidSelector(selector) {
+    if (reportedInvalidSelectors.has(selector)) return;
+    reportedInvalidSelectors.add(selector);
+    logger.warn(
+        `"${selector}" is not a valid CSS selector, so its step is shown as a dialog without a target`
+    );
+}
+
+/**
  * Build driver.js steps from a tour configuration.
  *
  * @param {object} tourConfig - A single tour from the layout's tours array.
@@ -125,6 +147,13 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         ? step.customCssSelector
                         : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
 
+                // A selector the browser can't parse matches nothing, so the
+                // step shows as a dialog without a target, as for a missing
+                // element. querySelector() would throw instead, which stops
+                // the tour at the step before this one.
+                const selectorUsable = isValidCssSelector(cssSelector);
+                if (!selectorUsable) reportInvalidSelector(cssSelector);
+
                 // For objects inside tab containers, we need to switch to
                 // the correct tab before the element can be found in the DOM.
                 // The sync variant clicks the tab immediately; if Qlik renders
@@ -146,6 +175,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                      * @returns {Element|null} The matching DOM element, or null.
                      */
                     element: () => {
+                        if (!selectorUsable) return null;
                         if (objectId && getTabInfo(objectId)) {
                             ensureTabVisibleSync(objectId, platformType, codePath);
                         }
@@ -516,6 +546,9 @@ export async function runTour(tourConfig, options = {}) {
         }
     };
 
+    // Set when driver.js fails to show the tour, which then doesn't count as seen
+    let startFailed = false;
+
     const driverConfig = {
         steps,
         animate: true,
@@ -547,6 +580,7 @@ export async function runTour(tourConfig, options = {}) {
          * Callback invoked when the driver.js tour is destroyed.
          */
         onDestroyed: () => {
+            if (startFailed) return;
             logger.info(`Tour "${tourConfig.tourName}" completed/closed`);
             // Mark as seen in localStorage
             if (appId && sheetId && tourConfig.tourId) {
@@ -584,8 +618,39 @@ export async function runTour(tourConfig, options = {}) {
     activeTourSheetId = sheetId || null;
     activeTourRefresh =
         reevaluateEachStep && objectId ? { objectId, refresh: refreshShownStep } : null;
-    driverObj.drive();
+    try {
+        driverObj.drive();
+    } catch (err) {
+        startFailed = true;
+        logger.error(`Tour "${tourConfig.tourName}" could not be shown:`, err);
+        abandonTour(driverObj);
+        return null;
+    }
     return driverObj;
+}
+
+/**
+ * Undo what driver.js did to the page for a tour it failed to show.
+ * driver.js puts `driver-active` on `<body>` before it shows the first step,
+ * and its `.driver-active *` rule keeps every click from reaching the sheet
+ * for as long as the class is there.
+ *
+ * @param {object} driverObj - The driver.js instance of the tour.
+ */
+function abandonTour(driverObj) {
+    try {
+        driverObj.destroy();
+    } catch {
+        // The classes driver.js added are removed below either way
+    }
+    if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.remove('driver-active', 'driver-fade', 'driver-simple');
+    }
+    if (activeTour === driverObj) {
+        activeTour = null;
+        activeTourSheetId = null;
+        activeTourRefresh = null;
+    }
 }
 
 /**
@@ -620,6 +685,13 @@ export function highlightStep(step, platformType, codePath) {
         step.selectorType === 'css' && step.customCssSelector
             ? step.customCssSelector
             : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+
+    // querySelector() would throw on it, and the editor, hidden for the
+    // preview, would not come back
+    if (!isValidCssSelector(cssSelector)) {
+        reportInvalidSelector(cssSelector);
+        return null;
+    }
 
     // For objects inside tab containers, switch to the correct tab first
     const objectId = step.selectorType !== 'css' ? step.targetObjectId : null;

@@ -1091,6 +1091,17 @@
     font-size: 11px;
 }
 
+/* Shown under a CSS selector the browser can't parse */
+.onboard-qs-editor__selector-warning {
+    display: block;
+    margin-top: 4px;
+    color: #b3261e;
+}
+
+.onboard-qs-editor__selector-warning[hidden] {
+    display: none;
+}
+
 /* ========================================================================
    Import Dialog
    ======================================================================== */

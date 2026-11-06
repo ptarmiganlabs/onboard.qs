@@ -7,6 +7,7 @@ import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
 import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
 import { wrapIfExpression, extractExpression } from '../util/expressions';
+import { isInvalidSelectorText } from '../util/css-selector';
 
 /**
  * Modal tour editor for edit mode.
@@ -477,8 +478,11 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         // Custom CSS selector input
         const cssSelectorInput = overlay.querySelector('.onboard-qs-editor__step-css-selector');
         if (cssSelectorInput) {
+            const selectorWarning = overlay.querySelector('.onboard-qs-editor__selector-warning');
             cssSelectorInput.addEventListener('input', (e) => {
                 step.customCssSelector = e.target.value;
+                if (selectorWarning)
+                    selectorWarning.hidden = !isInvalidSelectorText(e.target.value);
             });
         }
 
@@ -1074,6 +1078,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-css-selector"
                                value="${escapeAttr(step.customCssSelector || '')}"
                                placeholder="e.g., .qlik-help-button, #my-element" />
+                        <small class="onboard-qs-editor__hint onboard-qs-editor__selector-warning"${isInvalidSelectorText(step.customCssSelector) ? '' : ' hidden'}>This is not a valid CSS selector, so the step will be shown as a dialog without a target.</small>
                     </label>
                     <label class="onboard-qs-editor__field">
                         <span>Popover Title ${infoIcon('Bold heading displayed at the top of the tour step popover.')}</span>

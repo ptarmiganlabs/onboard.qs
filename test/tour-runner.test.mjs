@@ -16,6 +16,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
+import { installFakeDocument } from './support/fake-document.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -42,7 +43,7 @@ before(async () => {
             contents: [
                 `export { runTour, refreshRunningTour } from ${JSON.stringify(runnerPath)};`,
                 `export * from ${JSON.stringify(fakeDriverPath)};`,
-                `export { default as logger } from ${JSON.stringify(stubsPath)};`,
+                `export { default as logger, seen } from ${JSON.stringify(stubsPath)};`,
             ].join('\n'),
             resolveDir: root,
         },
@@ -71,6 +72,7 @@ before(async () => {
 beforeEach(() => {
     runner.reset();
     runner.logger.warnings.length = 0;
+    runner.seen.length = 0;
 });
 
 /**
@@ -536,4 +538,85 @@ test('a custom dialog size is capped at the window', async () => {
     });
     assert.equal(tooBig.width, '1200px');
     assert.equal(tooBig.minHeight, 'min(900px, var(--oqs-popover-max-height))');
+});
+
+test('a step whose CSS selector is invalid has no target, and the tour goes on to it', async () => {
+    const fake = installFakeDocument();
+    try {
+        await runner.runTour(
+            {
+                tourId: 't4',
+                tourName: 'Selectors',
+                steps: [
+                    { selectorType: 'none', popoverTitle: 'First' },
+                    { selectorType: 'css', customCssSelector: '#t4 >', popoverTitle: 'Invalid' },
+                    { selectorType: 'css', customCssSelector: '#target', popoverTitle: 'Valid' },
+                ],
+            },
+            { sheetId: 'sheet1' }
+        );
+        const [, invalid, valid] = runner.currentConfig().steps;
+        // driver.js shows a step whose element() is null as a dialog without a target
+        assert.equal(invalid.element(), null);
+        assert.equal(invalid.element(), null);
+        assert.equal(valid.element(), fake.target);
+        await runner.clickNext();
+        assert.equal(last().title, 'Invalid');
+        await runner.clickNext();
+        assert.equal(last().title, 'Valid');
+        const reports = runner.logger.warnings.filter((w) => w.includes('"#t4 >"'));
+        assert.equal(reports.length, 1);
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('a formula that builds an invalid selector does not stop the tour from starting', async () => {
+    const fake = installFakeDocument();
+    try {
+        // `='#' & Only(Year)` gives #2024 with 2024 selected: an ID can't start with a digit
+        const tour = {
+            tourId: 't5',
+            tourName: 'Formula selector',
+            steps: [{ selectorType: 'css', customCssSelector: '#2024', popoverTitle: 'Year' }],
+        };
+        const started = await runner.runTour(tour, { sheetId: 'sheet1' });
+        assert.ok(started, 'the tour starts');
+        assert.equal(runner.currentConfig().steps[0].element(), null);
+        assert.equal(last().title, 'Year');
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('a tour that driver.js fails to show leaves the page usable and is not marked as seen', async () => {
+    const fake = installFakeDocument();
+    try {
+        runner.failNextDrive(new Error('could not render the first step'));
+        const result = await runner.runTour(
+            {
+                tourId: 't6',
+                tourName: 'Broken',
+                steps: [{ selectorType: 'none', popoverTitle: 'Never' }],
+            },
+            { appId: 'app1', sheetId: 'sheet1' }
+        );
+        assert.equal(result, null);
+        // Without this, driver.js's `.driver-active *` rule keeps every click from the sheet
+        assert.ok(fake.removedClasses.includes('driver-active'));
+        assert.deepEqual(runner.seen, []);
+
+        // The failed tour doesn't count as running, so another one can start
+        await runner.runTour(
+            {
+                tourId: 't7',
+                tourName: 'Next one',
+                steps: [{ selectorType: 'none', popoverTitle: 'Shown' }],
+            },
+            { appId: 'app1', sheetId: 'sheet1' }
+        );
+        assert.equal(last().title, 'Shown');
+    } finally {
+        fake.uninstall();
+    }
 });

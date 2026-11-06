@@ -44,8 +44,17 @@ export const detectPlatformType = () => 'client-managed';
  */
 export const getPlatformAdapter = () => ({ getCurrentSheetId: () => 'sheet1' });
 
-/** Do nothing instead of writing to localStorage. */
-export const markTourSeen = () => {};
+/** @type {Array<Array<any>>} The arguments of each markTourSeen() call, oldest first. */
+export const seen = [];
+
+/**
+ * Record that a tour was marked as seen, instead of writing to localStorage.
+ *
+ * @param {...any} args - App ID, sheet ID, tour ID and tour version.
+ */
+export const markTourSeen = (...args) => {
+    seen.push(args);
+};
 
 /**
  * Report that no object is inside a tab container.

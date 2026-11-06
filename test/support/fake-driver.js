@@ -20,6 +20,8 @@ export const shown = [];
 let config = {};
 let state = {};
 let current = null;
+/** @type {Error|null} Thrown by the next drive(), set by failNextDrive(). */
+let driveFailure = null;
 
 /**
  * End the running tour, as driver.js's destroy() does.
@@ -73,12 +75,28 @@ export function driver(initialConfig) {
         moveTo: show,
         drive: (index = 0) => {
             state.active = true;
+            if (driveFailure) {
+                const error = driveFailure;
+                driveFailure = null;
+                throw error;
+            }
             show(index);
         },
         destroy,
     };
     current = instance;
     return instance;
+}
+
+/**
+ * Make the next drive() throw, after it has marked the tour active, as
+ * driver.js does when showing the first step fails after it has set up the
+ * page for the tour.
+ *
+ * @param {Error} error - What drive() throws.
+ */
+export function failNextDrive(error) {
+    driveFailure = error;
 }
 
 /**
