@@ -87,7 +87,8 @@ There are two places to configure all this, and they edit the same settings:
 - **The property panel**, under **Tours**, **Widget Appearance** and **Theme & Styling**.
 - **The tour editor.** In edit mode the object shows an **Edit Tours** button, which opens a larger
   editor with a Markdown editor for step texts, and **Export** and **Import** buttons for moving tours
-  between apps.
+  between apps. **Open tour editor**, at the top of the property panel's **Tours** section, opens it
+  too, which helps when the object is too small to show its button.
 
 Step descriptions are Markdown, and can mix in HTML. Text fields such as tour names, step titles, step
 descriptions and button labels also take **Qlik expressions**: start the value with `=`, the same as
@@ -395,11 +396,12 @@ a Markdown numbered list with an HTML `<img>` tag:
 ```
 
 It's an HTML tag rather than Markdown's `![…](…)` because of the `max-height`. The dialog sizes set a
-minimum size, but nothing stops a dialog from growing taller than the browser window, and step dialogs
-don't scroll. A full-width screenshot can push the step buttons off the bottom of a short window. So:
-keep long texts out of tours, prefer **Dialog size** _Dynamic (fit content)_, and cap image heights.
-Keeping popovers inside the window is requested in
-[ptarmiganlabs/onboard.qs#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281).
+minimum size. A full-width screenshot can make a dialog taller than a short browser window. From
+Onboard.qs 1.10.0 the dialog then stays inside the window and its description scrolls
+([ptarmiganlabs/onboard.qs#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)). Before
+that, the step buttons ended up off the bottom of the window. Either way, a step that has to be
+scrolled is harder to read. So: keep long texts out of tours, prefer **Dialog size** _Dynamic (fit
+content)_, and cap image heights.
 
 ---
 
@@ -509,7 +511,9 @@ selection.
   version to show it again.
 - **Expressions are evaluated when the tour starts**, unless the tour has **Update expressions at each
   step** on ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280), from 1.9.0).
-- **Step dialogs don't scroll.** Keep texts short, prefer _Dynamic (fit content)_, and cap image heights
+- **Tall step dialogs scroll** from 1.10.0: the description scrolls and the buttons stay in view. In
+  1.9.0 and earlier the buttons end up off the bottom of the window. Either way, keep texts short,
+  prefer _Dynamic (fit content)_, and cap image heights
   ([#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)).
 - **Selectors for Sense's own UI can break.** Titles change with the UI language, and generated classes
   with the Sense version. Use `id`, `data-tid`, `data-testid` and `tid` attributes, and run your tours

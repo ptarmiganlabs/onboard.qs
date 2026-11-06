@@ -82,7 +82,7 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 
 ### Create Your First Tour
 
-1. With the extension on a sheet, click **Edit Tours** (or use the property panel).
+1. With the extension on a sheet, click **Edit Tours** on the object, or **Open tour editor** at the top of the property panel's **Tours** section. The panel button also works when the object is too small to show its own.
 2. Click **+ Add Tour**, give it a name.
 3. Click **+ Add Step**, select a target object from the dropdown (or switch to **Custom CSS Selector** for non-object elements).
 4. Enter a title and description (Markdown supported).
@@ -201,6 +201,8 @@ Every step type has a dialog size: standalone dialogs and popovers attached to a
 | Custom      | User-specified width × height        |
 
 A step saved without a size renders as **Medium** if it is a standalone dialog and **Dynamic** if it is attached to a target, as it did before sizes applied to attached steps.
+
+The height is a minimum. A dialog never grows bigger than the browser window, though: in a narrower window it gets narrower, and when its content doesn't fit, the description scrolls and the title and buttons stay in view.
 
 When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
 

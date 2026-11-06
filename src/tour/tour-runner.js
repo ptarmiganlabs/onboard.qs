@@ -31,31 +31,43 @@ function clampDialogDimension(value, fallback, min, max) {
 /**
  * Build dialog size settings for a step popover.
  *
+ * Every popover gets an `onPopoverRender`, because driver.js shows each
+ * popover with an inline `display: block`. The flex layout that keeps a
+ * tall popover inside the window (see `.driver-popover.onboard-qs-popover`
+ * in style.css) can only replace it inline.
+ *
  * @param {object} step - Step configuration from tour config.
- * @returns {{popoverClass: string, onPopoverRender?: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
+ * @returns {{popoverClass: string, onPopoverRender: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
  */
 function getStepDialogSettings(step) {
     const size = getDialogSize(step);
-    const settings = {
+    const custom =
+        size === 'custom'
+            ? {
+                  width: clampDialogDimension(step.customDialogWidth, 500, 200, 1200),
+                  height: clampDialogDimension(step.customDialogHeight, 350, 100, 900),
+              }
+            : null;
+    return {
         popoverClass: `onboard-qs-popover onboard-qs-dialog-${size}`,
-    };
-    if (size === 'custom') {
-        const width = clampDialogDimension(step.customDialogWidth, 500, 200, 1200);
-        const height = clampDialogDimension(step.customDialogHeight, 350, 100, 900);
         /**
-         * Apply custom size to the rendered driver.js popover.
+         * Lay out the rendered driver.js popover and apply a custom size.
          *
          * @param {{wrapper?: HTMLElement}} popover - The rendered popover object.
          */
-        settings.onPopoverRender = (popover) => {
-            if (popover?.wrapper) {
-                popover.wrapper.style.width = `${width}px`;
-                popover.wrapper.style.maxWidth = `${width}px`;
-                popover.wrapper.style.minHeight = `${height}px`;
+        onPopoverRender: (popover) => {
+            if (!popover?.wrapper) return;
+            popover.wrapper.style.display = 'flex';
+            if (custom) {
+                // Capped at the window, as the presets are: a minimum height
+                // or a width bigger than the window would push the buttons
+                // out of view again
+                popover.wrapper.style.width = `${custom.width}px`;
+                popover.wrapper.style.maxWidth = `min(${custom.width}px, var(--oqs-popover-max-width))`;
+                popover.wrapper.style.minHeight = `min(${custom.height}px, var(--oqs-popover-max-height))`;
             }
-        };
-    }
-    return settings;
+        },
+    };
 }
 
 /**
@@ -103,8 +115,8 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                         popoverClass,
+                        onPopoverRender,
                     };
-                    if (onPopoverRender) popoverConfig.onPopoverRender = onPopoverRender;
                     return { popover: popoverConfig, _configIndex: configIndex };
                 }
 
@@ -145,7 +157,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                         popoverClass,
-                        ...(onPopoverRender ? { onPopoverRender } : {}),
+                        onPopoverRender,
                     },
                     disableActiveInteraction: step.disableInteraction !== false,
                     // Custom metadata — used by onNextClick/onPrevClick to
@@ -588,11 +600,10 @@ export function highlightStep(step, platformType, codePath) {
     const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
     // Standalone dialog — no element to highlight
     if (step.selectorType === 'none') {
-        const driverConfig = {
+        const driverObj = driver({
             popoverClass,
-        };
-        if (onPopoverRender) driverConfig.onPopoverRender = onPopoverRender;
-        const driverObj = driver(driverConfig);
+            onPopoverRender,
+        });
         driverObj.highlight({
             popover: {
                 title: stripHtml(step.popoverTitle || '(No title)'),
@@ -631,7 +642,7 @@ export function highlightStep(step, platformType, codePath) {
                 popoverClass,
                 stagePadding: 8,
                 stageRadius: 5,
-                ...(onPopoverRender ? { onPopoverRender } : {}),
+                onPopoverRender,
             });
 
             // Fire-and-forget: wait for element, then highlight
@@ -665,7 +676,7 @@ export function highlightStep(step, platformType, codePath) {
         popoverClass,
         stagePadding: 8,
         stageRadius: 5,
-        ...(onPopoverRender ? { onPopoverRender } : {}),
+        onPopoverRender,
     });
 
     driverObj.highlight({

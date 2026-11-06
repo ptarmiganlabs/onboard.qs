@@ -1,11 +1,12 @@
 import logger from '../util/logger';
 import { generateUUID } from '../util/uuid';
 import { highlightStep, destroyTour } from '../tour/tour-runner';
-import { detectPlatformType } from '../platform/index';
+import { detectPlatformType, getPlatformAdapter } from '../platform/index';
 import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io';
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
 import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
+import { wrapIfExpression, extractExpression } from '../util/expressions';
 
 /**
  * Modal tour editor for edit mode.
@@ -41,67 +42,6 @@ const STEP_EXPR_FIELDS = [
     'customCssSelector',
     'showCondition',
 ];
-
-/**
- * Wrap a string value starting with '=' in qStringExpression format
- * so that Qlik Sense evaluates it as a Dollar Sign Expansion expression.
- *
- * Non-string or non-expression values are returned unchanged.
- *
- * @param {string|number|boolean|object|null|undefined} value - Property value to check.
- *
- * @returns {object|string|number|boolean|null|undefined} Wrapped expression object, or the original value.
- */
-function wrapIfExpression(value) {
-    if (typeof value === 'string' && value.startsWith('=')) {
-        return { qStringExpression: value };
-    }
-    return value;
-}
-
-/**
- * Extract the raw expression string from a qStringExpression object.
- *
- * Handles both `{ qStringExpression: "=expr" }` and
- * `{ qStringExpression: { qExpr: "=expr" } }` formats.
- * Non-expression values are returned unchanged.
- *
- * @param {string|object|null|undefined} value - Property value that may be a qStringExpression object.
- *
- * @returns {string|object|null|undefined} The expression string, or the original value.
- */
-function unwrapExpression(value) {
-    if (value && typeof value === 'object') {
-        if (typeof value.qStringExpression === 'string') {
-            return value.qStringExpression;
-        }
-        if (value.qStringExpression && typeof value.qStringExpression.qExpr === 'string') {
-            return value.qStringExpression.qExpr;
-        }
-    }
-    return value;
-}
-
-/**
- * Check whether a property value is a qStringExpression object and, if so,
- * return the expression string with a leading '=' (the form the user typed
- * in the property panel).  Returns null for non-expression values.
- *
- * Qlik strips the leading '=' when it stores the expression internally as
- * `{ qStringExpression: { qExpr: "$(var)" } }`, so we re-add it here.
- *
- * @param {string|object|null|undefined} value - Raw property value.
- * @returns {string|null} Expression string prefixed with '=', or null.
- */
-function extractExpression(value) {
-    if (value && typeof value === 'object' && value.qStringExpression != null) {
-        const raw = unwrapExpression(value);
-        if (typeof raw === 'string') {
-            return raw.startsWith('=') ? raw : '=' + raw;
-        }
-    }
-    return null;
-}
 
 /**
  * Wrap '='-prefixed string values in qStringExpression format
@@ -163,6 +103,36 @@ function overlayExpressions(editorTours, propTours) {
 
 let currentHighlight = null;
 let activePreviewCleanup = null;
+
+/**
+ * Open the tour editor for an Onboard.qs object, with the objects on the
+ * current sheet to choose step targets from. Used by the object's own Edit
+ * Tours button and by the property panel.
+ *
+ * @param {object} params - Parameters.
+ * @param {object} params.app - Enigma app.
+ * @param {object} params.model - Enigma model of the Onboard.qs object.
+ * @param {object} [params.layout] - The object's current layout. Read from the model when not given.
+ * @returns {Promise<void>} Resolves once the editor is open.
+ */
+export async function openTourEditorFor({ app, model, layout }) {
+    const [sheetObjects, currentLayout] = await Promise.all([
+        getPlatformAdapter().getSheetObjects(app),
+        layout ?? model.getLayout(),
+    ]);
+    await openTourEditor({
+        layout: currentLayout,
+        model,
+        app,
+        sheetObjects,
+        /**
+         * Callback when the tour editor is closed.
+         */
+        onClose: () => {
+            logger.debug('Tour editor closed');
+        },
+    });
+}
 
 /**
  * Open the tour editor modal.

@@ -849,7 +849,12 @@
    Driver.js Theme Overrides (Qlik Sense visual consistency)
    ======================================================================== */
 
-.onboard-qs-popover {
+/* driver.js's CSS is injected after this file, and its
+   `.driver-popover { all: unset; ... }` beats a single-class rule here, so
+   the popover's own rules need the compound selector. */
+.driver-popover.onboard-qs-popover {
+    --oqs-popover-max-width: calc(100vw - 32px);
+    --oqs-popover-max-height: calc(100vh - 32px);
     font-family: var(
         --oqs-font-family,
         'QlikView Sans',
@@ -859,42 +864,76 @@
         Verdana,
         sans-serif
     );
-    max-width: 380px;
+    max-width: min(380px, var(--oqs-popover-max-width));
     background: var(--oqs-popover-bg, #fff);
     border-radius: var(--oqs-popover-border-radius, 4px);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Stay inside the window: a tall description scrolls while the title
+       and the buttons stay in view. tour-runner.js sets display: flex
+       inline, replacing the display: block that driver.js sets there. */
+    max-height: var(--oqs-popover-max-height);
+    flex-direction: column;
+}
+
+/* On phones and tablets 100vh includes the area behind the browser's
+   toolbars; 100dvh is the part that is visible */
+@supports (height: 100dvh) {
+    .driver-popover.onboard-qs-popover {
+        --oqs-popover-max-height: calc(100dvh - 32px);
+    }
+}
+
+/* driver.js sets a font on every element in the popover */
+.driver-popover.onboard-qs-popover * {
+    font-family: inherit;
+}
+
+/* The arrow is drawn by its one visible border; give it the background */
+.driver-popover.onboard-qs-popover .driver-popover-arrow-side-left {
+    border-left-color: var(--oqs-popover-bg, #fff);
+}
+.driver-popover.onboard-qs-popover .driver-popover-arrow-side-right {
+    border-right-color: var(--oqs-popover-bg, #fff);
+}
+.driver-popover.onboard-qs-popover .driver-popover-arrow-side-top {
+    border-top-color: var(--oqs-popover-bg, #fff);
+}
+.driver-popover.onboard-qs-popover .driver-popover-arrow-side-bottom {
+    border-bottom-color: var(--oqs-popover-bg, #fff);
 }
 
 /* Step dialog size presets — compound selectors override
-   both driver.js's max-width:300px and our base max-width:380px */
+   both driver.js's max-width:300px and our base max-width:380px.
+   Both sizes are capped at the window: a min-height wins over max-height,
+   and a width would run off the side of a narrow window. */
 .onboard-qs-popover.onboard-qs-dialog-dynamic {
-    max-width: 480px;
+    max-width: min(480px, var(--oqs-popover-max-width));
     width: auto;
 }
 
 .onboard-qs-popover.onboard-qs-dialog-small {
     width: 320px;
-    max-width: 320px;
-    min-height: 220px;
+    max-width: min(320px, var(--oqs-popover-max-width));
+    min-height: min(220px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-medium {
     width: 480px;
-    max-width: 480px;
-    min-height: 320px;
+    max-width: min(480px, var(--oqs-popover-max-width));
+    min-height: min(320px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-large {
     width: 640px;
-    max-width: 640px;
-    min-height: 420px;
+    max-width: min(640px, var(--oqs-popover-max-width));
+    min-height: min(420px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-x-large {
     width: 800px;
-    max-width: 800px;
-    min-height: 520px;
+    max-width: min(800px, var(--oqs-popover-max-width));
+    min-height: min(520px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-custom {
@@ -911,6 +950,29 @@
     font-size: var(--oqs-popover-font-size, 13px);
     color: var(--oqs-popover-text, #555);
     line-height: 1.5;
+    min-height: 0;
+    /* Content too tall, or too wide, scrolls inside the popover. The 2px
+       on either side keep focus outlines and shadows from being cut off. */
+    overflow: auto;
+    padding-inline: 2px;
+    margin-inline: -2px;
+}
+
+/* The description scrolls, so its children's outer margins no longer
+   collapse into the gaps around it: 5px to the title (driver.js) and 10px
+   to the buttons (the footer rule below). Where those gaps are there, drop
+   the smaller margins they used to absorb. Headings keep theirs, and a
+   margin set in a step's own HTML wins over both rules. */
+.onboard-qs-popover
+    .driver-popover-title[style*='block']
+    + .driver-popover-description
+    > :first-child:not(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0;
+}
+.onboard-qs-popover
+    .driver-popover-description:has(+ .driver-popover-footer[style*='flex'])
+    > :last-child {
+    margin-bottom: 0;
 }
 
 .onboard-qs-popover .driver-popover-footer {
@@ -1547,6 +1609,14 @@
 
 .oqs-md-editor-btn--save:hover {
     background: #007a37;
+}
+
+/* Left of the buttons, when a save failed */
+.oqs-md-editor-error {
+    margin-right: auto;
+    align-self: center;
+    font-size: 12px;
+    color: #dc2626;
 }
 
 /* =========================================================================
