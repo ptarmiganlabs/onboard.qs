@@ -6,7 +6,7 @@ import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
 import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
-import { wrapExpressions, overlayExpressions } from '../util/expressions';
+import { wrapExpressions, overlayExpressions, readNumberOrFormula } from '../util/expressions';
 import { isInvalidSelectorText } from '../util/css-selector';
 
 /**
@@ -18,18 +18,39 @@ import { isInvalidSelectorText } from '../util/css-selector';
  */
 
 /**
- * Read one of the editor's number fields. Like the property panel's, these
- * take a number or a formula: text starting with '=' is kept as typed, and
- * saved as a formula.
+ * The default and range of each of the editor's number fields: the property
+ * panel's defaults, and the limits the tour runner applies.
  *
- * @param {string} text - The field's text.
- * @param {number} fallback - Value for text that is neither a formula nor a number.
- * @returns {number|string} The number, or the formula as typed.
+ * @type {Record<string, {fallback: number, min: number, max?: number}>}
  */
-function readNumberField(text, fallback) {
-    const value = text.trim();
-    if (value.startsWith('=')) return value;
-    return parseInt(value, 10) || fallback;
+const NUMBER_FIELDS = {
+    overlayOpacity: { fallback: 60, min: 0, max: 100 },
+    stagePadding: { fallback: 8, min: 0 },
+    stageRadius: { fallback: 5, min: 0 },
+    customDialogWidth: { fallback: 500, min: 200, max: 1200 },
+    customDialogHeight: { fallback: 350, min: 100, max: 900 },
+};
+
+/**
+ * Keep one of the editor's number fields and the tour or step it edits in
+ * step. Each change is read with readNumberOrFormula(). On leaving the field,
+ * it shows the number that will be saved, so a number out of range, or text
+ * that isn't one, is seen to be replaced.
+ *
+ * @param {HTMLInputElement|null} input - The field, if it is shown.
+ * @param {object} target - The tour or step the field edits.
+ * @param {string} key - The property the field edits, a key of NUMBER_FIELDS.
+ */
+function bindNumberField(input, target, key) {
+    if (!input) return;
+    const range = NUMBER_FIELDS[key];
+    input.addEventListener('input', (e) => {
+        target[key] = readNumberOrFormula(e.target.value, range);
+    });
+    input.addEventListener('change', (e) => {
+        const value = readNumberOrFormula(e.target.value, range);
+        if (typeof value === 'number') e.target.value = String(value);
+    });
 }
 
 let currentHighlight = null;
@@ -461,19 +482,16 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         }
 
-        const customWidthInput = overlay.querySelector('.onboard-qs-editor__step-custom-width');
-        if (customWidthInput) {
-            customWidthInput.addEventListener('input', (e) => {
-                step.customDialogWidth = readNumberField(e.target.value, 500);
-            });
-        }
-
-        const customHeightInput = overlay.querySelector('.onboard-qs-editor__step-custom-height');
-        if (customHeightInput) {
-            customHeightInput.addEventListener('input', (e) => {
-                step.customDialogHeight = readNumberField(e.target.value, 350);
-            });
-        }
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__step-custom-width'),
+            step,
+            'customDialogWidth'
+        );
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__step-custom-height'),
+            step,
+            'customDialogHeight'
+        );
 
         const interactionCheck = overlay.querySelector('.onboard-qs-editor__step-interaction');
         if (interactionCheck) {
@@ -557,28 +575,21 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         }
 
-        const overlayOpacityInput = overlay.querySelector(
-            '.onboard-qs-editor__tour-overlay-opacity'
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-overlay-opacity'),
+            tour,
+            'overlayOpacity'
         );
-        if (overlayOpacityInput) {
-            overlayOpacityInput.addEventListener('input', (e) => {
-                tour.overlayOpacity = readNumberField(e.target.value, 0);
-            });
-        }
-
-        const stagePaddingInput = overlay.querySelector('.onboard-qs-editor__tour-stage-padding');
-        if (stagePaddingInput) {
-            stagePaddingInput.addEventListener('input', (e) => {
-                tour.stagePadding = readNumberField(e.target.value, 0);
-            });
-        }
-
-        const stageRadiusInput = overlay.querySelector('.onboard-qs-editor__tour-stage-radius');
-        if (stageRadiusInput) {
-            stageRadiusInput.addEventListener('input', (e) => {
-                tour.stageRadius = readNumberField(e.target.value, 0);
-            });
-        }
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-stage-padding'),
+            tour,
+            'stagePadding'
+        );
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-stage-radius'),
+            tour,
+            'stageRadius'
+        );
 
         // Navigation button text
         const nextBtnInput = overlay.querySelector('.onboard-qs-editor__tour-next-btn');

@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 import {
     extractValueExpression,
     overlayExpressions,
+    readNumberOrFormula,
     wrapExpressions,
     wrapIfValueExpression,
 } from '../src/util/expressions.js';
@@ -139,4 +140,30 @@ test('a formula typed in the editor is saved as a formula, and a number replaces
     assert.deepEqual(saved.steps[0].customDialogHeight, {
         qValueExpression: { qExpr: '300 + 100' },
     });
+});
+
+/** The tour editor's Overlay opacity field: default 60, from 0 to 100. */
+const opacity = { fallback: 60, min: 0, max: 100 };
+
+test('a number typed into an editor field is kept within its range', () => {
+    assert.equal(readNumberOrFormula('75', opacity), 75);
+    assert.equal(readNumberOrFormula('  75 ', opacity), 75);
+    assert.equal(readNumberOrFormula('0', opacity), 0);
+    assert.equal(readNumberOrFormula('500', opacity), 100);
+    assert.equal(readNumberOrFormula('-20', { fallback: 8, min: 0 }), 0);
+    assert.equal(readNumberOrFormula('5000', { fallback: 500, min: 200, max: 1200 }), 1200);
+});
+
+test('an empty field, or text that is not a number, gives the default', () => {
+    assert.equal(readNumberOrFormula('', opacity), 60);
+    assert.equal(readNumberOrFormula('dark', opacity), 60);
+});
+
+test('a formula is kept as typed, but a lone "=" is not saved as an empty formula', () => {
+    assert.equal(readNumberOrFormula('=20+10', opacity), '=20+10');
+    assert.equal(readNumberOrFormula(' =20+10 ', opacity), '=20+10');
+    assert.equal(readNumberOrFormula('=', opacity), 60);
+    assert.equal(readNumberOrFormula('=   ', opacity), 60);
+    // So wrapExpressions() never stores { qValueExpression: { qExpr: '' } }
+    assert.equal(wrapIfValueExpression(readNumberOrFormula('=', opacity)), 60);
 });

@@ -130,6 +130,29 @@ export function wrapIfValueExpression(value) {
 }
 
 /**
+ * Read what was typed into one of the tour editor's number fields. Like the
+ * property panel's, they take a number or a formula.
+ *
+ * - Text starting with '=' is kept as typed, to be saved as a formula. If
+ *   nothing follows the '=', as when typing has only just started, it gives
+ *   the fallback instead, so an empty formula is never saved.
+ * - A number is kept within the field's range.
+ * - Anything else, an empty field included, gives the fallback.
+ *
+ * @param {string} text - The field's text.
+ * @param {{fallback: number, min: number, max?: number}} range - The field's default, and the
+ *   smallest and largest numbers it takes.
+ * @returns {number|string} The number, or the formula as typed.
+ */
+export function readNumberOrFormula(text, { fallback, min, max = Infinity }) {
+    const value = text.trim();
+    if (value.startsWith('=')) return value.slice(1).trim() === '' ? fallback : value;
+    const number = parseInt(value, 10);
+    if (Number.isNaN(number)) return fallback;
+    return Math.min(max, Math.max(min, number));
+}
+
+/**
  * Check whether a number property's value is an expression and, if so,
  * return it as the property panel shows it, with a leading '='. Returns
  * null for a number or any other value.
