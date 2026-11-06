@@ -57,6 +57,13 @@ export const markTourSeen = (...args) => {
 };
 
 /**
+ * Report that no tour has been seen.
+ *
+ * @returns {boolean} Always false.
+ */
+export const hasSeenTour = () => false;
+
+/**
  * Report that no object is inside a tab container.
  *
  * @returns {null} No tab container.
@@ -73,12 +80,20 @@ export const ensureTabVisibleSync = () => {};
  */
 export const ensureTabVisible = async () => null;
 
-/** Logger that keeps warnings, so tests can check them. */
+/** Logger that keeps warnings and errors, so tests can check them. */
 const logger = {
     warnings: [],
+    errors: [],
     info() {},
     debug() {},
-    error() {},
+    /**
+     * Keep an error.
+     *
+     * @param {...any} args - Error message and details.
+     */
+    error(...args) {
+        logger.errors.push(args.join(' '));
+    },
     /**
      * Keep a warning.
      *

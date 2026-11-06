@@ -22,6 +22,8 @@ let state = {};
 let current = null;
 /** @type {Error|null} Thrown by the next drive(), set by failNextDrive(). */
 let driveFailure = null;
+/** @type {Error|null} Thrown by the next moveTo(), set by failNextMove(). */
+let moveFailure = null;
 
 /**
  * End the running tour, as driver.js's destroy() does.
@@ -72,7 +74,14 @@ export function driver(initialConfig) {
         setConfig: (next) => {
             config = { ...next };
         },
-        moveTo: show,
+        moveTo: (index) => {
+            if (moveFailure) {
+                const error = moveFailure;
+                moveFailure = null;
+                throw error;
+            }
+            show(index);
+        },
         drive: (index = 0) => {
             state.active = true;
             if (driveFailure) {
@@ -97,6 +106,15 @@ export function driver(initialConfig) {
  */
 export function failNextDrive(error) {
     driveFailure = error;
+}
+
+/**
+ * Make the next moveTo() throw, as driver.js does when showing a step fails.
+ *
+ * @param {Error} error - What moveTo() throws.
+ */
+export function failNextMove(error) {
+    moveFailure = error;
 }
 
 /**
