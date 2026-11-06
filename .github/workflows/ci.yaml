@@ -116,15 +116,18 @@ jobs:
 
                   test -s "${SBOM_FILE}" || { echo "SBOM file missing or empty"; exit 1; }
 
+            # Upload the files without updating the release itself. Updating a
+            # release makes GitHub pick its "Latest" release again, and GitHub
+            # ranks onboard-qs-v1.9.0 above onboard-qs-v1.10.0. gh finds
+            # release-please's draft release by its tag.
             - name: Upload release artifacts
-              uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-              with:
-                  allowUpdates: true
-                  omitBodyDuringUpdate: true
-                  omitNameDuringUpdate: true
-                  omitDraftDuringUpdate: true
-                  tag: ${{ needs.release-please.outputs.release_tag_name }}
-                  token: ${{ secrets.RELEASE_PLEASE_PAT }}
-                  artifacts: |
-                      ${{ env.DIST_FILE_NAME }}-v${{ needs.release-please.outputs.release_version }}.zip
-                      ${{ env.DIST_FILE_NAME }}-v${{ needs.release-please.outputs.release_version }}.sbom.cdx.json
+              env:
+                  GH_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+                  RELEASE_TAG: ${{ needs.release-please.outputs.release_tag_name }}
+                  RELEASE_VERSION: ${{ needs.release-please.outputs.release_version }}
+              run: |
+                  gh release upload "${RELEASE_TAG}" \
+                      "${DIST_FILE_NAME}-v${RELEASE_VERSION}.zip" \
+                      "${DIST_FILE_NAME}-v${RELEASE_VERSION}.sbom.cdx.json" \
+                      --repo "${GITHUB_REPOSITORY}" \
+                      --clobber
