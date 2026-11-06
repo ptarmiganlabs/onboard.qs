@@ -2,6 +2,7 @@ import logger from '../util/logger';
 import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
 import { extensionState } from '../util/extension-state';
 import { DIALOG_SIZE_OPTIONS } from '../util/dialog-size';
+import { extractExpression, wrapIfExpression } from '../util/expressions';
 import { openTourEditor } from '../ui/tour-editor';
 import { getPlatformAdapter } from '../platform/index';
 
@@ -517,19 +518,14 @@ export function toursSection() {
                                                  */
                                                 action(item, handler) {
                                                     const location = findStepInPanel(item, handler);
-                                                    // popoverDescription can be a Qlik expression object when
-                                                    // the field value is set to a formula (expression: 'optional').
-                                                    // Normalise it to a plain string before opening the editor.
-                                                    let descValue = item.popoverDescription;
-                                                    if (
-                                                        descValue !== null &&
-                                                        typeof descValue === 'object'
-                                                    ) {
-                                                        descValue =
-                                                            descValue?.qStringExpression?.qExpr ??
-                                                            String(descValue);
-                                                    }
-                                                    descValue = descValue || '';
+                                                    // popoverDescription is a Qlik expression object when
+                                                    // the field is set to a formula (expression: 'optional').
+                                                    // Edit it as '=expr', as the panel and the tour editor
+                                                    // show it, and save text starting with '=' as one.
+                                                    const desc = item.popoverDescription;
+                                                    const descValue =
+                                                        extractExpression(desc) ??
+                                                        (typeof desc === 'string' ? desc : '');
                                                     openMarkdownEditorDialog({
                                                         title: 'Edit Popover Description',
                                                         value: descValue,
@@ -537,12 +533,13 @@ export function toursSection() {
                                                          * Persist the edited text.
                                                          *
                                                          * @param {string} text - Updated Markdown text.
+                                                         * @returns {Promise<boolean>} Whether it was saved.
                                                          */
                                                         onSave(text) {
-                                                            persistStepProperty(
+                                                            return persistStepProperty(
                                                                 { handler, location, item },
                                                                 'popoverDescription',
-                                                                text
+                                                                wrapIfExpression(text)
                                                             );
                                                         },
                                                     });
@@ -780,6 +777,19 @@ function findStepInPanel(item, handler) {
 }
 
 /**
+ * The step fields isSameStep compares, with the defaults the property panel
+ * shows for them when a stored step has none.
+ *
+ * @type {{[key: string]: string}}
+ */
+const STEP_IDENTITY_DEFAULTS = {
+    selectorType: 'object',
+    targetObjectId: '',
+    customCssSelector: '',
+    popoverTitle: '',
+};
+
+/**
  * Check that a stored step is the one the property panel showed, in case
  * the tours changed after the panel read them.
  *
@@ -789,56 +799,88 @@ function findStepInPanel(item, handler) {
  */
 function isSameStep(stored, item) {
     if (stored.cId && item.cId) return stored.cId === item.cId;
-    return ['selectorType', 'targetObjectId', 'customCssSelector', 'popoverTitle'].every(
-        (key) => JSON.stringify(stored[key] ?? '') === JSON.stringify(item[key] ?? '')
+    return Object.entries(STEP_IDENTITY_DEFAULTS).every(
+        ([key, fallback]) =>
+            JSON.stringify(stored[key] ?? fallback) === JSON.stringify(item[key] ?? fallback)
     );
+}
+
+/**
+ * Find a step by its stored `cId`, in any tour.
+ *
+ * @param {object} props - The object's stored properties.
+ * @param {string} [cId] - The step's cId.
+ * @returns {object|null} The stored step, or null.
+ */
+function findStepByCId(props, cId) {
+    if (!cId) return null;
+    for (const tour of props.tours || []) {
+        const step = (tour.steps || []).find((s) => s.cId === cId);
+        if (step) return step;
+    }
+    return null;
+}
+
+/**
+ * Find the stored step the property panel showed: at its position in the
+ * panel's copy, or, when the tours changed since and the step has a stored
+ * `cId`, wherever that is now.
+ *
+ * @param {object} props - The object's stored properties.
+ * @param {{tourIndex: number, stepIndex: number}} location - Position, from findStepInPanel().
+ * @param {object} item - Step from the panel's copy.
+ * @returns {object|null} The stored step, or null.
+ */
+function findStoredStep(props, location, item) {
+    const atPosition = props.tours?.[location.tourIndex]?.steps?.[location.stepIndex];
+    if (atPosition && isSameStep(atPosition, item)) return atPosition;
+    return findStepByCId(props, item.cId);
 }
 
 /**
  * Persist a single step-level property change via the Enigma model.
  *
- * With the property panel's handler, updates the step at its position in
+ * With the property panel's handler, updates the step the panel showed in
  * the stored tours of the panel's object. Without one, finds the step by
  * its `cId` in the object rendered last.
+ *
+ * The change is written through the object's own model rather than through
+ * the panel, whose way of saving Sense doesn't document. The panel reads it
+ * back from the object, as it does after any other change.
  *
  * @param {object} target - The step to change.
  * @param {object} [target.handler] - The property panel's handler.
  * @param {{tourIndex: number, stepIndex: number}|null} target.location - Position, from findStepInPanel().
  * @param {object} target.item - The step, as the property panel passed it.
  * @param {string} property - Property name to update.
- * @param {string} value - New value for the property.
+ * @param {string|object} value - New value for the property.
+ * @returns {Promise<boolean>} Whether the change was saved.
  */
 async function persistStepProperty({ handler, location, item }, property, value) {
     try {
         const panelModel = location ? await getPanelModel(handler) : null;
-        if (panelModel) {
-            const props = await panelModel.getProperties();
-            const step = props.tours?.[location.tourIndex]?.steps?.[location.stepIndex];
-            if (!step || !isSameStep(step, item)) {
-                logger.warn('Cannot save the change — the tours changed after the panel read them');
-                return;
-            }
-            step[property] = value;
-            await panelModel.setProperties(props);
-            return;
-        }
-
-        const { model } = extensionState;
+        const model = panelModel || extensionState.model;
         if (!model) {
             logger.warn('Cannot persist property change — model not available');
-            return;
+            return false;
         }
         const props = await model.getProperties();
-        for (const tour of props.tours || []) {
-            const step = (tour.steps || []).find((s) => s.cId === item.cId);
-            if (step) {
-                step[property] = value;
-                await model.setProperties(props);
-                return;
-            }
+        const step = panelModel
+            ? findStoredStep(props, location, item)
+            : findStepByCId(props, item.cId);
+        if (!step) {
+            logger.warn(
+                panelModel
+                    ? 'Cannot save the change — the step is no longer in the tours'
+                    : `Step not found for cId: ${item.cId}`
+            );
+            return false;
         }
-        logger.warn('Step not found for cId:', item.cId);
+        step[property] = value;
+        await model.setProperties(props);
+        return true;
     } catch (err) {
         logger.warn('Failed to persist Markdown editor change:', err);
+        return false;
     }
 }

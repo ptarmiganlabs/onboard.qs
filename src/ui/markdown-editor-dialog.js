@@ -31,7 +31,9 @@ let activeBackdrop = null;
  * @param {string} options.title - Dialog heading.
  * @param {string} options.value - Current Markdown text.
  * @param {number} [options.maxLength] - Max chars (0 = unlimited).
- * @param {function(string): void} options.onSave - Called with the new text on save.
+ * @param {function(string): (boolean|void|Promise<boolean|void>)} options.onSave - Called with
+ *   the new text on save. When it returns, or resolves to, false or throws, the dialog stays open
+ *   and says the text was not saved.
  */
 export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
     closeMarkdownEditorDialog();
@@ -141,17 +143,40 @@ export function openMarkdownEditorDialog({ title, value, maxLength, onSave }) {
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', guardedClose);
 
+    // Shown when a save fails, so the text isn't lost with the dialog
+    const saveError = document.createElement('div');
+    saveError.className = 'oqs-md-editor-error';
+    saveError.setAttribute('role', 'alert');
+    saveError.hidden = true;
+
     const saveBtn = document.createElement('button');
     saveBtn.className = 'oqs-md-editor-btn oqs-md-editor-btn--save';
     saveBtn.type = 'button';
     saveBtn.textContent = 'Save';
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
         if (typeof onSave === 'function') {
-            onSave(textarea.value);
+            saveBtn.disabled = true;
+            saveError.hidden = true;
+            let saved;
+            try {
+                saved = await onSave(textarea.value);
+            } catch (err) {
+                logger.warn('Markdown editor save failed:', err);
+                saved = false;
+            }
+            saveBtn.disabled = false;
+            if (saved === false) {
+                saveError.textContent =
+                    'The text could not be saved. Copy it before you close this dialog.';
+                saveError.hidden = false;
+                return;
+            }
         }
-        closeMarkdownEditorDialog();
+        // The user may have closed this dialog, or opened another, meanwhile
+        if (activeBackdrop === backdrop) closeMarkdownEditorDialog();
     });
 
+    footer.appendChild(saveError);
     footer.appendChild(cancelBtn);
     footer.appendChild(saveBtn);
     dialog.appendChild(footer);

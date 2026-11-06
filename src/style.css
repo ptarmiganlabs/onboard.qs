@@ -1611,6 +1611,14 @@
     background: #007a37;
 }
 
+/* Left of the buttons, when a save failed */
+.oqs-md-editor-error {
+    margin-right: auto;
+    align-self: center;
+    font-size: 12px;
+    color: #dc2626;
+}
+
 /* =========================================================================
  *  Unsaved-changes confirmation dialog
  * ========================================================================= */
