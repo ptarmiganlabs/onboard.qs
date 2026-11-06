@@ -1082,6 +1082,14 @@
 .onboard-qs-popover .driver-popover-description video {
     height: auto;
 }
+/* Raw HTML blocks get the gap below them that a paragraph has. The converter
+   leaves them as written, without a <p> around them, so nothing else adds
+   one. Their own inline margin, and the last-child rule above, still win. */
+.onboard-qs-popover
+    .driver-popover-description
+    > :is(div, table, figure, details, svg, img, video, iframe) {
+    margin-bottom: 8px;
+}
 
 /* --- Editor hint text --- */
 

@@ -6,16 +6,22 @@
  *   - [links](url)
  *   - ![images](url "optional title")
  *   - `inline code`
- *   - Line breaks (double newline → paragraph, single newline → <br>)
+ *   - Line breaks (blank line → paragraph, single newline → <br>)
  *   - Unordered lists (- item or * item)
- *   - Ordered lists (1. item)
- *   - Headings (### h3, #### h4 — h1/h2 intentionally omitted for popovers)
+ *   - Ordered lists (1. item), starting at the first item's number
+ *   - Headings (### h3 to ###### h6; h1/h2 intentionally omitted for popovers)
  *   - > blockquotes
  *   - --- horizontal rules
- *   - Embedded videos via raw HTML (`<video>`, `<iframe>`, `<source>`)
+ *   - Raw HTML, including embedded videos (`<video>`, `<iframe>`, `<source>`)
  *
- * This is intentionally minimal (~60 lines) to keep the bundle small.
- * For full Markdown, consider replacing with `marked` or `snarkdown`.
+ * Raw HTML blocks work as in CommonMark: a line that starts with a
+ * block-level tag such as `<div>` or `<table>`, or that holds nothing but
+ * one tag, starts a block that runs to the next blank line. The converter
+ * adds no paragraphs and no line breaks inside it.
+ *
+ * This is intentionally minimal, with no dependency besides DOMPurify, to
+ * keep the bundle small. For full Markdown, consider replacing it with
+ * `marked` or `snarkdown`.
  */
 
 import DOMPurify from 'dompurify';
@@ -32,6 +38,388 @@ export function stripHtml(text) {
     return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 }
 
+// The block-level tag names CommonMark 0.31.2 lists for HTML blocks
+const BLOCK_TAGS =
+    'address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|' +
+    'details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|' +
+    'h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|' +
+    'optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|' +
+    'track|ul';
+
+// The elements whose content is text rather than HTML. A block of one runs
+// to its end tag, blank lines and all.
+const RAW_TEXT = 'pre|script|style|textarea';
+// Browsers also take an end tag with spaces before the `>`, such as `</pre >`
+const RAW_TEXT_END = new RegExp(String.raw`<\/(?:${RAW_TEXT})\s*>`, 'i');
+
+// An open tag and a close tag, as CommonMark defines raw HTML
+const ATTRIBUTE = String.raw`\s+[A-Za-z_:][\w.:-]*(?:\s*=\s*(?:[^\s"'=<>\x60]+|'[^']*'|"[^"]*"))?`;
+const OPEN_TAG = String.raw`<[A-Za-z][A-Za-z0-9-]*(?:${ATTRIBUTE})*\s*\/?>`;
+const CLOSE_TAG = String.raw`<\/[A-Za-z][A-Za-z0-9-]*\s*>`;
+
+/**
+ * The lines that start an HTML block, and the line that ends each kind
+ * (CommonMark 0.31.2, section 4.6). A block without `end` runs until a blank
+ * line. A line holding just one tag can't interrupt a paragraph. A comment
+ * ends at `-->`, or at `--!>`, which browsers accept too.
+ */
+const HTML_BLOCKS = [
+    {
+        start: new RegExp(String.raw`^<(?:${RAW_TEXT})(?:\s|>|$)`, 'i'),
+        end: RAW_TEXT_END,
+        verbatim: true,
+    },
+    { start: /^<!--/, end: /--!?>/, verbatim: true },
+    { start: new RegExp(String.raw`^<\/?(?:${BLOCK_TAGS})(?:\s|\/?>|$)`, 'i') },
+    {
+        start: new RegExp(
+            String.raw`^(?!<\/?(?:${RAW_TEXT})\b)(?:${OPEN_TAG}|${CLOSE_TAG})\s*$`,
+            'i'
+        ),
+        notInParagraph: true,
+    },
+];
+
+const RULE = /^(?:[-*_]){3,}\s*$/;
+const HEADING = /^(#{3,6})\s+(.+)$/;
+const QUOTE = /^>\s+(.+)$/;
+const BULLET = /^[*-]\s+(.+)$/;
+const NUMBERED = /^(\d+)\.\s+(.+)$/;
+
+// Inline, a code span and raw HTML have the same precedence, as in
+// CommonMark: whichever starts first wins. A <pre>, <script>, <style> or
+// <textarea> element is kept whole, and so is an <svg> or <math> one: a <br>
+// or <strong> added inside SVG or MathML would end it.
+const ATOM = new RegExp(
+    [
+        String.raw`(?<!\x60)(\x60+)(?!\x60)([\s\S]*?[^\x60])\1(?!\x60)`,
+        String.raw`<(${RAW_TEXT}|svg|math)\b[^>]*>[\s\S]*?<\/\3\s*>`,
+        String.raw`<!--(?:-?>|[\s\S]*?--!?>)`,
+        OPEN_TAG,
+        CLOSE_TAG,
+    ].join('|'),
+    'gi'
+);
+
+// Marks HTML set aside while the inline rules run: `\uFFFC`, then "h" for HTML
+// the author wrote or "b" for a block-level tag the author wrote, then its
+// index, then `\uFFFC`. U+FFFC (object replacement character) is a symbol, so
+// emphasis treats it as punctuation, as it treats the < and > it stands for.
+// A description can't contain one: renderBlocks() replaces it.
+const KEPT = /\uFFFC([hb]?)(\d+)\uFFFC/g;
+const BREAK = /\n(?![ \t]*\uFFFC[hb])/g;
+// Emphasis never pairs across a block-level tag, such as from one table cell
+// to the next, which would leave the tags crossing each other
+const BLOCK_KEPT = /(\uFFFCb\d+\uFFFC)/;
+const BLOCK_TAG = new RegExp(String.raw`^<\/?(?:${BLOCK_TAGS})(?![\w-])`, 'i');
+const PUNCTUATION = /[\p{P}\p{S}]/u;
+const WHITESPACE = /\s/;
+
+/**
+ * The character before a position, as a whole code point, so that an emoji
+ * counts as the symbol it is. At the start of the text it's a space.
+ *
+ * @param {string} s - Text.
+ * @param {number} i - Position.
+ * @returns {string} The character.
+ */
+const charBefore = (s, i) => {
+    const c = s.codePointAt(i - 2);
+    return c > 0xffff ? String.fromCodePoint(c) : (s[i - 1] ?? ' ');
+};
+
+// A & that doesn't start an entity such as &copy; or &#169;
+const BARE_AMP = /&(?!#?\w+;)/g;
+
+/**
+ * Escape text for element content.
+ *
+ * @param {string} text - Text.
+ * @returns {string} The text with &, < and > escaped.
+ */
+const escapeHtml = (text) =>
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * Escape a bare & in HTML the author wrote, as in text, so that `&copy-2` in
+ * a URL stays as typed instead of turning into "©-2". Comments, scripts and
+ * styles are left as they are: & means nothing special in them.
+ *
+ * @param {string} html - HTML the author wrote.
+ * @returns {string} The HTML with bare & escaped.
+ */
+const escapeAuthored = (html) =>
+    /^\s*<(?:!--|script\b|style\b)/i.test(html) ? html : html.replace(BARE_AMP, '&amp;');
+
+/**
+ * Quote Markdown text, in which & and < are escaped already, for an
+ * attribute value.
+ *
+ * @param {string} text - Text.
+ * @returns {string} The text with " escaped too.
+ */
+const attr = (text) => text.replace(/"/g, '&quot;');
+
+/**
+ * Turn the `*` and `_` delimiter runs in one line into <em> and <strong>, by
+ * CommonMark's rules (spec 0.31.2, section 6.2, and its "process emphasis"
+ * algorithm). A run can open emphasis only next to the text it starts, so
+ * `price * quantity * 12` stays as it is, and `_` doesn't work inside a word.
+ *
+ * @param {string} line - One line, with code spans and tags set aside.
+ * @returns {string} The line with emphasis.
+ */
+function emphasis(line) {
+    const runs = [...line.matchAll(/\*+|_+/g)].map((m) => {
+        // Whole code points, and the start and the end of the line count as
+        // whitespace
+        const before = charBefore(line, m.index);
+        const after = String.fromCodePoint(line.codePointAt(m.index + m[0].length) ?? 0x20);
+        const punctBefore = PUNCTUATION.test(before);
+        const punctAfter = PUNCTUATION.test(after);
+        const left =
+            !WHITESPACE.test(after) && (!punctAfter || WHITESPACE.test(before) || punctBefore);
+        const right =
+            !WHITESPACE.test(before) && (!punctBefore || WHITESPACE.test(after) || punctAfter);
+        const star = m[0][0] === '*';
+        return {
+            index: m.index,
+            char: m[0][0],
+            size: m[0].length,
+            left: m[0].length,
+            canOpen: star ? left : left && (!right || punctBefore),
+            canClose: star ? right : right && (!left || punctAfter),
+            active: true,
+            opening: '',
+            closing: '',
+        };
+    });
+
+    for (let c = 0; c < runs.length; c++) {
+        const closer = runs[c];
+        if (!closer.canClose) continue;
+        for (let o = c - 1; o >= 0 && closer.left > 0; o--) {
+            const opener = runs[o];
+            if (!opener.active || !opener.canOpen || !opener.left || opener.char !== closer.char) {
+                continue;
+            }
+            // The rule of 3
+            if (
+                (opener.canClose || closer.canOpen) &&
+                (opener.size + closer.size) % 3 === 0 &&
+                (opener.size % 3 || closer.size % 3)
+            ) {
+                continue;
+            }
+            const tag = opener.left >= 2 && closer.left >= 2 ? 'strong' : 'em';
+            const used = tag === 'strong' ? 2 : 1;
+            opener.left -= used;
+            closer.left -= used;
+            opener.opening = `<${tag}>${opener.opening}`;
+            closer.closing += `</${tag}>`;
+            for (let k = o + 1; k < c; k++) runs[k].active = false;
+            o++; // the same opener may have characters left for this closer
+        }
+    }
+
+    let out = '';
+    let last = 0;
+    for (const run of runs) {
+        out += line.slice(last, run.index) + run.closing + run.char.repeat(run.left) + run.opening;
+        last = run.index + run.size;
+    }
+    return out + line.slice(last);
+}
+
+/**
+ * Convert the inline Markdown in a block's text. Tags and code spans are set
+ * aside first, so no Markdown rule ever sees an attribute value or code.
+ *
+ * @param {string} text - The block's text.
+ * @param {boolean} breaks - Whether a single newline becomes <br>.
+ * @returns {string} HTML.
+ */
+function inline(text, breaks) {
+    const kept = [];
+
+    /**
+     * Set HTML aside until the inline rules are done.
+     *
+     * @param {string} html - The HTML.
+     * @param {string} [mark] - "h" for HTML the author wrote, "b" for a block-level tag the
+     *   author wrote, and nothing for HTML this converter made.
+     * @param {string} [text] - Its plain text, escaped, for use in an attribute value.
+     * @returns {string} The placeholder that stands for it.
+     */
+    const keep = (html, mark = '', text = '') =>
+        `\uFFFC${mark}${kept.push({ html, text }) - 1}\uFFFC`;
+
+    /**
+     * Put the HTML that was set aside back, including HTML inside it.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The text with the HTML back in place.
+     */
+    const restore = (s) => s.replace(KEPT, (_, _mark, n) => restore(kept[n].html));
+
+    /**
+     * Put plain text back for the HTML that was set aside, for an attribute
+     * value: a tag gives nothing, and code gives its text.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The plain text.
+     */
+    const plain = (s) => s.replace(KEPT, (_, _mark, n) => plain(kept[n].text));
+
+    /**
+     * Apply emphasis, one line and one block-level element at a time, and
+     * then the line breaks.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The text with emphasis and breaks.
+     */
+    const format = (s) => {
+        s = s
+            .split('\n')
+            .map((line) =>
+                line
+                    .split(BLOCK_KEPT)
+                    .map((part, k) => (k % 2 ? part : emphasis(part)))
+                    .join('')
+            )
+            .join('\n');
+        // A single newline becomes <br>, except before a line that starts
+        // with HTML the author wrote
+        return breaks ? s.replace(BREAK, '<br>') : s;
+    };
+
+    text = text.replace(ATOM, (match, ticks, code) => {
+        if (!ticks) return keep(escapeAuthored(match), BLOCK_TAG.test(match) ? 'b' : 'h');
+        // As in CommonMark: line endings become spaces, and one space is
+        // stripped from each end of code that has a space at both ends
+        code = code.replace(/\n/g, ' ');
+        if (/^ [\s\S]*[^ ][\s\S]* $/.test(code)) code = code.slice(1, -1);
+        const escaped = escapeHtml(code);
+        return keep(`<code>${escaped}</code>`, '', escaped);
+    });
+
+    // What is left is text. Escape & unless it starts an entity, and every
+    // <: one that starts a tag or a comment has been set aside above
+    text = text.replace(BARE_AMP, '&amp;').replace(/</g, '&lt;');
+
+    // Images: ![alt](src "title"), with an optional title in "" or ''. The
+    // alt text, title and URL are plain text, as in CommonMark, so that HTML
+    // or code in them can't end the attribute.
+    text = text.replace(
+        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\)/g,
+        (_, alt, src, title1, title2) => {
+            const altText = plain(alt);
+            const title = plain(title1 ?? title2 ?? '');
+            const titleAttr = title ? ` title="${attr(title)}"` : '';
+            return keep(
+                `<img src="${attr(plain(src))}" alt="${attr(altText)}"${titleAttr} style="max-width:100%;height:auto;" />`,
+                '',
+                altText
+            );
+        }
+    );
+
+    // Links: [text](url). The text gets its emphasis on its own, as in
+    // CommonMark, so that emphasis can't cross the link's edge.
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
+        keep(
+            `<a href="${attr(plain(href))}" target="_blank" rel="noopener">${format(label)}</a>`,
+            '',
+            plain(label)
+        )
+    );
+
+    return restore(format(text));
+}
+
+/**
+ * Convert Markdown to HTML, block by block. The result is not sanitised.
+ *
+ * @param {string} md - Markdown source text.
+ * @returns {string} HTML.
+ */
+function renderBlocks(md) {
+    const lines = md
+        .replace(/\r\n?/g, '\n')
+        .replace(/\uFFFC/g, '\uFFFD')
+        .split('\n');
+    const html = [];
+    let paragraph = [];
+    let i;
+
+    /**
+     * End the paragraph being collected, if there is one.
+     */
+    const endParagraph = () => {
+        if (paragraph.length) html.push(`<p>${inline(paragraph.join('\n'), true)}</p>`);
+        paragraph = [];
+    };
+
+    /**
+     * Take the run of lines, from the current one on, that match a pattern.
+     * Leaves `i` at the last of them.
+     *
+     * @param {RegExp} pattern - Pattern for one line.
+     * @returns {Array<string[]>} The match for each line.
+     */
+    const run = (pattern) => {
+        const found = [];
+        for (let m; i < lines.length && (m = pattern.exec(lines[i])); i++) found.push(m);
+        i--;
+        return found;
+    };
+
+    for (i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) {
+            endParagraph();
+            continue;
+        }
+        // Any indentation is fine: there are no indented code blocks
+        const block = HTML_BLOCKS.find(
+            (b) => b.start.test(line.trimStart()) && !(b.notInParagraph && paragraph.length)
+        );
+        let m;
+        if (block) {
+            endParagraph();
+            const first = i;
+            if (block.end) while (!block.end.test(lines[i]) && i + 1 < lines.length) i++;
+            else while (i + 1 < lines.length && lines[i + 1].trim()) i++;
+            const raw = lines.slice(first, i + 1).join('\n');
+            html.push(block.verbatim ? escapeAuthored(raw) : inline(raw, false));
+        } else if (RULE.test(line)) {
+            endParagraph();
+            html.push('<hr>');
+        } else if ((m = HEADING.exec(line))) {
+            endParagraph();
+            html.push(`<h${m[1].length}>${inline(m[2], false)}</h${m[1].length}>`);
+        } else if (QUOTE.test(line)) {
+            endParagraph();
+            const quote = run(QUOTE).map((q) => q[1]);
+            html.push(`<blockquote>${inline(quote.join('\n'), true)}</blockquote>`);
+        } else if (BULLET.test(line)) {
+            endParagraph();
+            const items = run(BULLET).map((li) => `<li>${inline(li[1], false)}</li>`);
+            html.push(`<ul>${items.join('')}</ul>`);
+        } else if ((m = NUMBERED.exec(line))) {
+            endParagraph();
+            // The list starts at its first item's number, as in CommonMark
+            const start = Number(m[1]);
+            const items = run(NUMBERED).map((li) => `<li>${inline(li[2], false)}</li>`);
+            html.push(`<ol${start === 1 ? '' : ` start="${start}"`}>${items.join('')}</ol>`);
+        } else {
+            paragraph.push(line);
+        }
+    }
+    endParagraph();
+    return html.join('\n');
+}
+
 /**
  * Convert a Markdown string to HTML.
  *
@@ -44,92 +432,7 @@ export function stripHtml(text) {
 export function markdownToHtml(md, options) {
     if (!md) return '';
 
-    // Normalize line endings
-    let text = md.replace(/\r\n?/g, '\n');
-
-    // Escape HTML entities (but preserve already-written HTML tags for power users)
-    // We only escape & and angle brackets that are NOT part of existing HTML tags
-    text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/<(?![/a-zA-Z!])/g, '&lt;');
-
-    // Collapse multi-line HTML tags into single lines so that the <br> replacement
-    // later does not inject <br> inside opening tags and break them.
-    text = text.replace(/<[a-zA-Z][^>]*\n[^>]*>/g, (match) => match.replace(/\n\s*/g, ' '));
-
-    // Horizontal rules: --- or *** or ___ on their own line
-    text = text.replace(/^(?:[-*_]){3,}\s*$/gm, '<hr>');
-
-    // Headings (h3–h6 only; h1/h2 are too large for popovers)
-    text = text.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
-    text = text.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
-    text = text.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
-    text = text.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
-
-    // Blockquotes (single level)
-    text = text.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
-    // Merge adjacent blockquotes
-    text = text.replace(/<\/blockquote>\n<blockquote>/g, '\n');
-
-    // Unordered lists: lines starting with - or *
-    text = text.replace(/(?:^[*-]\s+.+\n?)+/gm, (match) => {
-        const items = match
-            .trim()
-            .split('\n')
-            .map((line) => `<li>${line.replace(/^[*-]\s+/, '')}</li>`)
-            .join('');
-        return `<ul>${items}</ul>`;
-    });
-
-    // Ordered lists: lines starting with digits followed by .
-    text = text.replace(/(?:^\d+\.\s+.+\n?)+/gm, (match) => {
-        const items = match
-            .trim()
-            .split('\n')
-            .map((line) => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
-            .join('');
-        return `<ol>${items}</ol>`;
-    });
-
-    // Images: ![alt](src "title") — title is optional
-    text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, alt, src, title) => {
-        const titleAttr = title ? ` title="${title}"` : '';
-        return `<img src="${src}" alt="${alt}"${titleAttr} style="max-width:100%;height:auto;" />`;
-    });
-
-    // Links: [text](url)
-    text = text.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener">$1</a>'
-    );
-
-    // Inline code: `code`
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-    // Bold: **text** or __text__
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
-
-    // Italic: *text* or _text_
-    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    text = text.replace(/(?<![a-zA-Z0-9])_(.+?)_(?![a-zA-Z0-9])/g, '<em>$1</em>');
-
-    // Paragraphs: double newlines
-    text = text.replace(/\n{2,}/g, '</p><p>');
-
-    // Single newlines → <br> (but not inside block elements)
-    text = text.replace(/(?<!<\/(?:li|ul|ol|blockquote|h[3-6]|hr|p)>)\n(?!<)/g, '<br>');
-
-    // Wrap in paragraph tags
-    text = `<p>${text}</p>`;
-
-    // Clean up empty paragraphs
-    text = text.replace(/<p>\s*<\/p>/g, '');
-
-    // Clean up paragraphs wrapping block elements
-    text = text.replace(/<p>(<(?:ul|ol|blockquote|h[3-6]|hr|video|iframe))/g, '$1');
-    text = text.replace(/(<\/(?:ul|ol|blockquote|h[3-6]|video|iframe)>)<\/p>/g, '$1');
-    text = text.replace(/<p>(<hr>)<\/p>/g, '$1');
-
-    const sanitized = DOMPurify.sanitize(text.trim(), {
+    const sanitized = DOMPurify.sanitize(renderBlocks(md).trim(), {
         ADD_TAGS: ['iframe', 'video', 'source'],
         ADD_ATTR: [
             'target',

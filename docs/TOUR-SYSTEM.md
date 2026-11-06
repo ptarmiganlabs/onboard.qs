@@ -457,10 +457,12 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 | `---`               | horizontal rule |
 | `- item` / `* item` | unordered list  |
 | `1. item`           | ordered list    |
-| double newline      | paragraph break |
+| blank line          | paragraph break |
 | single newline      | `<br>`          |
 
-The converter is intentionally minimal (~112 lines) to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
+Raw HTML passes through as well. A line that starts with a block-level tag such as `<div>` or `<table>`, or that holds nothing but one tag, starts an HTML block, as in CommonMark. The block runs to the next blank line, and the converter adds no paragraphs and no line breaks inside it.
+
+The converter is intentionally minimal, with no dependency besides DOMPurify, to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
 
 ### Embedded videos
 

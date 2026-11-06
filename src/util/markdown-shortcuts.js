@@ -49,14 +49,21 @@ function wrapSelection(textarea, before, after, placeholder) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const value = textarea.value;
-    const inner = value.slice(start, end) || placeholder || '';
+    const selected = value.slice(start, end);
 
-    const replacement = before + inner + after;
+    // Inline markers go inside any spaces at either end of the selection:
+    // CommonMark doesn't treat `**word **` as bold, and double-clicking a
+    // word selects the space after it in some browsers
+    const [, lead, word, trail] =
+        before && after ? /^(\s*)([\s\S]*?)(\s*)$/.exec(selected) : ['', '', selected, ''];
+    const inner = word || placeholder || '';
+
+    const replacement = lead + before + inner + after + trail;
     textarea.value = value.slice(0, start) + replacement + value.slice(end);
 
     // If there was a selection keep it highlighted inside the markers;
     // otherwise select the placeholder so the user can type over it.
-    const newStart = start + before.length;
+    const newStart = start + lead.length + before.length;
     const newEnd = newStart + inner.length;
     textarea.selectionStart = newStart;
     textarea.selectionEnd = newEnd;

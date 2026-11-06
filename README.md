@@ -150,12 +150,12 @@ It is valid to place several Onboard.qs extension objects on the same sheet (e.g
 | Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold` |
 | Font family           | String        | (from preset)            | CSS font-family value (expression-enabled)                              |
 | Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                        |
-| Button font size      | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Button font size      | String (px)   | (from preset)            | Font size in pixels (expression-enabled)                                |
+| Button border radius  | String (px)   | (from preset)            | Border radius in pixels (expression-enabled)                            |
 | Button font weight    | Dropdown      | (from preset)            | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`          |
 | Popover colors        | Color pickers | (from preset)            | Background, text, title, button bg/text/hover, progress bar             |
-| Popover font size     | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Popover border radius | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Popover font size     | String (px)   | (from preset)            | Font size in pixels (expression-enabled)                                |
+| Popover border radius | String (px)   | (from preset)            | Border radius in pixels (expression-enabled)                            |
 | Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu     |
 
 All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
@@ -164,28 +164,28 @@ All color properties use the native Qlik color-picker component. When you switch
 
 | Property                        | Type    | Default    | Description                                                                                                                                                                                                                                                                    |
 | ------------------------------- | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tour name                       | String  | `New Tour` | Display name shown in multi-tour dropdown                                                                                                                                                                                                                                      |
+| Tour name                       | String  | `New Tour` | Display name shown in multi-tour dropdown (expression-enabled)                                                                                                                                                                                                                 |
 | Show condition                  | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).                                                                                                                                                                                                   |
 | Auto-start                      | Boolean | `false`    | Start the tour automatically on sheet load                                                                                                                                                                                                                                     |
 | Show only once                  | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)                                                                                                                                                                                               |
-| Tour version                    | Integer | `1`        | Increment to reset the "seen" flag for all users                                                                                                                                                                                                                               |
+| Tour version                    | Integer | `1`        | Increment to reset the "seen" flag for all users (expression-enabled)                                                                                                                                                                                                          |
 | Show progress                   | Boolean | `true`     | Display an "X of Y" progress counter in popovers; its wording is set by Progress text                                                                                                                                                                                          |
 | Allow keyboard                  | Boolean | `true`     | Enable arrow-key / Escape navigation                                                                                                                                                                                                                                           |
 | Update expressions at each step | Boolean | `false`    | Evaluate step titles, descriptions, show conditions and the button and progress texts again during the tour, so they follow selections made during it: in the step on screen, and at each move to another step. When off, expressions are evaluated once, when the tour starts |
 
 ### Step Settings
 
-| Property            | Type              | Default        | Description                                                                           |
-| ------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
-| Show condition      | String            | —              | Controls visibility of this step. Supports expressions (1 = show, 0 = hide).          |
-| Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`             |
-| Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object) |
-| CSS selector        | String            | —              | Any valid CSS selector (shown when Target type = Custom CSS Selector)                 |
-| Popover title       | String            | —              | Heading text (expression-enabled)                                                     |
-| Popover description | String (Markdown) | —              | Body text with Markdown support                                                       |
-| Popover side        | Dropdown          | `Bottom`       | `Top`, `Bottom`, `Left`, `Right`                                                      |
-| Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                              |
-| Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                            |
+| Property            | Type              | Default        | Description                                                                               |
+| ------------------- | ----------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| Show condition      | String            | —              | Controls visibility of this step. Supports expressions (1 = show, 0 = hide).              |
+| Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`                 |
+| Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object)     |
+| CSS selector        | String            | —              | Any valid CSS selector (expression-enabled); shown when Target type = Custom CSS Selector |
+| Popover title       | String            | —              | Heading text (expression-enabled)                                                         |
+| Popover description | String (Markdown) | —              | Body text with Markdown support (expression-enabled)                                      |
+| Popover side        | Dropdown          | `Bottom`       | `Top`, `Bottom`, `Left`, `Right`                                                          |
+| Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                                  |
+| Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                                |
 
 ### Step Dialog Size
 
@@ -204,7 +204,7 @@ A step saved without a size renders as **Medium** if it is a standalone dialog a
 
 The height is a minimum. A dialog never grows bigger than the browser window, though: in a narrower window it gets narrower, and when its content doesn't fit, the description scrolls and the title and buttons stay in view.
 
-When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
+When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`). Both take an expression.
 
 ### Tour Overlay & Navigation
 
@@ -212,10 +212,10 @@ The following per-tour properties are configured in both the **property panel** 
 
 | Property             | Type    | Default                    | Description                                                                                                                                              |
 | -------------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area                                                                                                             |
-| Overlay opacity      | Integer | `60`                       | Opacity percentage (0–100)                                                                                                                               |
-| Stage padding        | Integer | `8`                        | Padding around the highlighted element (px)                                                                                                              |
-| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout (px)                                                                                                               |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area (expression-enabled)                                                                                        |
+| Overlay opacity      | Integer | `60`                       | Opacity percentage, 0–100 (expression-enabled)                                                                                                           |
+| Stage padding        | Integer | `8`                        | Padding around the highlighted element, in px (expression-enabled)                                                                                       |
+| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout, in px (expression-enabled)                                                                                        |
 | Next button text     | String  | `Next`                     | Label for the “Next” navigation button (expression-enabled)                                                                                              |
 | Previous button text | String  | `Previous`                 | Label for the “Previous” navigation button (expression-enabled)                                                                                          |
 | Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                                        |
@@ -239,6 +239,8 @@ _Italic text_ or _also italic_
 ```
 
 Renders as: **Bold text**, _Italic text_, `inline code`.
+
+As in [CommonMark](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis), a `*` or `_` only starts or ends formatting when it touches the text it formats. So `price * quantity * 12` stays as it is, and so does the `_` in `snake_case`. Code in backticks shows exactly as typed, HTML tags included.
 
 #### Links
 
@@ -295,6 +297,8 @@ Then paste as: `![Alt](data:image/png;base64,<pasted string>)`
 3. Step three
 ```
 
+An ordered list starts at its first item's number, so `2024.` and `2025.` render as 2024. and 2025.
+
 #### Blockquotes
 
 ```markdown
@@ -328,8 +332,8 @@ Renders as a thin separator line, useful for dividing sections within a step des
 
 #### Paragraphs and Line Breaks
 
-- **Double newline** → new paragraph (with spacing)
-- **Single newline** → `<br>` line break (no spacing)
+- **Blank line** → new paragraph (with spacing)
+- **Single newline** → `<br>` line break (no spacing), except before a line that starts with an HTML tag, and inside [HTML blocks](#raw-html)
 
 ```markdown
 First paragraph with some context.
@@ -367,6 +371,19 @@ Since the converter preserves HTML tags, you can use **any HTML** directly in de
 </video>
 ```
 
+A line that starts with a block-level tag, such as `<div>`, `<table>` or `<p>`, starts an **HTML block**. So does a line that holds nothing but one tag, such as `<svg …>` or `<img … />`, when a blank line comes before it. Straight after a line of text, such a line belongs to that text's paragraph, and so does what follows it. The block runs to the next blank line. A `<pre>`, `<script>`, `<style>` or `<textarea>` block, and an `<!-- … -->` comment, run to their end instead. Inside an HTML block the converter adds no paragraphs and no line breaks, so the HTML can be indented and spread over as many lines as you like, as above. This is how [CommonMark](https://spec.commonmark.org/0.31.2/#html-blocks) treats HTML. Bold, italics, links and code still work in the text between the tags, within one element: bold can't start in one table cell and end in the next. Markdown never changes anything inside a tag, such as an image URL or a `style` attribute, or anything inside an `<svg>` or `<math>` element.
+
+A Markdown list, heading, quote or rule inside an HTML element needs a blank line before and after it, or it shows as plain text:
+
+```markdown
+<div style="background: #f0f8ff; padding: 8px;">
+
+- First point
+- Second point
+
+</div>
+```
+
 ### Mixing Markdown and HTML
 
 You can freely combine both in the same description:
@@ -389,15 +406,18 @@ Key things to note:
 
 ### What Gets Escaped
 
-The parser escapes `&` (when not part of an HTML entity) and `<` only when **not** followed by a letter, `/`, or `!`. This means:
+The parser escapes `&` when it isn't part of an HTML entity, in your own HTML's attributes too (but not in a `<style>`, a `<script>` or a comment). It escapes `<` when it doesn't start an HTML tag (`<name …>`, `</name>`) or comment (`<!-- … -->`). This means:
 
-| Input                   | Result                                    |
-| ----------------------- | ----------------------------------------- |
-| `<strong>Bold</strong>` | Preserved as HTML → **Bold**              |
-| `<img src="..." />`     | Preserved as HTML → rendered image        |
-| `5 < 10`                | Escaped to `5 &lt; 10` → displays as text |
-| `AT&T`                  | Escaped to `AT&amp;T` → displays as text  |
-| `&copy;`                | Preserved → ©                             |
+| Input                   | Result                                          |
+| ----------------------- | ----------------------------------------------- |
+| `<strong>Bold</strong>` | Preserved as HTML → **Bold**                    |
+| `<img src="..." />`     | Preserved as HTML → rendered image              |
+| `5 < 10`                | Escaped to `5 &lt; 10` → displays as text       |
+| `Sales<budget in Q3`    | Escaped to `Sales&lt;budget` → displays as text |
+| `AT&T`                  | Escaped to `AT&amp;T` → displays as text        |
+| `&copy;`                | Preserved → ©                                   |
+
+As in CommonMark, a `<` followed by a name and, later, a `>` is a tag, so `x<y and y>z` loses `<y and y>`. Write `x < y` with spaces, or `x &lt; y`, when text like that comes from a formula.
 
 ### Complete Example
 
