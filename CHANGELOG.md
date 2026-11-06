@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.10.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.10.0...onboard-qs-v1.10.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* **markdown:** end a &lt;pre&gt;, &lt;script&gt;, &lt;style&gt; or &lt;textarea&gt; block at an end tag with spaces in it ([d34d0aa](https://github.com/ptarmiganlabs/onboard.qs/commit/d34d0aaa8a654779c32b83a4cfd951a9cb64c95c)), closes [#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)
+* **markdown:** end an HTML comment at --!&gt; too, as browsers do ([ec6141d](https://github.com/ptarmiganlabs/onboard.qs/commit/ec6141db1cbb87ccc3a532466aedf9b9bda3bef4)), closes [#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)
+* **markdown:** escape & in HTML attributes, and give images plain-text alt text ([06be530](https://github.com/ptarmiganlabs/onboard.qs/commit/06be530bb55877a2730a66a73fd7fa92b9e89498)), closes [#318](https://github.com/ptarmiganlabs/onboard.qs/issues/318)
+* **markdown:** keep emphasis within links, table cells and SVG, and read emoji as symbols ([618a3e6](https://github.com/ptarmiganlabs/onboard.qs/commit/618a3e63025fe566ce4f64bf541f058496e9901f))
+* **markdown:** keep Markdown out of HTML tags and follow CommonMark's emphasis rules ([b794957](https://github.com/ptarmiganlabs/onboard.qs/commit/b794957ad0c4e4165163ea1c19d23b0764cf99fa)), closes [#318](https://github.com/ptarmiganlabs/onboard.qs/issues/318)
+* **markdown:** leave raw HTML in step descriptions as written ([794712d](https://github.com/ptarmiganlabs/onboard.qs/commit/794712d706ecfaa451acef9f8c249e5bbd69dfb1)), closes [#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)
+* **markdown:** show a stray &lt; as text, and start ordered lists at their first number ([8210d97](https://github.com/ptarmiganlabs/onboard.qs/commit/8210d97f09af3f02ac4ae7b8a1bffa52cd177cf5)), closes [#320](https://github.com/ptarmiganlabs/onboard.qs/issues/320)
+
+
+### Miscellaneous
+
+* **markdown:** check step descriptions with the real DOMPurify in headless Chrome ([d141197](https://github.com/ptarmiganlabs/onboard.qs/commit/d141197d135dd8dde599ef8f188ee56cd0f630cd))
+
+
+### Documentation
+
+* explain the blank lines Markdown needs inside HTML ([7a73434](https://github.com/ptarmiganlabs/onboard.qs/commit/7a7343437923bcd0e007ab5e0a85d2624f4696c6)), closes [#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)
+* mark every formula-enabled property in the README ([6b839a2](https://github.com/ptarmiganlabs/onboard.qs/commit/6b839a2c22bfc6dce3bbc419fc7c69eec8f85dea)), closes [#322](https://github.com/ptarmiganlabs/onboard.qs/issues/322)
+* **readme:** show tours as data stories in the video at the top ([9e1e80e](https://github.com/ptarmiganlabs/onboard.qs/commit/9e1e80ef863c601bf4142371a36255341bf627c9))
+
 ## [1.10.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.9.0...onboard-qs-v1.10.0) (2026-11-06)
 
 
