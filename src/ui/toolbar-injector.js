@@ -165,18 +165,18 @@ function rebuildToolbarButton() {
  * @param {string} [appId] - Application ID from the app context.
  */
 function injectToolbarButton(adapter, platform, appId) {
-    // Merge tours from all registered objects, remembering which object's
-    // layout each one comes from
+    // Merge tours from all registered objects, remembering which object
+    // each one comes from
     const mergedTours = [];
-    const layoutGetters = new Map();
+    const tourSources = new Map();
     const seenNames = new Set();
-    for (const { tours, getLayout } of tourRegistry.values()) {
+    for (const [objectId, { tours, getLayout }] of tourRegistry) {
         for (const tour of tours) {
             const key = tour.tourId || tour.tourName || JSON.stringify(tour);
             if (!seenNames.has(key)) {
                 seenNames.add(key);
                 mergedTours.push(tour);
-                layoutGetters.set(tour, getLayout);
+                tourSources.set(tour, { objectId, getLayout });
             }
         }
     }
@@ -258,7 +258,7 @@ function injectToolbarButton(adapter, platform, appId) {
         appId: resolvedAppId,
         sheetId,
         allowedUriPatterns: layout.security?.allowedUriPatterns,
-        getLayout: layoutGetters.get(tour),
+        ...tourSources.get(tour),
     });
 
     // -- Click handler --

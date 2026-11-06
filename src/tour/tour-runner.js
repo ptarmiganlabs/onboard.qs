@@ -75,8 +75,11 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
 
     return (
         tourConfig.steps
-            .filter((step) => isVisible(step.showCondition))
-            .filter((step) => {
+            // Keep each step's position in the tour, which stays the same when
+            // steps around it are shown or hidden. Steps have no ID.
+            .map((step, configIndex) => ({ step, configIndex }))
+            .filter(({ step }) => isVisible(step.showCondition))
+            .filter(({ step }) => {
                 if (step.selectorType === 'none') return true;
                 if (step.selectorType === 'css' && step.customCssSelector) return true;
                 if (step.targetObjectId) return true;
@@ -85,14 +88,13 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
             /**
              * Transform a step configuration into a driver.js DriveStep object.
              *
-             * @param {object} step - Step configuration from tour config.
+             * @param {object} item - A step and its position in the tour.
+             * @param {object} item.step - Step configuration from tour config.
+             * @param {number} item.configIndex - The step's index in tourConfig.steps.
              * @returns {object} A driver.js DriveStep object.
              */
-            .map((step) => {
+            .map(({ step, configIndex }) => {
                 const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
-                // The step's position in the tour, which stays the same when
-                // steps around it are shown or hidden. Steps have no ID.
-                const configIndex = tourConfig.steps.indexOf(step);
                 // Standalone dialog — no element, driver.js shows a centered modal
                 if (step.selectorType === 'none') {
                     const popoverConfig = {
@@ -211,6 +213,37 @@ function getTourTexts(tourConfig) {
 }
 
 /**
+ * Everything driver.js shows in a step's popover, to tell whether showing
+ * the step again would change anything.
+ *
+ * @param {Array<object>} steps - driver.js steps.
+ * @param {number} index - Index of the step shown.
+ * @param {object} config - driver.js configuration.
+ * @returns {string} The popover's content, as a comparable string.
+ */
+function popoverContent(steps, index, config) {
+    const popover = steps[index]?.popover || {};
+    return JSON.stringify([
+        popover.title,
+        popover.description,
+        index,
+        steps.length,
+        config.progressText,
+        config.nextBtnText,
+        config.prevBtnText,
+        config.doneBtnText,
+    ]);
+}
+
+/**
+ * How long a move waits for the layout of the tour's object before going
+ * ahead with the steps the tour already has.
+ *
+ * @type {number}
+ */
+const LAYOUT_TIMEOUT_MS = 5000;
+
+/**
  * Read a running tour again from the current layout of the object it
  * belongs to. The engine evaluates the layout's expressions with the
  * selections in place now.
@@ -218,16 +251,27 @@ function getTourTexts(tourConfig) {
  * @param {() => Promise<object>} getLayout - Gets the layout of the tour's object.
  * @param {object} tourConfig - The tour as it was when it started.
  *
- * @returns {Promise<object|null>} The tour as it evaluates now, or null if it can't be read.
+ * @returns {Promise<object|null>} The tour as it evaluates now, or null if it can't be read in time.
  */
 async function readCurrentTour(getLayout, tourConfig) {
+    let timer;
     try {
-        const layout = await getLayout();
+        const layout = await Promise.race([
+            getLayout(),
+            new Promise((_resolve, reject) => {
+                timer = setTimeout(
+                    () => reject(new Error(`no answer within ${LAYOUT_TIMEOUT_MS} ms`)),
+                    LAYOUT_TIMEOUT_MS
+                );
+            }),
+        ]);
         const tour = (layout?.tours || []).find((t) => t.tourId === tourConfig.tourId);
         if (tour) return tour;
         logger.debug(`Tour "${tourConfig.tourName}" is no longer in its object's layout`);
     } catch (err) {
         logger.warn(`Could not read the layout of tour "${tourConfig.tourName}":`, err);
+    } finally {
+        clearTimeout(timer);
     }
     return null;
 }
@@ -247,6 +291,14 @@ let activeTour = null;
  * @type {string|null}
  */
 let activeTourSheetId = null;
+
+/**
+ * Passes new layouts of the object activeTour belongs to on to that tour,
+ * when it updates its expressions at each step.
+ *
+ * @type {{objectId: string, refresh: (layout: object) => void}|null}
+ */
+let activeTourRefresh = null;
 
 /**
  * Whether a tour started by runTour() is still running.
@@ -272,8 +324,9 @@ function anotherTourRunning(tourConfig) {
  * @param {string} [options.appId] - App ID for localStorage tracking.
  * @param {string} [options.sheetId] - Sheet the tour belongs to. Also used for localStorage tracking.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
- * @param {() => Promise<object>} [options.getLayout] - Gets the current layout of the object the
- *   tour belongs to. Needed for the tour's "Update expressions at each step" setting.
+ * @param {string} [options.objectId] - ID of the Onboard.qs object the tour belongs to.
+ * @param {() => Promise<object>} [options.getLayout] - Gets the current layout of that object.
+ *   Needed, with objectId, for the tour's "Update expressions at each step" setting.
  * @param {(tourConfig: object) => void} [options.onComplete] - Callback when tour finishes.
  *
  * @returns {Promise<object|null>} Promise resolving to the driver.js instance, or null if no tour is shown.
@@ -286,6 +339,7 @@ export async function runTour(tourConfig, options = {}) {
         appId,
         sheetId,
         allowedUriPatterns,
+        objectId,
         getLayout,
         onComplete,
     } = options;
@@ -315,28 +369,50 @@ export async function runTour(tourConfig, options = {}) {
         Boolean(tourConfig.tourId);
 
     /**
-     * Find the step to move to. When the tour's "Update expressions at each
-     * step" setting is on, read the tour again first and give driver.js the
-     * steps built from it, so that the step moved to has text, and is shown
-     * or skipped, according to the selections made since the tour started.
-     * driver.js reads its steps array each time it shows a step, so the step
-     * count and progress text follow too.
+     * Whether this run's tour is still the one driver.js is showing.
+     * driver.js keeps one state for all its instances, so after an await
+     * isActive() alone can't tell this tour from one started after it
+     * was closed.
      *
-     * @param {object} driverInstance - The running driver.js instance.
+     * @returns {boolean} True while this tour runs.
+     */
+    const isRunning = () => activeTour === driverObj && driverObj.isActive();
+
+    /**
+     * Give driver.js steps built from the tour as it evaluates now, with its
+     * button and progress texts. driver.js reads its steps array each time
+     * it shows a step, so the step count, the Done label and the disabled
+     * Previous button follow. setSteps() would clear the running tour.
+     *
+     * @param {object} currentTour - The tour as it evaluates now.
+     * @param {Array<object>} currentSteps - driver.js steps built from it.
+     */
+    const useSteps = (currentTour, currentSteps) => {
+        steps = currentSteps;
+        driverObj.setConfig({ ...driverObj.getConfig(), ...getTourTexts(currentTour), steps });
+    };
+
+    /**
+     * Find the step to move to. When the tour's "Update expressions at each
+     * step" setting is on, read the tour again first and use the steps built
+     * from it, so that the step moved to has text, and is shown or skipped,
+     * according to the selections made since the tour started.
+     *
      * @param {number} activeIdx - Index of the step being left.
      * @param {number} direction - 1 to move forward, -1 to move back.
      *
-     * @returns {Promise<number>} Index of the step to move to; out of range when the tour ends.
+     * @returns {Promise<number|null>} Index of the step to move to (out of range when the tour
+     *   ends), or null to stay on the step shown.
      */
-    const findTargetIndex = async (driverInstance, activeIdx, direction) => {
+    const findTargetIndex = async (activeIdx, direction) => {
         const targetIdx = activeIdx + direction;
-        // Moving past either end does what it did when the step was shown:
-        // "Done" ends the tour even if a selection made during the last step
-        // has made a later step visible
+        // Moving past either end does what the popover offered: "Done" ends
+        // the tour, as Previous does on the first step
         if (!reevaluateEachStep || targetIdx < 0 || targetIdx >= steps.length) return targetIdx;
 
         const currentTour = await readCurrentTour(getLayout, tourConfig);
-        if (!currentTour) return targetIdx;
+        // A tour closed meanwhile, or followed by another one, is left alone
+        if (!currentTour || !isRunning()) return targetIdx;
 
         const currentSteps = buildDriverSteps(currentTour, platformType, codePath, {
             allowedUriPatterns,
@@ -344,29 +420,89 @@ export async function runTour(tourConfig, options = {}) {
         const leaving = steps[activeIdx]._configIndex;
         // Steps are in tour order, so the last step before the one being
         // left is at the number of steps before it, minus one
-        const currentIdx =
+        let currentIdx =
             direction > 0
                 ? currentSteps.findIndex((step) => step._configIndex > leaving)
                 : currentSteps.filter((step) => step._configIndex < leaving).length - 1;
 
         if (currentIdx === -1) {
-            // No later step is visible now, so Next ends the tour. Previous
-            // stays on the step being left.
-            return direction > 0 ? steps.length : activeIdx;
+            // No later step is visible now, so Next ends the tour
+            if (direction > 0) return steps.length;
+            // No earlier step is: show the step being left again, with its
+            // new text and Previous disabled, unless it's hidden now too
+            currentIdx = currentSteps.findIndex((step) => step._configIndex === leaving);
+            if (currentIdx === -1) return null;
         }
 
-        steps = currentSteps;
-        driverInstance.setConfig({
-            ...driverInstance.getConfig(),
-            ...getTourTexts(currentTour),
-            steps,
-        });
+        useSteps(currentTour, currentSteps);
         return currentIdx;
     };
 
     // Next and Previous wait for the engine, and a second click meanwhile
     // must not move a second time
     let moving = false;
+
+    /**
+     * Move to the next or previous step, after switching to the tab of a
+     * step inside a tab container. Replaces driver.js's own moves.
+     *
+     * @param {number} direction - 1 for Next, -1 for Previous.
+     *
+     * @returns {Promise<void>} Resolves once the move is made, or given up.
+     */
+    const move = async (direction) => {
+        if (moving) return;
+        moving = true;
+        const activeIdx = driverObj.getActiveIndex();
+        let targetIdx = activeIdx + direction;
+        try {
+            targetIdx = await findTargetIndex(activeIdx, direction);
+            const target = targetIdx === null ? undefined : steps[targetIdx];
+            if (target?._targetObjectId && getTabInfo(target._targetObjectId)) {
+                await ensureTabVisible(target._targetObjectId, platformType, codePath);
+            }
+        } catch (err) {
+            // Move with the steps there are, rather than stay stuck on this one
+            logger.warn(`Tour "${tourConfig.tourName}": could not prepare the step:`, err);
+        } finally {
+            moving = false;
+        }
+        // The user can close the tour, and start another, while the awaits above run
+        if (targetIdx === null || !isRunning()) return;
+        // Past either end, driver.js ends the tour
+        driverObj.moveTo(targetIdx);
+    };
+
+    /**
+     * Take the tour from a new layout of its object while a step is shown,
+     * so the open popover follows a selection made during it: its text, the
+     * step count and the Next or Done label.
+     *
+     * @param {object} layout - The object's new layout.
+     */
+    const refreshShownStep = (layout) => {
+        // A move under way reads the layout itself
+        if (moving || !isRunning()) return;
+        const currentTour = (layout?.tours || []).find((t) => t.tourId === tourConfig.tourId);
+        const shownIdx = driverObj.getActiveIndex();
+        const shown = steps[shownIdx];
+        if (!currentTour || !shown) return;
+
+        const currentSteps = buildDriverSteps(currentTour, platformType, codePath, {
+            allowedUriPatterns,
+        });
+        const currentIdx = currentSteps.findIndex(
+            (step) => step._configIndex === shown._configIndex
+        );
+        // A step the selection has hidden stays on screen until the user moves on
+        if (currentIdx === -1) return;
+
+        const before = popoverContent(steps, shownIdx, driverObj.getConfig());
+        useSteps(currentTour, currentSteps);
+        if (popoverContent(steps, currentIdx, driverObj.getConfig()) !== before) {
+            driverObj.moveTo(currentIdx);
+        }
+    };
 
     const driverConfig = {
         steps,
@@ -383,60 +519,18 @@ export async function runTour(tourConfig, options = {}) {
         popoverClass: 'onboard-qs-popover',
         ...getTourTexts(tourConfig),
         /**
-         * Pre-switch tab containers when navigating forward.
-         * This fires INSTEAD of the default next behavior, so we must
-         * move to the next step ourselves after the tab switch.
+         * Move forward. This fires INSTEAD of the default next behavior,
+         * so the move to the next step is made by move().
          *
-         * @param {Element|undefined} _element - Current highlighted element.
-         * @param {object} _step - Current step config.
-         * @param {{ driver: object }} opts - Driver options containing the driver instance.
+         * @returns {Promise<void>} Resolves once the move is made, or given up.
          */
-        onNextClick: async (_element, _step, { driver: driverInstance }) => {
-            if (moving) return;
-            moving = true;
-            try {
-                const activeIdx = driverInstance.getActiveIndex();
-                const nextIdx = await findTargetIndex(driverInstance, activeIdx, 1);
-                if (nextIdx < steps.length) {
-                    const nextStep = steps[nextIdx];
-                    if (nextStep._targetObjectId && getTabInfo(nextStep._targetObjectId)) {
-                        await ensureTabVisible(nextStep._targetObjectId, platformType, codePath);
-                    }
-                }
-                // The user can close the tour while the awaits above run
-                if (!driverInstance.isActive()) return;
-                // Past the last step, driver.js ends the tour
-                driverInstance.moveTo(nextIdx);
-            } finally {
-                moving = false;
-            }
-        },
+        onNextClick: () => move(1),
         /**
-         * Pre-switch tab containers when navigating backward.
+         * Move back, as onNextClick moves forward.
          *
-         * @param {Element|undefined} _element - Current highlighted element.
-         * @param {object} _step - Current step config.
-         * @param {{ driver: object }} opts - Driver options containing the driver instance.
+         * @returns {Promise<void>} Resolves once the move is made, or given up.
          */
-        onPrevClick: async (_element, _step, { driver: driverInstance }) => {
-            if (moving) return;
-            moving = true;
-            try {
-                const activeIdx = driverInstance.getActiveIndex();
-                const prevIdx = await findTargetIndex(driverInstance, activeIdx, -1);
-                if (prevIdx >= 0) {
-                    const prevStep = steps[prevIdx];
-                    if (prevStep._targetObjectId && getTabInfo(prevStep._targetObjectId)) {
-                        await ensureTabVisible(prevStep._targetObjectId, platformType, codePath);
-                    }
-                }
-                if (!driverInstance.isActive()) return;
-                // Before the first step, driver.js ends the tour
-                driverInstance.moveTo(prevIdx);
-            } finally {
-                moving = false;
-            }
-        },
+        onPrevClick: () => move(-1),
         /**
          * Callback invoked when the driver.js tour is destroyed.
          */
@@ -476,6 +570,8 @@ export async function runTour(tourConfig, options = {}) {
     const driverObj = driver(driverConfig);
     activeTour = driverObj;
     activeTourSheetId = sheetId || null;
+    activeTourRefresh =
+        reevaluateEachStep && objectId ? { objectId, refresh: refreshShownStep } : null;
     driverObj.drive();
     return driverObj;
 }
@@ -610,4 +706,20 @@ export function closeTourForSheet(sheetId) {
     if (!sheetId || activeTourSheetId !== sheetId || !activeTour?.isActive()) return;
     logger.info(`Closing the running tour: its sheet ${sheetId} is no longer open`);
     destroyTour(activeTour);
+}
+
+/**
+ * Pass a new layout of an Onboard.qs object to the running tour, if the tour
+ * belongs to that object and updates its expressions at each step, so the
+ * step on screen follows a selection made while it is shown.
+ *
+ * @param {object} layout - The object's new layout.
+ */
+export function refreshRunningTour(layout) {
+    if (!activeTourRefresh || activeTourRefresh.objectId !== layout?.qInfo?.qId) return;
+    try {
+        activeTourRefresh.refresh(layout);
+    } catch (err) {
+        logger.warn('Could not update the running tour from a new layout:', err);
+    }
 }

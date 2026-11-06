@@ -13,7 +13,7 @@ import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
 import { endAutoStartVisit } from './tour/tour-helpers';
-import { closeTourForSheet } from './tour/tour-runner';
+import { closeTourForSheet, refreshRunningTour } from './tour/tour-runner';
 import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
@@ -369,8 +369,13 @@ export default function supernova(galaxy) {
                     senseVersion: platform.version,
                     codePath: platform.codePath,
                     allowedUriPatterns: layout.security?.allowedUriPatterns,
+                    objectId: layout.qInfo.qId,
                     getLayout,
                 });
+
+                // A running tour of this object that updates its expressions
+                // follows the new layout, e.g. after a selection
+                refreshRunningTour(layout);
 
                 // --- Toolbar button injection ---
                 const showToolbarButton = layout.widget?.showToolbarButton === true;

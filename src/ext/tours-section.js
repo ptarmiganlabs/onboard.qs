@@ -290,7 +290,7 @@ export function toursSection() {
                                         type: 'boolean',
                                         label: 'Update expressions at each step',
                                         description:
-                                            'Evaluate step titles, descriptions and show conditions, and the button and progress texts, again each time the user moves to another step, so they follow selections made during the tour. Steps can then appear or disappear, which changes the step count. When off, they are evaluated once, when the tour starts.',
+                                            'Evaluate step titles, descriptions and show conditions, and the button and progress texts, again during the tour: when selections change while a step is shown, and each time the user moves to another step. Steps can then appear or disappear, which changes the step count. When off, they are evaluated once, when the tour starts.',
                                         defaultValue: false,
                                         component: 'switch',
                                         options: [
