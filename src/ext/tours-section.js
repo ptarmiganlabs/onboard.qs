@@ -285,6 +285,19 @@ export function toursSection() {
                                             { value: false, label: 'Off' },
                                         ],
                                     },
+                                    reevaluateEachStep: {
+                                        ref: 'reevaluateEachStep',
+                                        type: 'boolean',
+                                        label: 'Update expressions at each step',
+                                        description:
+                                            'Evaluate step titles, descriptions and show conditions, and the button and progress texts, again during the tour: when selections change while a step is shown, and each time the user moves to another step. Steps can then appear or disappear, which changes the step count. When off, they are evaluated once, when the tour starts.',
+                                        defaultValue: false,
+                                        component: 'switch',
+                                        options: [
+                                            { value: true, label: 'On' },
+                                            { value: false, label: 'Off' },
+                                        ],
+                                    },
                                 },
                             },
 

@@ -13,7 +13,7 @@ import definition from './object-properties';
 import { renderWidget, renderEditPlaceholder, openAboutModal } from './ui/widget-renderer';
 import { openTourEditor } from './ui/tour-editor';
 import { endAutoStartVisit } from './tour/tour-helpers';
-import { closeTourForSheet } from './tour/tour-runner';
+import { closeTourForSheet, refreshRunningTour } from './tour/tour-runner';
 import { registerToolbarTours, unregisterToolbarTours } from './ui/toolbar-injector';
 import { detectPlatform, detectPlatformType, getPlatformAdapter } from './platform/index';
 import { generateUUID } from './util/uuid';
@@ -111,6 +111,14 @@ export default function supernova(galaxy) {
 
             // Store model reference so utility modules can persist property changes
             extensionState.model = model;
+
+            /**
+             * Get this object's current layout, so a running tour can read
+             * its tours again with the selections made since it started.
+             *
+             * @returns {Promise<object>} The object's layout.
+             */
+            const getLayout = () => model.getLayout();
 
             // Platform detection: async, resolved once then cached in state.
             // useState (not useRef) ensures a re-render when detection completes.
@@ -234,7 +242,14 @@ export default function supernova(galaxy) {
 
                     // Keep toolbar button visible while editing (if enabled)
                     if (layout.widget?.showToolbarButton && platform && adapter) {
-                        registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, app?.id);
+                        registerToolbarTours(
+                            layout.qInfo.qId,
+                            layout,
+                            adapter,
+                            platform,
+                            app?.id,
+                            getLayout
+                        );
                     } else {
                         unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                     }
@@ -354,12 +369,25 @@ export default function supernova(galaxy) {
                     senseVersion: platform.version,
                     codePath: platform.codePath,
                     allowedUriPatterns: layout.security?.allowedUriPatterns,
+                    objectId: layout.qInfo.qId,
+                    getLayout,
                 });
+
+                // A running tour of this object that updates its expressions
+                // follows the new layout, e.g. after a selection
+                refreshRunningTour(layout);
 
                 // --- Toolbar button injection ---
                 const showToolbarButton = layout.widget?.showToolbarButton === true;
                 if (showToolbarButton) {
-                    registerToolbarTours(layout.qInfo.qId, layout, adapter, platform, appId);
+                    registerToolbarTours(
+                        layout.qInfo.qId,
+                        layout,
+                        adapter,
+                        platform,
+                        appId,
+                        getLayout
+                    );
                 } else {
                     unregisterToolbarTours(layout.qInfo.qId, { clearConfig: true });
                 }
