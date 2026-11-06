@@ -137,9 +137,9 @@ sequenceDiagram
         end
     end
 
-    TR->>DJ: driver({steps, ...config})
     TR->>TB: ensureTabVisible(firstStep.objectId) [if in tab container]
     Note over TB: Click tab button + poll DOM until element appears
+    TR->>DJ: driver({steps, ...config})
     TR->>DJ: driverObj.drive()
     DJ->>User: Shows overlay + first popover
 
@@ -325,31 +325,33 @@ flowchart TD
 
 Tab switching is integrated at three points in `tour-runner.js`:
 
-1. **First step** — Before calling `driverObj.drive()`, `runTour()` calls `await ensureTabVisible()` for the first step. This is critical because driver.js's `element()` function is synchronous and cannot wait for async tab rendering.
+1. **First step** — Before creating the driver.js instance with `driver()` and calling `drive()`, `runTour()` calls `await ensureTabVisible()` for the first step. This is critical because driver.js's `element()` function is synchronous and cannot wait for async tab rendering.
 
-2. **Step navigation** — `onNextClick` and `onPrevClick` callbacks are async. They call `await ensureTabVisible()` for the upcoming step, then call `moveNext()` / `movePrevious()` after the element is in the DOM.
+2. **Step navigation** — `onNextClick` and `onPrevClick` both call the async `move()`. It finds the step to move to, calls `await ensureTabVisible()` for it, then calls `moveTo(index)` once the element is in the DOM.
 
 3. **Element resolution fallback** — Each step's `element()` function calls `ensureTabVisibleSync()` as a best-effort synchronous fallback. This handles edge cases like keyboard navigation where the async callbacks may not fire.
 
 ### Property panel integration
 
-In the tour editor's object dropdown (populated by `getObjectList()` in `tours-section.js`), objects inside tab containers are labeled with a suffix:
+In the property panel's **Target object** dropdown (populated by `getObjectList()` in `ext/tours-section.js`), objects inside tab containers are labeled with a suffix:
 
 ```text
-My Chart — Tab: Revenue
-Pivot Table — Tab: Details
+My Chart (barchart) — Tab: Revenue
+Pivot Table (pivot-table) — Tab: Details
 ```
 
 This helps tour authors identify which tab an object belongs to when configuring steps.
 
+The tour editor's object dropdown has no such suffix. It lists the objects from `adapter.getSheetObjects()` as title and type only (see [Object picker](#object-picker) below).
+
 ## Tour editor (edit mode)
 
-The tour editor is a full-screen modal overlay (`tour-editor.js`, ~879 lines) that opens when the user clicks "Edit Tours" in the extension placeholder, or "Open tour editor" at the top of the property panel's Tours section.
+The tour editor is a full-screen modal overlay (`ui/tour-editor.js`) that opens when the user clicks "Edit Tours" in the extension placeholder, or "Open tour editor" at the top of the property panel's Tours section.
 
 ```mermaid
 flowchart TD
     subgraph "Tour Editor Modal"
-        H[Header: Save / Cancel]
+        H[Header: Export / Import / Save / Cancel]
         TL[Tour List Panel<br/>Add, rename, delete tours]
         SL[Step List Panel<br/>Add, reorder, delete steps]
         SF[Step Form Panel<br/>Title, description, target object,<br/>selector type, popover settings]
@@ -366,9 +368,9 @@ flowchart TD
 
 1. **Open** — Deep-clones `layout.tours` to avoid mutating live properties.
 2. **Edit** — User adds/removes tours and steps, configures each step's target object, title, description, popover position.
-3. **Preview** — "Preview Step" calls `highlightStep()` which creates a temporary driver.js highlight on the actual Qlik object. Auto-dismisses after 3 seconds.
+3. **Preview** — "Preview This Step" hides the editor and calls `highlightStep()`, which creates a temporary driver.js highlight on the actual Qlik object. Auto-dismisses after 5 seconds, or at the first click or Escape.
 4. **Save** — Writes the modified tours back via `model.getProperties()` → mutate → `model.setProperties()`.
-5. **Cancel** — Discards changes, clones are garbage-collected.
+5. **Cancel** — Closes the editor without saving. Cancel and Escape both ask for confirmation first if there are unsaved changes: tours that differ from when the editor opened, or an imported theme not yet saved. Confirming discards the changes.
 
 ### Object picker
 
