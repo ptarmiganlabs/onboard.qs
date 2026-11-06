@@ -20,19 +20,25 @@ npm install
 
 ## Build Commands
 
-| Command                | Description                                                   |
-| ---------------------- | ------------------------------------------------------------- |
-| `npm run pack:dev`     | Development build → `onboard-qs.zip` (with logging)           |
-| `npm run pack:prod`    | Production build → `onboard-qs.zip` (minified, no debug logs) |
-| `npm run build`        | Build only (no zip)                                           |
-| `npm run lint`         | ESLint check                                                  |
-| `npm run lint:fix`     | ESLint auto-fix                                               |
-| `npm run format`       | Format all files with Prettier                                |
-| `npm run format:check` | Check formatting without modifying files                      |
-| `npm run start`        | nebula serve (local dev mode)                                 |
-| `npm run cloc`         | Count lines of code                                           |
+| Command                | Description                                                                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run pack:dev`     | Development build → `onboard-qs.zip` (with logging)                                                                              |
+| `npm run pack:prod`    | Production build → `onboard-qs.zip` (minified, no debug logs)                                                                    |
+| `npm run build`        | Development build of `dist/` only (no zip)                                                                                       |
+| `npm run build:dist`   | Production build of `dist/` only (minified, no zip)                                                                              |
+| `npm run sense`        | `nebula sense`: builds the Sense extension folder `onboard-qs-ext/`, with its `.qext`, from `dist/`                              |
+| `npm run post-build`   | Replaces the version, build-type and build-date tokens in `dist/` and `onboard-qs-ext/`, and adds bundle metadata to the `.qext` |
+| `npm run generate-pdf` | Writes `README.pdf` from `README.md`, with the Mermaid diagrams drawn. CI puts it in the release zip                             |
+| `npm run zip`          | Zips `onboard-qs-ext/` and `README.md` into `onboard-qs.zip`                                                                     |
+| `npm test`             | Unit tests in `test/`, with Node's built-in test runner                                                                          |
+| `npm run lint`         | ESLint check                                                                                                                     |
+| `npm run lint:fix`     | ESLint auto-fix                                                                                                                  |
+| `npm run format`       | Format all files with Prettier                                                                                                   |
+| `npm run format:check` | Check formatting without modifying files                                                                                         |
+| `npm run start`        | nebula serve (local dev mode)                                                                                                    |
+| `npm run cloc`         | Count lines of code                                                                                                              |
 
-The `pack:prod` script is the main build pipeline: it runs `nebula build` (Rollup bundle), `nebula sense` (metadata generation), `post-build` (token replacement for version/build-type), and `zip-extension` (creates `onboard-qs.zip`).
+The `pack:prod` script is the main build pipeline: it runs `build:dist` (Rollup bundle), `sense` (the extension folder and its metadata), `post-build` (token replacement and `.qext` metadata), `generate-pdf` (`README.pdf`) and `zip` (creates `onboard-qs.zip`). `pack:dev` runs the same steps with the development build.
 
 For full details on the build toolchain, see [BUILD-AND-DEPLOYMENT.md](BUILD-AND-DEPLOYMENT.md).
 
@@ -46,15 +52,26 @@ onboard.qs/
 ├── nebula.config.cjs         # nebula.js / Rollup build configuration
 ├── eslint.config.js          # ESLint flat config
 ├── scripts/
-│   ├── build-date.cjs       # Shared build-date generator (CJS)
+│   ├── build-date.cjs        # Shared build-date generator (CJS)
 │   ├── post-build.mjs        # Token replacement (version, build type, build date)
+│   ├── generate-readme-pdf.mjs # README.md → README.pdf for the release zip, Mermaid diagrams drawn
 │   └── zip-extension.mjs     # Zip builder for Sense deployment
+├── test/                     # Unit tests, run with `npm test` (node --test)
+│   └── support/              # Stand-ins for driver.js, DOMPurify, the DOM and Qlik-bound modules
 └── src/
     ├── index.js              # Supernova entry point (hooks, lifecycle)
-    ├── ext.js                # Property panel definition
     ├── object-properties.js  # Default object properties
     ├── meta.json             # Extension metadata (name, icon, type)
     ├── style.css             # All CSS: widget, editor, driver.js theme
+    ├── ext/
+    │   ├── index.js          # Property panel definition
+    │   ├── tours-section.js  # Tours section, Target object dropdown
+    │   ├── widget-section.js # Widget Appearance section
+    │   ├── theme-section.js  # Theme & Styling section
+    │   ├── theme-helpers.js  # Color keys and preset helpers for the theme section
+    │   ├── security-section.js # Security section (URI allowlist)
+    │   ├── about-section.js  # About section
+    │   └── lui-icons.js      # Lui icons for the button icon picker
     ├── platform/
     │   ├── index.js          # Platform detection + selector helper
     │   ├── selectors.js      # Versioned CSS selector registry
@@ -62,32 +79,42 @@ onboard.qs/
     │   └── cloud.js          # Qlik Cloud adapter
     ├── tour/
     │   ├── tour-runner.js    # driver.js integration: build steps, run/highlight/destroy
+    │   ├── tour-helpers.js   # startTour(), auto-start and sheet visits
     │   ├── tour-storage.js   # localStorage "show once" tracking
     │   └── tour-io.js        # Tour import/export (JSON serialization, merge modes)
     ├── theme/
     │   ├── resolve.js        # Theme resolver (preset + overrides → CSS vars)
     │   └── presets.js        # Built-in theme presets (4 presets)
     ├── ui/
-    │   ├── widget-renderer.js # Analysis mode: button, dropdown, auto-start
-    │   └── tour-editor.js    # Full-screen modal editor (3-panel layout)
+    │   ├── widget-renderer.js # Analysis mode: start button and tour dropdown
+    │   ├── toolbar-injector.js # Tour button in the Sense toolbar
+    │   ├── tour-editor.js    # Full-screen modal editor (3-panel layout)
+    │   ├── confirm-discard.js # Unsaved-changes confirmation dialog
+    │   ├── markdown-editor-dialog.js # Property panel's Markdown editor dialog
+    │   └── markdown-toolbar.js # Tabbed Write/Preview Markdown editor
     └── util/
+        ├── css-selector.js   # Checks for step CSS selectors
+        ├── dialog-size.js    # Dialog-size presets for steps
         ├── expressions.js    # Qlik expression values (=expr ↔ qStringExpression)
         ├── extension-state.js # Shared state (model and app refs, tabContainerMap)
         ├── logger.js         # Build-type-aware console logger
         ├── markdown.js       # Mini Markdown-to-HTML converter
+        ├── markdown-shortcuts.js # Markdown keyboard shortcuts
+        ├── sanitize.js       # Lui icon name sanitizer
         ├── tab-switcher.js   # Tab container auto-switching
-        └── uuid.js           # UUID v4 generator
+        ├── uuid.js           # UUID v4 generator
+        └── visibility.js     # Show conditions of tours and steps
 ```
 
 ---
 
 ## How It Works
 
-1. **Edit mode**: The extension renders an "Open Tour Editor" placeholder. Clicking it opens a full-screen modal with three panels — tour list, step list, and detail editor. Alternatively, use the Qlik property panel on the right.
+1. **Edit mode**: The extension renders a placeholder with its tour and step counts, and **Edit Tours** and **About** buttons. **Edit Tours** opens a full-screen modal with three panels — tour list, step list, and detail editor. Alternatively, use the Qlik property panel on the right. Its Tours section has an **Open tour editor** button that opens the same editor.
 
-2. **Analysis mode**: The extension renders a start button (or auto-starts). When triggered, it builds a driver.js configuration from the saved tour steps, resolving sheet objects to live DOM elements via CSS class selectors (`.qv-object-{objectId}`), and runs the tour. Objects inside **tab containers** are handled automatically — the extension switches to the correct tab and waits for the element to render before highlighting.
+2. **Analysis mode**: The extension renders a start button (or auto-starts), and with **Show toolbar button** on, a tour button in the Sense toolbar too. When triggered, it builds a driver.js configuration from the saved tour steps, resolving sheet objects to live DOM elements via CSS class selectors (`.qv-object-{objectId}`), and runs the tour. Objects inside **tab containers** are handled automatically — the extension switches to the correct tab and waits for the element to render before highlighting.
 
-3. **Show-once**: When a tour completes or is dismissed, a localStorage key (`onboard-qs:{appId}:{sheetId}:{tourId}:v{version}`) is written. Auto-start checks this key and skips if present.
+3. **Show-once**: When a tour ends, whether by **Done**, the close button, Esc or leaving the sheet, a localStorage key (`onboard-qs:{appId}:{sheetId}:{tourId}:v{version}`) is written. With **Show only once** on, which is the default, auto-start skips a tour whose key is present. With it off, the tour auto-starts on every visit. Either way, a tour auto-starts at most once per visit to the sheet. See [Auto-start tours](TOUR-SYSTEM.md#auto-start-tours).
 
 4. **Markdown**: Step descriptions are converted from Markdown to HTML by a built-in mini parser ([src/util/markdown.js](../src/util/markdown.js)) before being passed to driver.js popovers.
 
