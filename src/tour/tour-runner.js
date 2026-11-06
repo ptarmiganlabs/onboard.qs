@@ -33,8 +33,8 @@ function clampDialogDimension(value, fallback, min, max) {
  *
  * Every popover gets an `onPopoverRender`, because driver.js shows each
  * popover with an inline `display: block`. The flex layout that keeps a
- * tall popover inside the window (see `.onboard-qs-popover` in style.css)
- * can only replace it inline.
+ * tall popover inside the window (see `.driver-popover.onboard-qs-popover`
+ * in style.css) can only replace it inline.
  *
  * @param {object} step - Step configuration from tour config.
  * @returns {{popoverClass: string, onPopoverRender: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
@@ -59,10 +59,11 @@ function getStepDialogSettings(step) {
             if (!popover?.wrapper) return;
             popover.wrapper.style.display = 'flex';
             if (custom) {
+                // Capped at the window, as the presets are: a minimum height
+                // or a width bigger than the window would push the buttons
+                // out of view again
                 popover.wrapper.style.width = `${custom.width}px`;
-                popover.wrapper.style.maxWidth = `${custom.width}px`;
-                // A minimum height taller than the window would push the
-                // buttons out of view again
+                popover.wrapper.style.maxWidth = `min(${custom.width}px, var(--oqs-popover-max-width))`;
                 popover.wrapper.style.minHeight = `min(${custom.height}px, var(--oqs-popover-max-height))`;
             }
         },
@@ -114,8 +115,8 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                         popoverClass,
+                        onPopoverRender,
                     };
-                    if (onPopoverRender) popoverConfig.onPopoverRender = onPopoverRender;
                     return { popover: popoverConfig, _configIndex: configIndex };
                 }
 
@@ -156,7 +157,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         side: step.popoverSide || 'bottom',
                         align: step.popoverAlign || 'center',
                         popoverClass,
-                        ...(onPopoverRender ? { onPopoverRender } : {}),
+                        onPopoverRender,
                     },
                     disableActiveInteraction: step.disableInteraction !== false,
                     // Custom metadata — used by onNextClick/onPrevClick to
@@ -599,11 +600,10 @@ export function highlightStep(step, platformType, codePath) {
     const { popoverClass, onPopoverRender } = getStepDialogSettings(step);
     // Standalone dialog — no element to highlight
     if (step.selectorType === 'none') {
-        const driverConfig = {
+        const driverObj = driver({
             popoverClass,
-        };
-        if (onPopoverRender) driverConfig.onPopoverRender = onPopoverRender;
-        const driverObj = driver(driverConfig);
+            onPopoverRender,
+        });
         driverObj.highlight({
             popover: {
                 title: stripHtml(step.popoverTitle || '(No title)'),
@@ -642,7 +642,7 @@ export function highlightStep(step, platformType, codePath) {
                 popoverClass,
                 stagePadding: 8,
                 stageRadius: 5,
-                ...(onPopoverRender ? { onPopoverRender } : {}),
+                onPopoverRender,
             });
 
             // Fire-and-forget: wait for element, then highlight
@@ -676,7 +676,7 @@ export function highlightStep(step, platformType, codePath) {
         popoverClass,
         stagePadding: 8,
         stageRadius: 5,
-        ...(onPopoverRender ? { onPopoverRender } : {}),
+        onPopoverRender,
     });
 
     driverObj.highlight({

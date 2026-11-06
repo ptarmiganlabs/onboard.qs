@@ -202,7 +202,7 @@ Every step type has a dialog size: standalone dialogs and popovers attached to a
 
 A step saved without a size renders as **Medium** if it is a standalone dialog and **Dynamic** if it is attached to a target, as it did before sizes applied to attached steps.
 
-The height is a minimum. A dialog never grows taller than the browser window, though: when its content doesn't fit, the description scrolls and the title and buttons stay in view.
+The height is a minimum. A dialog never grows bigger than the browser window, though: in a narrower window it gets narrower, and when its content doesn't fit, the description scrolls and the title and buttons stay in view.
 
 When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
 
