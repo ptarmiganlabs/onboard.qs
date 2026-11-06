@@ -114,6 +114,17 @@ test('a <pre> block runs to its end tag, blank lines and all (#317)', () => {
     assert.equal(md(pre), pre);
 });
 
+test('a <pre> or <style> block also ends at an end tag with spaces in it', () => {
+    assert.equal(
+        md('<pre>\ncode\n</pre >\n\n**bold**'),
+        '<pre>\ncode\n</pre >\n<p><strong>bold</strong></p>'
+    );
+    assert.equal(
+        md('<style>\n.a { color: red }\n</STYLE  >\nText'),
+        '<style>\n.a { color: red }\n</STYLE  >\n<p>Text</p>'
+    );
+});
+
 test('an HTML comment runs to its end, blank lines and all (#317)', () => {
     assert.equal(md('<!-- one\n\ntwo -->\nText'), '<!-- one\n\ntwo -->\n<p>Text</p>');
 });

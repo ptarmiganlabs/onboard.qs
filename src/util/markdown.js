@@ -46,6 +46,12 @@ const BLOCK_TAGS =
     'optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|' +
     'track|ul';
 
+// The elements whose content is text rather than HTML. A block of one runs
+// to its end tag, blank lines and all.
+const RAW_TEXT = 'pre|script|style|textarea';
+// Browsers also take an end tag with spaces before the `>`, such as `</pre >`
+const RAW_TEXT_END = new RegExp(String.raw`<\/(?:${RAW_TEXT})\s*>`, 'i');
+
 // An open tag and a close tag, as CommonMark defines raw HTML
 const ATTRIBUTE = String.raw`\s+[A-Za-z_:][\w.:-]*(?:\s*=\s*(?:[^\s"'=<>\x60]+|'[^']*'|"[^"]*"))?`;
 const OPEN_TAG = String.raw`<[A-Za-z][A-Za-z0-9-]*(?:${ATTRIBUTE})*\s*\/?>`;
@@ -59,15 +65,15 @@ const CLOSE_TAG = String.raw`<\/[A-Za-z][A-Za-z0-9-]*\s*>`;
  */
 const HTML_BLOCKS = [
     {
-        start: /^<(?:pre|script|style|textarea)(?:\s|>|$)/i,
-        end: /<\/(?:pre|script|style|textarea)>/i,
+        start: new RegExp(String.raw`^<(?:${RAW_TEXT})(?:\s|>|$)`, 'i'),
+        end: RAW_TEXT_END,
         verbatim: true,
     },
     { start: /^<!--/, end: /--!?>/, verbatim: true },
     { start: new RegExp(String.raw`^<\/?(?:${BLOCK_TAGS})(?:\s|\/?>|$)`, 'i') },
     {
         start: new RegExp(
-            String.raw`^(?!<\/?(?:pre|script|style|textarea)\b)(?:${OPEN_TAG}|${CLOSE_TAG})\s*$`,
+            String.raw`^(?!<\/?(?:${RAW_TEXT})\b)(?:${OPEN_TAG}|${CLOSE_TAG})\s*$`,
             'i'
         ),
         notInParagraph: true,
@@ -86,7 +92,7 @@ const NUMBERED = /^(\d+)\.\s+(.+)$/;
 const ATOM = new RegExp(
     [
         String.raw`(?<!\x60)(\x60+)(?!\x60)([\s\S]*?[^\x60])\1(?!\x60)`,
-        String.raw`<(pre|script|style|textarea)\b[^>]*>[\s\S]*?<\/\3\s*>`,
+        String.raw`<(${RAW_TEXT})\b[^>]*>[\s\S]*?<\/\3\s*>`,
         String.raw`<!--(?:-?>|[\s\S]*?--!?>)`,
         OPEN_TAG,
         CLOSE_TAG,
