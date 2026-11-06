@@ -6,7 +6,7 @@ import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
 import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
-import { wrapIfExpression, extractExpression } from '../util/expressions';
+import { wrapExpressions, overlayExpressions } from '../util/expressions';
 import { isInvalidSelectorText } from '../util/css-selector';
 
 /**
@@ -18,88 +18,18 @@ import { isInvalidSelectorText } from '../util/css-selector';
  */
 
 /**
- * Tour-level string properties that support Qlik expression evaluation.
+ * Read one of the editor's number fields. Like the property panel's, these
+ * take a number or a formula: text starting with '=' is kept as typed, and
+ * saved as a formula.
  *
- * @type {string[]}
+ * @param {string} text - The field's text.
+ * @param {number} fallback - Value for text that is neither a formula nor a number.
+ * @returns {number|string} The number, or the formula as typed.
  */
-const TOUR_EXPR_FIELDS = [
-    'tourName',
-    'showCondition',
-    'overlayColor',
-    'nextBtnText',
-    'prevBtnText',
-    'doneBtnText',
-    'progressText',
-];
-
-/**
- * Step-level string properties that support Qlik expression evaluation.
- *
- * @type {string[]}
- */
-const STEP_EXPR_FIELDS = [
-    'popoverTitle',
-    'popoverDescription',
-    'customCssSelector',
-    'showCondition',
-];
-
-/**
- * Wrap '='-prefixed string values in qStringExpression format
- * across all expression-capable fields in a tours array.
- *
- * Mutates the tours in place.
- *
- * @param {Array} tours - Array of tour configuration objects.
- */
-function wrapExpressions(tours) {
-    for (const tour of tours) {
-        for (const key of TOUR_EXPR_FIELDS) {
-            tour[key] = wrapIfExpression(tour[key]);
-        }
-        if (tour.steps) {
-            for (const step of tour.steps) {
-                for (const key of STEP_EXPR_FIELDS) {
-                    step[key] = wrapIfExpression(step[key]);
-                }
-            }
-        }
-    }
-}
-
-/**
- * Overlay raw expression strings from model properties onto the
- * editor's tour data (which was cloned from the evaluated layout).
- *
- * This ensures that existing expressions appear as '=...' text in
- * the editor fields instead of their evaluated values.
- *
- * @param {Array} editorTours - The editor's in-memory tours (cloned from layout).
- * @param {Array} propTours - The raw tours from model.getProperties().
- */
-function overlayExpressions(editorTours, propTours) {
-    for (let i = 0; i < editorTours.length && i < propTours.length; i++) {
-        const editorTour = editorTours[i];
-        const propTour = propTours[i];
-
-        for (const key of TOUR_EXPR_FIELDS) {
-            const expr = extractExpression(propTour[key]);
-            if (expr !== null) {
-                editorTour[key] = expr;
-            }
-        }
-
-        if (editorTour.steps && propTour.steps) {
-            for (let j = 0; j < editorTour.steps.length && j < propTour.steps.length; j++) {
-                for (const key of STEP_EXPR_FIELDS) {
-                    const expr = extractExpression(propTour.steps[j][key]);
-                    if (expr !== null) {
-                        editorTour.steps[j][key] = expr;
-                    }
-                }
-            }
-        }
-    }
+function readNumberField(text, fallback) {
+    const value = text.trim();
+    if (value.startsWith('=')) return value;
+    return parseInt(value, 10) || fallback;
 }
 
 let currentHighlight = null;
@@ -534,14 +464,14 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         const customWidthInput = overlay.querySelector('.onboard-qs-editor__step-custom-width');
         if (customWidthInput) {
             customWidthInput.addEventListener('input', (e) => {
-                step.customDialogWidth = parseInt(e.target.value, 10) || 500;
+                step.customDialogWidth = readNumberField(e.target.value, 500);
             });
         }
 
         const customHeightInput = overlay.querySelector('.onboard-qs-editor__step-custom-height');
         if (customHeightInput) {
             customHeightInput.addEventListener('input', (e) => {
-                step.customDialogHeight = parseInt(e.target.value, 10) || 350;
+                step.customDialogHeight = readNumberField(e.target.value, 350);
             });
         }
 
@@ -632,21 +562,21 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         );
         if (overlayOpacityInput) {
             overlayOpacityInput.addEventListener('input', (e) => {
-                tour.overlayOpacity = parseInt(e.target.value, 10) || 0;
+                tour.overlayOpacity = readNumberField(e.target.value, 0);
             });
         }
 
         const stagePaddingInput = overlay.querySelector('.onboard-qs-editor__tour-stage-padding');
         if (stagePaddingInput) {
             stagePaddingInput.addEventListener('input', (e) => {
-                tour.stagePadding = parseInt(e.target.value, 10) || 0;
+                tour.stagePadding = readNumberField(e.target.value, 0);
             });
         }
 
         const stageRadiusInput = overlay.querySelector('.onboard-qs-editor__tour-stage-radius');
         if (stageRadiusInput) {
             stageRadiusInput.addEventListener('input', (e) => {
-                tour.stageRadius = parseInt(e.target.value, 10) || 0;
+                tour.stageRadius = readNumberField(e.target.value, 0);
             });
         }
 
@@ -1122,14 +1052,14 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     </label>
                     <div class="onboard-qs-editor__field-row" style="${step.dialogSize !== 'custom' ? 'display:none' : ''}">
                         <label class="onboard-qs-editor__field">
-                            <span>Width (px)</span>
-                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
-                                   value="${step.customDialogWidth || 500}" min="200" max="1200" />
+                            <span>Width (px) ${infoIcon('Width of the dialog in pixels, from 200 to 1200. A formula starting with = works too.')}</span>
+                            <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
+                                   value="${escapeAttr(String(step.customDialogWidth || 500))}" />
                         </label>
                         <label class="onboard-qs-editor__field">
-                            <span>Height (px)</span>
-                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-height"
-                                   value="${step.customDialogHeight || 350}" min="100" max="900" />
+                            <span>Height (px) ${infoIcon('Minimum height of the dialog in pixels, from 100 to 900. A formula starting with = works too.')}</span>
+                            <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-custom-height"
+                                   value="${escapeAttr(String(step.customDialogHeight || 350))}" />
                         </label>
                     </div>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
@@ -1186,19 +1116,19 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                                value="${escapeAttr(tour.overlayColor || 'rgba(0, 0, 0, 0.6)')}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Overlay opacity (0\u2013100) ${infoIcon('How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-opacity"
-                               value="${tour.overlayOpacity != null ? tour.overlayOpacity : 60}" min="0" max="100" />
+                        <span>Overlay opacity (0\u2013100) ${infoIcon('How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-opacity"
+                               value="${escapeAttr(String(tour.overlayOpacity != null ? tour.overlayOpacity : 60))}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Stage padding (px) ${infoIcon('Extra space (in pixels) between the highlighted element and the cutout edge.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-padding"
-                               value="${tour.stagePadding != null ? tour.stagePadding : 8}" min="0" />
+                        <span>Stage padding (px) ${infoIcon('Extra space (in pixels) between the highlighted element and the cutout edge. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-padding"
+                               value="${escapeAttr(String(tour.stagePadding != null ? tour.stagePadding : 8))}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Stage border radius (px) ${infoIcon('Corner rounding (in pixels) of the highlight cutout around the target element.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-radius"
-                               value="${tour.stageRadius != null ? tour.stageRadius : 5}" min="0" />
+                        <span>Stage border radius (px) ${infoIcon('Corner rounding (in pixels) of the highlight cutout around the target element. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-radius"
+                               value="${escapeAttr(String(tour.stageRadius != null ? tour.stageRadius : 5))}" />
                     </label>
                 </div>
                 <div class="onboard-qs-editor__section">

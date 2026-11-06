@@ -208,7 +208,7 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 ### Tour Overlay & Navigation
 
-The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. The text fields take expressions in both places, so one tour can switch language with a variable:
+The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. Each of them takes an expression in both places, so one tour can switch language with a variable, or change its overlay with the selections:
 
 | Property             | Type    | Default                    | Description                                                                                                                                              |
 | -------------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
