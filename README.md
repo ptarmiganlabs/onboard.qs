@@ -150,12 +150,12 @@ It is valid to place several Onboard.qs extension objects on the same sheet (e.g
 | Theme preset          | Dropdown      | `The Lean Green Machine` | `Default`, `The Lean Green Machine`, `Corporate Blue`, `Corporate Gold` |
 | Font family           | String        | (from preset)            | CSS font-family value (expression-enabled)                              |
 | Button colors         | Color pickers | (from preset)            | Background, text, hover background, border color                        |
-| Button font size      | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Button border radius  | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Button font size      | String (px)   | (from preset)            | Font size in pixels (expression-enabled)                                |
+| Button border radius  | String (px)   | (from preset)            | Border radius in pixels (expression-enabled)                            |
 | Button font weight    | Dropdown      | (from preset)            | `Normal (400)`, `Medium (500)`, `Semibold (600)`, `Bold (700)`          |
 | Popover colors        | Color pickers | (from preset)            | Background, text, title, button bg/text/hover, progress bar             |
-| Popover font size     | String (px)   | (from preset)            | Font size in pixels                                                     |
-| Popover border radius | String (px)   | (from preset)            | Border radius in pixels                                                 |
+| Popover font size     | String (px)   | (from preset)            | Font size in pixels (expression-enabled)                                |
+| Popover border radius | String (px)   | (from preset)            | Border radius in pixels (expression-enabled)                            |
 | Menu colors           | Color pickers | (from preset)            | Background, text, hover background for the multi-tour dropdown menu     |
 
 All color properties use the native Qlik color-picker component. When you switch presets, all pickers update to the preset's defaults. Individual overrides take precedence over the preset.
@@ -164,28 +164,28 @@ All color properties use the native Qlik color-picker component. When you switch
 
 | Property                        | Type    | Default    | Description                                                                                                                                                                                                                                                                    |
 | ------------------------------- | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tour name                       | String  | `New Tour` | Display name shown in multi-tour dropdown                                                                                                                                                                                                                                      |
+| Tour name                       | String  | `New Tour` | Display name shown in multi-tour dropdown (expression-enabled)                                                                                                                                                                                                                 |
 | Show condition                  | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).                                                                                                                                                                                                   |
 | Auto-start                      | Boolean | `false`    | Start the tour automatically on sheet load                                                                                                                                                                                                                                     |
 | Show only once                  | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)                                                                                                                                                                                               |
-| Tour version                    | Integer | `1`        | Increment to reset the "seen" flag for all users                                                                                                                                                                                                                               |
+| Tour version                    | Integer | `1`        | Increment to reset the "seen" flag for all users (expression-enabled)                                                                                                                                                                                                          |
 | Show progress                   | Boolean | `true`     | Display an "X of Y" progress counter in popovers; its wording is set by Progress text                                                                                                                                                                                          |
 | Allow keyboard                  | Boolean | `true`     | Enable arrow-key / Escape navigation                                                                                                                                                                                                                                           |
 | Update expressions at each step | Boolean | `false`    | Evaluate step titles, descriptions, show conditions and the button and progress texts again during the tour, so they follow selections made during it: in the step on screen, and at each move to another step. When off, expressions are evaluated once, when the tour starts |
 
 ### Step Settings
 
-| Property            | Type              | Default        | Description                                                                           |
-| ------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
-| Show condition      | String            | —              | Controls visibility of this step. Supports expressions (1 = show, 0 = hide).          |
-| Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`             |
-| Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object) |
-| CSS selector        | String            | —              | Any valid CSS selector (shown when Target type = Custom CSS Selector)                 |
-| Popover title       | String            | —              | Heading text (expression-enabled)                                                     |
-| Popover description | String (Markdown) | —              | Body text with Markdown support                                                       |
-| Popover side        | Dropdown          | `Bottom`       | `Top`, `Bottom`, `Left`, `Right`                                                      |
-| Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                              |
-| Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                            |
+| Property            | Type              | Default        | Description                                                                               |
+| ------------------- | ----------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| Show condition      | String            | —              | Controls visibility of this step. Supports expressions (1 = show, 0 = hide).              |
+| Target type         | Dropdown          | `Sheet Object` | `Sheet Object`, `Custom CSS Selector`, or `Standalone Dialog (no target)`                 |
+| Target object       | Dropdown          | —              | Select a visualisation from the current sheet (shown when Target type = Sheet Object)     |
+| CSS selector        | String            | —              | Any valid CSS selector (expression-enabled); shown when Target type = Custom CSS Selector |
+| Popover title       | String            | —              | Heading text (expression-enabled)                                                         |
+| Popover description | String (Markdown) | —              | Body text with Markdown support (expression-enabled)                                      |
+| Popover side        | Dropdown          | `Bottom`       | `Top`, `Bottom`, `Left`, `Right`                                                          |
+| Popover align       | Dropdown          | `Center`       | `Start`, `Center`, `End`                                                                  |
+| Disable interaction | Boolean           | `true`         | Prevent clicks on the highlighted element during this step                                |
 
 ### Step Dialog Size
 
@@ -204,7 +204,7 @@ A step saved without a size renders as **Medium** if it is a standalone dialog a
 
 The height is a minimum. A dialog never grows bigger than the browser window, though: in a narrower window it gets narrower, and when its content doesn't fit, the description scrolls and the title and buttons stay in view.
 
-When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`).
+When **Custom** is selected, two additional fields appear: **Custom width (px)** (default `500`) and **Custom height (px)** (default `350`). Both take an expression.
 
 ### Tour Overlay & Navigation
 
@@ -212,10 +212,10 @@ The following per-tour properties are configured in both the **property panel** 
 
 | Property             | Type    | Default                    | Description                                                                                                                                              |
 | -------------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area                                                                                                             |
-| Overlay opacity      | Integer | `60`                       | Opacity percentage (0–100)                                                                                                                               |
-| Stage padding        | Integer | `8`                        | Padding around the highlighted element (px)                                                                                                              |
-| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout (px)                                                                                                               |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area (expression-enabled)                                                                                        |
+| Overlay opacity      | Integer | `60`                       | Opacity percentage, 0–100 (expression-enabled)                                                                                                           |
+| Stage padding        | Integer | `8`                        | Padding around the highlighted element, in px (expression-enabled)                                                                                       |
+| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout, in px (expression-enabled)                                                                                        |
 | Next button text     | String  | `Next`                     | Label for the “Next” navigation button (expression-enabled)                                                                                              |
 | Previous button text | String  | `Previous`                 | Label for the “Previous” navigation button (expression-enabled)                                                                                          |
 | Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                                        |
