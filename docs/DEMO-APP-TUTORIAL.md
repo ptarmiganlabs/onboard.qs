@@ -36,20 +36,21 @@ apps reload anywhere without data connections. It has 1,000 orders from January 
 Each of the four sheets has one Onboard.qs object, and each object is set up differently, so between
 them they cover most of what Onboard.qs can do:
 
-| Sheet                       | Tours                                                         | What it shows                                                                                                                                                                                                         |
-| --------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Sales overview           | _Welcome: find your way around_, _Reading the sales overview_ | A tour that starts by itself, once. Steps that point at Sense's own toolbar: **Sheets**, **Bookmarks**, Smart search, the selections bar. A toolbar button. Text from Qlik expressions. A step the user can click in. |
-| 2. Products & profitability | _Profitability explained_, _Deep dive: ‹category›_            | An HTML table in a step. A tour that is only offered when exactly one category is selected, and whose name and text are all expressions.                                                                              |
-| 3. Customers & channels     | _Customers and channels_                                      | An object that is hidden on the sheet, with the tour started from the toolbar. A custom overlay, highlight and button labels.                                                                                         |
-| 4. Organisation             | _The organisation_                                            | A button that fills a full-width strip across the sheet. A closing dialog with an image.                                                                                                                              |
+| Sheet                       | Tours                                                         | What it shows                                                                                                                                                                                                                                            |
+| --------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Sales overview           | _Welcome: find your way around_, _Reading the sales overview_ | A tour that starts by itself, once. Steps that point at Sense's own toolbar: **Sheets**, **Bookmarks**, Smart search, the selections bar. A toolbar button. Text from Qlik expressions that follows the user's selections. A step the user can click in. |
+| 2. Products & profitability | _Profitability explained_, _Deep dive: ‹category›_            | An HTML table in a step. A tour that is only offered when exactly one category is selected, and whose name and text are all expressions.                                                                                                                 |
+| 3. Customers & channels     | _Customers and channels_                                      | An object that is hidden on the sheet, with the tour started from the toolbar. A custom overlay, highlight and button labels.                                                                                                                            |
+| 4. Organisation             | _The organisation_                                            | A button that fills a full-width strip across the sheet. A closing dialog with an image.                                                                                                                                                                 |
 
 Each object also uses a different theme preset (_The Lean Green Machine_, _Corporate Blue_, _Corporate
 Gold_ and _Default_), so you can compare them.
 
 ### What you need
 
-- **Onboard.qs 1.8.2 or later**, installed as described in the README's
-  [Getting Started](../README.md#getting-started).
+- **Onboard.qs 1.9.0 or later**, installed as described in the README's
+  [Getting Started](../README.md#getting-started). The tours also run in 1.8.2, but there their
+  expressions are only evaluated when a tour starts, and the step counter is always in English.
 - **Qlik Sense Enterprise on Windows** (client-managed). The demo apps were built and tested on May 2026
   Patch 3. Onboard.qs also runs on Qlik Cloud, but the welcome tour's toolbar steps were written for
   the client-managed toolbar and haven't been tried on Qlik Cloud. A step whose selector matches
@@ -174,12 +175,12 @@ tour that is already recorded. Three things follow from that:
 
 "Show once" only limits auto-start. Users can always start the tour again from the buttons.
 
-**A known problem with auto-start.** In Onboard.qs 1.8.2, an auto-start tour starts again each time its
-object gets a new layout, and that happens on every selection if any tour on the object contains an
-expression ([#285](https://github.com/ptarmiganlabs/onboard.qs/issues/285)). With "show once" off, the
-tour comes back after every selection. With it on, a selection made during the tour sends the user back
-to step 1. Until it's fixed, put auto-start tours on an Onboard.qs object whose tours have no
-expressions. Or keep "show once" on and block clicks while the tour runs, as the welcome tour does.
+**Auto-start and selections.** From Onboard.qs 1.9.0, an auto-start tour starts at most once each time
+the user opens its sheet, and only one tour runs at a time. In 1.8.2 it started again whenever its
+object got a new layout, which happens on every selection if any tour on the object contains an
+expression ([#285](https://github.com/ptarmiganlabs/onboard.qs/issues/285)). If your users are still on
+1.8.2, put auto-start tours on an Onboard.qs object whose tours have no expressions, or keep "show once"
+on and block clicks while the tour runs, as the welcome tour does.
 
 **Pointing at Sense's own toolbar.** A step with **Custom CSS Selector** can highlight any element on the
 page. To find a selector, right-click the element in the browser, choose **Inspect**, and look for an
@@ -234,16 +235,19 @@ sales over time, sales by product category and by region, and the customer table
   includes Markdown: `**` for bold, and `Chr(10) & Chr(10)` for a paragraph break.
 
     ```
-    ='When this tour started you were looking at **' & Num(Sum(Sales)/1000000, '#,##0.0')
+    ='You are looking at **' & Num(Sum(Sales)/1000000, '#,##0.0')
      & ' MSEK** of sales, at a gross margin of **' & Num(Sum(GrossProfit)/Sum(Sales), '0.0%') & '**.'
-     & Chr(10) & Chr(10) & 'This text is a Qlik expression, worked out when the tour starts. ...'
+     & Chr(10) & Chr(10) & 'This text is a Qlik expression. The tour has ...'
     ```
 
-There is one catch, and the text above says it outright: **expressions are evaluated once, when the
-tour starts.** A selection the user makes in step 3 changes the charts, but not the text of the steps
-that follow. To see the text for a new selection, the user starts the tour again. Re-evaluating
-expressions at each step is requested in
-[ptarmiganlabs/onboard.qs#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280).
+**Text that follows the selection.** By default, Onboard.qs evaluates a tour's expressions once, when the
+tour starts: a selection made in step 3 would change the charts, but not the text of the steps that
+follow. This tour has **Update expressions at each step** on, under **Behavior** in the property panel
+(**Tours** › your tour) or in the tour editor. Then the tour reads its texts and show conditions again
+each time the user moves to another step, and the step on screen changes in place when a selection
+changes what it says. After a selection in step 3, the last step shows the selected figures, and going
+back to step 1 with **Previous** shows its title for the selection too. The setting needs Onboard.qs
+1.9.0 or later ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280)).
 
 ### Try it: a welcome tour in your own app
 
@@ -328,7 +332,8 @@ an `Aggr()`:
 ```
 
 Steps have show conditions too, under **Step Settings** › **Show condition**. They are evaluated when
-the tour starts, and a hidden step is left out of the tour.
+the tour starts, and again at each step if the tour has **Update expressions at each step** on. A hidden
+step is left out of the tour, and the step counter counts only the steps that are left.
 
 ---
 
@@ -427,8 +432,8 @@ The English format `'#,##0.0'` gives wrong numbers in that app.
 **The progress counter.** From Onboard.qs 1.9.0, _1 of 7_ is set per tour as **Progress text**, under
 **Button Labels** in the property panel or **Navigation Buttons** in the tour editor. In Swedish that's
 `{{current}} av {{total}}`: the step number goes in place of `{{current}}` and the number of steps in
-place of `{{total}}`, once each. In 1.8.2 the counter is always English, and the demo apps don't set it
-yet.
+place of `{{total}}`, once each. Every tour in the Swedish demo app sets it. In 1.8.2 the counter is
+always English.
 
 The demo uses one app per language. Since nearly every text field takes an expression, one app can also
 carry both, picking each text from a variable or a language field, for example
@@ -464,7 +469,8 @@ A tour states facts about data, and the data changes with every reload. The demo
 of statement, and they age differently:
 
 1. **Computed figures**, such as `='Gross margin: ' & Num(Sum(GrossProfit)/Sum(Sales), '0.0%')`. Always
-   right when the tour starts.
+   right when the tour starts, and at every step if the tour has **Update expressions at each step**
+   on.
 2. **Computed conclusions**, such as the deep-dive tour's best seller, found with `FirstSortedValue()`,
    or the comparison with the whole business using `{1}`. Also always right, and they can name things,
    not only count them.
@@ -501,18 +507,15 @@ selection.
 
 - **"Show once" is per browser.** It is stored in localStorage, not on the server. Raise the tour's
   version to show it again.
-- **Auto-start tours can restart on a selection** if any tour on the same object contains an expression
-  ([#285](https://github.com/ptarmiganlabs/onboard.qs/issues/285)). Keep auto-start tours on an object
-  without expressions.
-- **Expressions are evaluated when the tour starts**, not at each step
-  ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280)).
+- **Expressions are evaluated when the tour starts**, unless the tour has **Update expressions at each
+  step** on ([#280](https://github.com/ptarmiganlabs/onboard.qs/issues/280), from 1.9.0).
 - **Step dialogs don't scroll.** Keep texts short, prefer _Dynamic (fit content)_, and cap image heights
   ([#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)).
 - **Selectors for Sense's own UI can break.** Titles change with the UI language, and generated classes
   with the Sense version. Use `id`, `data-tid`, `data-testid` and `tid` attributes, and run your tours
   after each Sense upgrade.
-- **The progress text is English in 1.8.2.** From 1.9.0 it's set per tour
-  ([#282](https://github.com/ptarmiganlabs/onboard.qs/issues/282)).
+- **The progress text is set per tour** from 1.9.0
+  ([#282](https://github.com/ptarmiganlabs/onboard.qs/issues/282)). In 1.8.2 it is always English.
 - **Several objects on a sheet** share one toolbar button, which lists all their tours.
 
 ## Further reading
