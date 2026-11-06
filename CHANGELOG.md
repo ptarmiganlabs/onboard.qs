@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.10.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.9.0...onboard-qs-v1.10.0) (2026-11-06)
+
+
+### Features
+
+* **ext:** open the tour editor from the property panel ([4a78c22](https://github.com/ptarmiganlabs/onboard.qs/commit/4a78c22a99030ba201410f79b3c5de98b4307998)), closes [#274](https://github.com/ptarmiganlabs/onboard.qs/issues/274)
+
+
+### Bug Fixes
+
+* **ext:** keep formulas and unsaved text in the Markdown editor ([ef75b0c](https://github.com/ptarmiganlabs/onboard.qs/commit/ef75b0cabffa169be777a01340be47926d950d4a))
+* **ext:** keep formulas in number fields when the tour editor saves ([85167b8](https://github.com/ptarmiganlabs/onboard.qs/commit/85167b85e904adf83dd744e207d4b8fc7dbad6b8)), closes [#316](https://github.com/ptarmiganlabs/onboard.qs/issues/316)
+* **ext:** keep the tour editor's number fields in range, and never save an empty formula ([8bf6590](https://github.com/ptarmiganlabs/onboard.qs/commit/8bf659002e1b76688f67a610786610dca1c9b0c7))
+* **ext:** open the tour editor through one helper, and say when it can't ([cc7c231](https://github.com/ptarmiganlabs/onboard.qs/commit/cc7c2319298eab5d4516ad2250283f9f9c9dde71))
+* **ext:** save Markdown editor changes to the step the panel shows ([9168f95](https://github.com/ptarmiganlabs/onboard.qs/commit/9168f95ba0ff2a87c4c567ad3918d115cc0647e2))
+* **tour:** fit step dialogs to narrow windows and apply their theme in Sense ([b6a4507](https://github.com/ptarmiganlabs/onboard.qs/commit/b6a450732b8afdb5fe96d49d7ce0a3962b79bd07))
+* **tour:** keep overlay values numeric, and close a tour whose step can't be shown ([95eba81](https://github.com/ptarmiganlabs/onboard.qs/commit/95eba819367aca6454199e2a62b0693c51c02ea1))
+* **tour:** keep tall step dialogs inside the browser window ([4e2afe9](https://github.com/ptarmiganlabs/onboard.qs/commit/4e2afe92f9df1a5131e4420af874633d6906012d)), closes [#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)
+* **tour:** show a step with an invalid CSS selector as a dialog ([56091b0](https://github.com/ptarmiganlabs/onboard.qs/commit/56091b0995fc8f91ca478d30ce645b105e52e0a2)), closes [#315](https://github.com/ptarmiganlabs/onboard.qs/issues/315)
+
+
+### Miscellaneous
+
+* cover the popover layout hook and the property panel's buttons ([4c6d1b3](https://github.com/ptarmiganlabs/onboard.qs/commit/4c6d1b33f3a105300d8f1619431d8d9241e69123))
+
+
+### Documentation
+
+* **changelog:** remove duplicate entries from 1.9.0 ([57de996](https://github.com/ptarmiganlabs/onboard.qs/commit/57de99695ebf54dc15b18ced7388916793a55d53))
+* **demo:** re-export both demo apps for 1.9.0 ([0353601](https://github.com/ptarmiganlabs/onboard.qs/commit/03536018d3aaa6e51f7892c29239a89e1024c33e))
+* **demo:** update the demo app tutorial for 1.9.0 ([6ddd1df](https://github.com/ptarmiganlabs/onboard.qs/commit/6ddd1df34f94944eb0d5b7ffa39ffb8f8c3deebd))
+
 ## [1.9.0](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.8.2...onboard-qs-v1.9.0) (2026-11-06)
 
 ### Features
