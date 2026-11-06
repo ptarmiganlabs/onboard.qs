@@ -424,8 +424,10 @@ thousands separator, so its expressions use `'# ##0,0'` and `'0,0 %'`:
 
 The English format `'#,##0.0'` gives wrong numbers in that app.
 
-**What you can't translate yet.** The progress text, _1 of 7_, is fixed English. Making it configurable
-is requested in [ptarmiganlabs/onboard.qs#282](https://github.com/ptarmiganlabs/onboard.qs/issues/282).
+**The progress counter.** _1 of 7_ is set per tour as **Progress text**, under **Button Labels**. In
+Swedish that's `{{current}} av {{total}}`; Onboard.qs puts the step number in place of `{{current}}`
+and the number of steps in place of `{{total}}`. The demo apps don't set it yet, so they show the
+English default.
 
 The demo uses one app per language. Since nearly every text field takes an expression, one app can also
 carry both, picking each text from a variable or a language field, for example
@@ -508,7 +510,6 @@ selection.
 - **Selectors for Sense's own UI can break.** Titles change with the UI language, and generated classes
   with the Sense version. Use `id`, `data-tid`, `data-testid` and `tid` attributes, and run your tours
   after each Sense upgrade.
-- **The progress text is English** ([#282](https://github.com/ptarmiganlabs/onboard.qs/issues/282)).
 - **Several objects on a sheet** share one toolbar button, which lists all their tours.
 
 ## Further reading

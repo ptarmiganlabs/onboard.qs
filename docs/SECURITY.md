@@ -71,7 +71,7 @@ regex validation"]
     B --> C1 & C2 & C3
     C1 -->|popoverDescription| S1 --> D2
     C1 -->|popoverTitle| S2 --> D1
-    C2 -->|"nextBtnText / prevBtnText / doneBtnText"| S2 --> D3
+    C2 -->|"nextBtnText / prevBtnText / doneBtnText / progressText"| S2 --> D3
     C2 -->|overlayColor| S3 --> D4
 ```
 
@@ -86,6 +86,7 @@ regex validation"]
 | `nextBtnText`        | Tour      | `stripHtml()`                                                                              | `innerHTML`         | Plain text only.                                                                                                                                                                                 |
 | `prevBtnText`        | Tour      | `stripHtml()`                                                                              | `innerHTML`         | Plain text only.                                                                                                                                                                                 |
 | `doneBtnText`        | Tour      | `stripHtml()`                                                                              | `innerHTML`         | Plain text only.                                                                                                                                                                                 |
+| `progressText`       | Tour      | `stripHtml()`                                                                              | `innerHTML`         | Plain text only. driver.js replaces `{{current}}` and `{{total}}` after sanitising.                                                                                                              |
 | `overlayColor`       | Tour      | `safeCssColor()` — regex pattern match                                                     | `style.fill` on SVG | Must match hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, or a short named color. Invalid values fall back to the default.                                                                           |
 | `customCssSelector`  | Step      | **None**                                                                                   | `querySelector()`   | See [Remaining risks — CSS selector injection](#css-selector-injection).                                                                                                                         |
 | `tourName`           | Tour      | `escapeHtml()` in editor, `textContent` in widget                                          | varies              | Editor rendering escapes HTML; widget uses `textContent` (no HTML interpretation).                                                                                                               |
@@ -140,9 +141,9 @@ customCssSelector"]
 
 **Content sanitization** (`sanitizeImportData`):
 
-| Tour-level fields sanitised                                             | Step-level fields sanitised         | Fields left untouched                                                |
-| ----------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
-| `tourName`, `nextBtnText`, `prevBtnText`, `doneBtnText`, `overlayColor` | `popoverTitle`, `customCssSelector` | `popoverDescription` (sanitised at render time via `markdownToHtml`) |
+| Tour-level fields sanitised                                                             | Step-level fields sanitised         | Fields left untouched                                                |
+| --------------------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| `tourName`, `nextBtnText`, `prevBtnText`, `doneBtnText`, `progressText`, `overlayColor` | `popoverTitle`, `customCssSelector` | `popoverDescription` (sanitised at render time via `markdownToHtml`) |
 
 **Export** files are plain JSON with no signing or encryption. See [Remaining risks — Export integrity](#export-file-integrity).
 

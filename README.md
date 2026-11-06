@@ -162,15 +162,15 @@ All color properties use the native Qlik color-picker component. When you switch
 
 ### Tour Settings
 
-| Property       | Type    | Default    | Description                                                                      |
-| -------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
-| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                        |
-| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).     |
-| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                       |
-| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`) |
-| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                 |
-| Show progress  | Boolean | `true`     | Display "X of Y" progress indicator in popovers                                  |
-| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                             |
+| Property       | Type    | Default    | Description                                                                           |
+| -------------- | ------- | ---------- | ------------------------------------------------------------------------------------- |
+| Tour name      | String  | `New Tour` | Display name shown in multi-tour dropdown                                             |
+| Show condition | String  | —          | Controls visibility of this tour. Supports expressions (1 = show, 0 = hide).          |
+| Auto-start     | Boolean | `false`    | Start the tour automatically on sheet load                                            |
+| Show only once | Boolean | `true`     | Skip auto-start if user has already seen this tour version (uses `localStorage`)      |
+| Tour version   | Integer | `1`        | Increment to reset the "seen" flag for all users                                      |
+| Show progress  | Boolean | `true`     | Display an "X of Y" progress counter in popovers; its wording is set by Progress text |
+| Allow keyboard | Boolean | `true`     | Enable arrow-key / Escape navigation                                                  |
 
 ### Step Settings
 
@@ -205,17 +205,18 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 ### Tour Overlay & Navigation
 
-The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay and navigation buttons (expression support for button text is only available in the property panel):
+The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. The text fields take expressions in both places, so one tour can switch language with a variable:
 
-| Property             | Type    | Default              | Description                                                       |
-| -------------------- | ------- | -------------------- | ----------------------------------------------------------------- |
-| Overlay color        | String  | `rgba(0, 0, 0, 0.6)` | Background color behind the highlighted area                      |
-| Overlay opacity      | Integer | `60`                 | Opacity percentage (0–100)                                        |
-| Stage padding        | Integer | `8`                  | Padding around the highlighted element (px)                       |
-| Stage border radius  | Integer | `5`                  | Border radius of the highlight cutout (px)                        |
-| Next button text     | String  | `Next`               | Label for the “Next” navigation button (expression-enabled)       |
-| Previous button text | String  | `Previous`           | Label for the “Previous” navigation button (expression-enabled)   |
-| Done button text     | String  | `Done`               | Label for the final step's navigation button (expression-enabled) |
+| Property             | Type    | Default                    | Description                                                                                                                             |
+| -------------------- | ------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Overlay color        | String  | `rgba(0, 0, 0, 0.6)`       | Background color behind the highlighted area                                                                                            |
+| Overlay opacity      | Integer | `60`                       | Opacity percentage (0–100)                                                                                                              |
+| Stage padding        | Integer | `8`                        | Padding around the highlighted element (px)                                                                                             |
+| Stage border radius  | Integer | `5`                        | Border radius of the highlight cutout (px)                                                                                              |
+| Next button text     | String  | `Next`                     | Label for the “Next” navigation button (expression-enabled)                                                                             |
+| Previous button text | String  | `Previous`                 | Label for the “Previous” navigation button (expression-enabled)                                                                         |
+| Done button text     | String  | `Done`                     | Label for the final step's navigation button (expression-enabled)                                                                       |
+| Progress text        | String  | `{{current}} of {{total}}` | Progress counter in each popover. `{{current}}` is replaced by the step number, `{{total}}` by the number of steps (expression-enabled) |
 
 ---
 

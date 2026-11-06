@@ -177,7 +177,14 @@ function validateImportData(data) {
  */
 function sanitizeImportData(data) {
     /** Tour-level plain-text string fields. */
-    const tourFields = ['tourName', 'nextBtnText', 'prevBtnText', 'doneBtnText', 'overlayColor'];
+    const tourFields = [
+        'tourName',
+        'nextBtnText',
+        'prevBtnText',
+        'doneBtnText',
+        'progressText',
+        'overlayColor',
+    ];
     /** Step-level plain-text string fields. */
     const stepFields = ['popoverTitle', 'customCssSelector'];
 
