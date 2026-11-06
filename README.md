@@ -240,6 +240,8 @@ _Italic text_ or _also italic_
 
 Renders as: **Bold text**, _Italic text_, `inline code`.
 
+As in [CommonMark](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis), a `*` or `_` only starts or ends formatting when it touches the text it formats. So `price * quantity * 12` stays as it is, and so does the `_` in `snake_case`. Code in backticks shows exactly as typed, HTML tags included.
+
 #### Links
 
 ```markdown
@@ -329,7 +331,7 @@ Renders as a thin separator line, useful for dividing sections within a step des
 #### Paragraphs and Line Breaks
 
 - **Blank line** → new paragraph (with spacing)
-- **Single newline** → `<br>` line break (no spacing)
+- **Single newline** → `<br>` line break (no spacing), except before a line that starts with an HTML tag, and inside [HTML blocks](#raw-html)
 
 ```markdown
 First paragraph with some context.
@@ -367,7 +369,7 @@ Since the converter preserves HTML tags, you can use **any HTML** directly in de
 </video>
 ```
 
-A line that starts with a block-level tag, such as `<div>`, `<table>` or `<p>`, starts an **HTML block**. So does a line that holds nothing but one tag, such as `<svg …>` or `<img … />`. The block runs to the next blank line. A `<pre>`, `<script>`, `<style>` or `<textarea>` block, and an `<!-- … -->` comment, run to their end instead. Inside an HTML block the converter adds no paragraphs and no line breaks, so the HTML can be indented and spread over as many lines as you like, as above. This is how [CommonMark](https://spec.commonmark.org/0.31.2/#html-blocks) treats HTML.
+A line that starts with a block-level tag, such as `<div>`, `<table>` or `<p>`, starts an **HTML block**. So does a line that holds nothing but one tag, such as `<svg …>` or `<img … />`. The block runs to the next blank line. A `<pre>`, `<script>`, `<style>` or `<textarea>` block, and an `<!-- … -->` comment, run to their end instead. Inside an HTML block the converter adds no paragraphs and no line breaks, so the HTML can be indented and spread over as many lines as you like, as above. This is how [CommonMark](https://spec.commonmark.org/0.31.2/#html-blocks) treats HTML. Bold, italics, links and code still work in the text between the tags, but Markdown never changes anything inside a tag, such as an image URL or a `style` attribute.
 
 A Markdown list, heading, quote or rule inside an HTML element needs a blank line before and after it, or it shows as plain text:
 

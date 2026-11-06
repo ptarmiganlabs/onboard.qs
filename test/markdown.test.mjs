@@ -196,6 +196,142 @@ test('video and iframe embeds come out as written', () => {
     assert.equal(md(`${video}\n\n${iframe}`), `${video}\n${iframe}`);
 });
 
+// Markdown and HTML tags: #318
+
+test('Markdown rules leave attribute values alone (#318)', () => {
+    for (const html of [
+        '<img src="https://example.com/img/_flags_/se.png">',
+        '<img src="https://cdn.example.com/__assets__/logo.png">',
+        '<div style="width:calc(100% * 0.5);height:calc(10px * 2)"></div>',
+    ]) {
+        assert.equal(md(html), html);
+    }
+    assert.equal(
+        md('Docs: <a href="https://example.com/a_b_c/`x`" title="*not em*">here</a>'),
+        '<p>Docs: <a href="https://example.com/a_b_c/`x`" title="*not em*">here</a></p>'
+    );
+});
+
+test('Markdown image and link URLs are left alone too (#318)', () => {
+    assert.equal(
+        md('![Flag](https://example.com/img/_flags_/se.png)'),
+        '<p><img src="https://example.com/img/_flags_/se.png" alt="Flag" style="max-width:100%;height:auto;" /></p>'
+    );
+    assert.equal(
+        md('[Assets](https://cdn.example.com/__assets__/)'),
+        '<p><a href="https://cdn.example.com/__assets__/" target="_blank" rel="noopener">Assets</a></p>'
+    );
+});
+
+test('a * or _ with a space on both sides is not emphasis (#318)', () => {
+    assert.equal(
+        md('Revenue = price * quantity * 12 months'),
+        '<p>Revenue = price * quantity * 12 months</p>'
+    );
+    assert.equal(
+        md('** not bold ** and _ not italic _'),
+        '<p>** not bold ** and _ not italic _</p>'
+    );
+});
+
+test('_ inside a word is not emphasis; * inside a word is, as in CommonMark', () => {
+    assert.equal(md('snake_case_name and 2*3*4'), '<p>snake_case_name and 2<em>3</em>4</p>');
+});
+
+test('emphasis follows CommonMark next to punctuation and when nested (#318)', () => {
+    const cases = {
+        'pilarna **‹ ›** uppe': 'pilarna <strong>‹ ›</strong> uppe',
+        'dess **×** för': 'dess <strong>×</strong> för',
+        'strax under **38 %**, men': 'strax under <strong>38 %</strong>, men',
+        '**Enterprise**-kunderna': '<strong>Enterprise</strong>-kunderna',
+        '*‹ Föregående / Nästa › / Avsluta*': '<em>‹ Föregående / Nästa › / Avsluta</em>',
+        'Use _Ctrl+Click_ to select': 'Use <em>Ctrl+Click</em> to select',
+        '**Bold and _nested italic_ together**':
+            '<strong>Bold and <em>nested italic</em> together</strong>',
+        '***both***': '<em><strong>both</strong></em>',
+        '*a **b** c*': '<em>a <strong>b</strong> c</em>',
+        '**not closed *but this is*': '**not closed <em>but this is</em>',
+    };
+    for (const [input, output] of Object.entries(cases)) {
+        assert.equal(md(input), `<p>${output}</p>`, input);
+    }
+});
+
+test('emphasis can wrap HTML, and works in the text of an HTML block (#318)', () => {
+    assert.equal(
+        md('**<span style="color:red">Important</span>**'),
+        '<p><strong><span style="color:red">Important</span></strong></p>'
+    );
+    assert.equal(
+        md('<div class="note">**Note:** read this</div>'),
+        '<div class="note"><strong>Note:</strong> read this</div>'
+    );
+});
+
+test('a code span shows the HTML and Markdown in it as text (#318)', () => {
+    assert.equal(
+        md('Use the `<kbd>` tag, not `**bold**`'),
+        '<p>Use the <code>&lt;kbd&gt;</code> tag, not <code>**bold**</code></p>'
+    );
+    assert.equal(md('``a `tick` inside``'), '<p><code>a `tick` inside</code></p>');
+});
+
+test('an evaluated formula description from the demo tours', () => {
+    assert.equal(
+        md(
+            '**Hardware** sold 19.0 MSEK over the period, 17% of all sales.\n\nIts gross margin is **25.8%**, against 37.6% for the business as a whole.\n\n*Everything in this tour, even its name, is calculated from your selection.*'
+        ),
+        '<p><strong>Hardware</strong> sold 19.0 MSEK over the period, 17% of all sales.</p>\n<p>Its gross margin is <strong>25.8%</strong>, against 37.6% for the business as a whole.</p>\n<p><em>Everything in this tour, even its name, is calculated from your selection.</em></p>'
+    );
+});
+
+// Line breaks
+
+test('a line that starts with bold, a link or code gets its <br>', () => {
+    assert.equal(
+        md('**Step 1:** Open the sheet\n**Step 2:** Click a chart'),
+        '<p><strong>Step 1:</strong> Open the sheet<br><strong>Step 2:</strong> Click a chart</p>'
+    );
+    assert.equal(
+        md('See\n[the guide](https://example.com)\n`code`'),
+        '<p>See<br><a href="https://example.com" target="_blank" rel="noopener">the guide</a><br><code>code</code></p>'
+    );
+});
+
+test('a line that starts with HTML the author wrote still joins the line above', () => {
+    assert.equal(
+        md('Press\n<kbd>Ctrl</kbd> + <kbd>Z</kbd>'),
+        '<p>Press\n<kbd>Ctrl</kbd> + <kbd>Z</kbd></p>'
+    );
+});
+
+test("the README's Text Formatting example keeps its lines apart", () => {
+    assert.equal(
+        md(readmeExample('#### Text Formatting', 'markdown')),
+        '<p><strong>Bold text</strong> or <strong>also bold</strong><br><em>Italic text</em> or <em>also italic</em><br><strong>Bold and <em>nested italic</em> together</strong><br><code>inline code</code></p>'
+    );
+});
+
+// Generated tags
+
+test("an image title can be in single quotes, as in the README's example", () => {
+    assert.equal(
+        md("![Chart explanation](https://example.com/chart.png 'Optional tooltip title')"),
+        '<p><img src="https://example.com/chart.png" alt="Chart explanation" title="Optional tooltip title" style="max-width:100%;height:auto;" /></p>'
+    );
+});
+
+test('a quote in generated attributes is escaped', () => {
+    assert.equal(
+        md('![Say "hi"](a.png)'),
+        '<p><img src="a.png" alt="Say &quot;hi&quot;" style="max-width:100%;height:auto;" /></p>'
+    );
+});
+
+test('the placeholder character used inside the converter stays text', () => {
+    assert.equal(md('a \uFFFC0\uFFFC <b>x</b>'), '<p>a \uFFFD0\uFFFD <b>x</b></p>');
+});
+
 // Markdown that works as before
 
 test('a blank line starts a new paragraph, and a single newline is a <br>', () => {

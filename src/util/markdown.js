@@ -79,47 +79,183 @@ const QUOTE = /^>\s+(.+)$/;
 const BULLET = /^[*-]\s+(.+)$/;
 const NUMBERED = /^(\d+)\.\s+(.+)$/;
 
+// Inline, a code span and raw HTML have the same precedence, as in
+// CommonMark: whichever starts first wins. The content of a <pre>, <script>,
+// <style> or <textarea> element is raw HTML too.
+const ATOM = new RegExp(
+    [
+        String.raw`(?<!\x60)(\x60+)(?!\x60)([\s\S]*?[^\x60])\1(?!\x60)`,
+        String.raw`<(pre|script|style|textarea)\b[^>]*>[\s\S]*?<\/\3\s*>`,
+        String.raw`<!--(?:-?>|[\s\S]*?-->)`,
+        OPEN_TAG,
+        CLOSE_TAG,
+    ].join('|'),
+    'gi'
+);
+
+// Marks HTML set aside while the inline rules run: `\uFFFC` + "h" for HTML
+// the author wrote + its index + `\uFFFC`. U+FFFC (object replacement
+// character) is a symbol, so emphasis treats it as punctuation, as it treats
+// the < and > it stands for. A description can't contain one: renderBlocks()
+// replaces it.
+const KEPT = /\uFFFC(h?)(\d+)\uFFFC/g;
+const BREAK = /\n(?![ \t]*\uFFFCh)/g;
+const PUNCTUATION = /[\p{P}\p{S}]/u;
+const WHITESPACE = /\s/;
+
 /**
- * Convert the inline Markdown in a block's text.
+ * Escape text for element content.
+ *
+ * @param {string} text - Text.
+ * @returns {string} The text with &, < and > escaped.
+ */
+const escapeHtml = (text) =>
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * Quote Markdown text, in which & and < are escaped already, for an
+ * attribute value.
+ *
+ * @param {string} text - Text.
+ * @returns {string} The text with " escaped too.
+ */
+const attr = (text) => text.replace(/"/g, '&quot;');
+
+/**
+ * Turn the `*` and `_` delimiter runs in one line into <em> and <strong>, by
+ * CommonMark's rules (spec 0.31.2, section 6.2, and its "process emphasis"
+ * algorithm). A run can open emphasis only next to the text it starts, so
+ * `price * quantity * 12` stays as it is, and `_` doesn't work inside a word.
+ *
+ * @param {string} line - One line, with code spans and tags set aside.
+ * @returns {string} The line with emphasis.
+ */
+function emphasis(line) {
+    const runs = [...line.matchAll(/\*+|_+/g)].map((m) => {
+        // The start and the end of the line count as whitespace
+        const before = line[m.index - 1] ?? ' ';
+        const after = line[m.index + m[0].length] ?? ' ';
+        const punctBefore = PUNCTUATION.test(before);
+        const punctAfter = PUNCTUATION.test(after);
+        const left =
+            !WHITESPACE.test(after) && (!punctAfter || WHITESPACE.test(before) || punctBefore);
+        const right =
+            !WHITESPACE.test(before) && (!punctBefore || WHITESPACE.test(after) || punctAfter);
+        const star = m[0][0] === '*';
+        return {
+            index: m.index,
+            char: m[0][0],
+            size: m[0].length,
+            left: m[0].length,
+            canOpen: star ? left : left && (!right || punctBefore),
+            canClose: star ? right : right && (!left || punctAfter),
+            active: true,
+            opening: '',
+            closing: '',
+        };
+    });
+
+    for (let c = 0; c < runs.length; c++) {
+        const closer = runs[c];
+        if (!closer.canClose) continue;
+        for (let o = c - 1; o >= 0 && closer.left > 0; o--) {
+            const opener = runs[o];
+            if (!opener.active || !opener.canOpen || !opener.left || opener.char !== closer.char) {
+                continue;
+            }
+            // The rule of 3
+            if (
+                (opener.canClose || closer.canOpen) &&
+                (opener.size + closer.size) % 3 === 0 &&
+                (opener.size % 3 || closer.size % 3)
+            ) {
+                continue;
+            }
+            const tag = opener.left >= 2 && closer.left >= 2 ? 'strong' : 'em';
+            const used = tag === 'strong' ? 2 : 1;
+            opener.left -= used;
+            closer.left -= used;
+            opener.opening = `<${tag}>${opener.opening}`;
+            closer.closing += `</${tag}>`;
+            for (let k = o + 1; k < c; k++) runs[k].active = false;
+            o++; // the same opener may have characters left for this closer
+        }
+    }
+
+    let out = '';
+    let last = 0;
+    for (const run of runs) {
+        out += line.slice(last, run.index) + run.closing + run.char.repeat(run.left) + run.opening;
+        last = run.index + run.size;
+    }
+    return out + line.slice(last);
+}
+
+/**
+ * Convert the inline Markdown in a block's text. Tags and code spans are set
+ * aside first, so no Markdown rule ever sees an attribute value or code.
  *
  * @param {string} text - The block's text.
  * @param {boolean} breaks - Whether a single newline becomes <br>.
  * @returns {string} HTML.
  */
 function inline(text, breaks) {
+    const kept = [];
+
+    /**
+     * Set HTML aside until the inline rules are done.
+     *
+     * @param {string} html - The HTML.
+     * @param {boolean} [authored] - Whether the author wrote it, rather than this converter.
+     * @returns {string} The placeholder that stands for it.
+     */
+    const keep = (html, authored) => `\uFFFC${authored ? 'h' : ''}${kept.push(html) - 1}\uFFFC`;
+
+    /**
+     * Put the HTML that was set aside back, including HTML inside it.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The text with the HTML back in place.
+     */
+    const restore = (s) => s.replace(KEPT, (_, _h, n) => restore(kept[n]));
+
+    text = text.replace(ATOM, (match, ticks, code) => {
+        if (!ticks) return keep(match, true);
+        // As in CommonMark: line endings become spaces, and one space is
+        // stripped from each end of code that has a space at both ends
+        code = code.replace(/\n/g, ' ');
+        if (/^ [\s\S]*[^ ][\s\S]* $/.test(code)) code = code.slice(1, -1);
+        return keep(`<code>${escapeHtml(code)}</code>`);
+    });
+
     // Escape HTML entities (but preserve already-written HTML tags for power users)
     // We only escape & and angle brackets that are NOT part of existing HTML tags
     text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/<(?![/a-zA-Z!])/g, '&lt;');
 
-    // Collapse multi-line HTML tags into single lines so that the <br> replacement
-    // later does not inject <br> inside opening tags and break them.
-    text = text.replace(/<[a-zA-Z][^>]*\n[^>]*>/g, (match) => match.replace(/\n\s*/g, ' '));
-
-    // Images: ![alt](src "title") — title is optional
-    text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, alt, src, title) => {
-        const titleAttr = title ? ` title="${title}"` : '';
-        return `<img src="${src}" alt="${alt}"${titleAttr} style="max-width:100%;height:auto;" />`;
-    });
-
-    // Links: [text](url)
+    // Images: ![alt](src "title"), with an optional title in "" or ''
     text = text.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener">$1</a>'
+        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\)/g,
+        (_, alt, src, title1, title2) => {
+            const title = title1 ?? title2;
+            const titleAttr = title ? ` title="${attr(title)}"` : '';
+            return keep(
+                `<img src="${attr(src)}" alt="${attr(alt)}"${titleAttr} style="max-width:100%;height:auto;" />`
+            );
+        }
     );
 
-    // Inline code: `code`
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Links: [text](url). The text stays, so emphasis works in it.
+    text = text.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        (_, label, href) =>
+            keep(`<a href="${attr(href)}" target="_blank" rel="noopener">`) + label + keep('</a>')
+    );
 
-    // Bold: **text** or __text__
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    text = text.split('\n').map(emphasis).join('\n');
 
-    // Italic: *text* or _text_
-    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    text = text.replace(/(?<![a-zA-Z0-9])_(.+?)_(?![a-zA-Z0-9])/g, '<em>$1</em>');
-
-    // A single newline becomes <br>, except before a line that starts with a tag
-    return breaks ? text.replace(/\n(?!\s*<)/g, '<br>') : text;
+    // A single newline becomes <br>, except before a line that starts with
+    // HTML the author wrote
+    return restore(breaks ? text.replace(BREAK, '<br>') : text);
 }
 
 /**
@@ -129,7 +265,10 @@ function inline(text, breaks) {
  * @returns {string} HTML.
  */
 function renderBlocks(md) {
-    const lines = md.replace(/\r\n?/g, '\n').split('\n');
+    const lines = md
+        .replace(/\r\n?/g, '\n')
+        .replace(/\uFFFC/g, '\uFFFD')
+        .split('\n');
     const html = [];
     let paragraph = [];
     let i;
