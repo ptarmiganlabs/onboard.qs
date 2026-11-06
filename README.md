@@ -203,21 +203,21 @@ A tour with **Auto-start** on starts half a second after its sheet has loaded in
 
 ```mermaid
 flowchart TD
-    A([Sheet loads in analysis mode]) --> B{Tour's show condition<br/>is not 0?}
-    B -- no --> X1[Not listed]
-    B -- yes --> C{Auto-start on?}
-    C -- no --> X2[Starts only from the button<br/>or the toolbar]
-    C -- yes --> D{Already started by itself<br/>on this visit?}
-    D -- yes --> X3[Doesn't start]
-    D -- no --> E{Show only once on, and a<br/>seen flag stored for this<br/>tour version?}
-    E -- yes --> X4[Doesn't start]
-    E -- no --> G{After 500 ms: another<br/>tour already running?}
-    G -- yes --> X5[Doesn't start]
-    G -- no --> R[Tour runs]
-    R --> T[(When it ends, by Done, close, Esc<br/>or leaving the sheet: seen flag<br/>stored for this tour version)]
+    A([Sheet loads in analysis mode]) --> B(Tour's show condition not 0?)
+    B -- yes --> C(Auto-start on?)
+    C -- yes --> E(Show only once on?)
+    E -- yes --> E2(Seen in this tour version?)
+    E -- no --> F(After 500 ms: another tour running?)
+    E2 -- no --> F
+    F -- no --> R[Tour runs]
+    R --> T[(Seen flag stored when it ends)]
+    B -- no --> N[Doesn't start by itself]
+    C -- no --> N
+    E2 -- yes --> N
+    F -- yes --> N
 ```
 
-The seen flag is kept in the browser's `localStorage`, under `onboard-qs:<appId>:<sheetId>:<tourId>:v<version>`. Raising **Tour version** gives the tour a new key, so it starts by itself again for everyone. A tour started from the button is marked as seen when it ends, too. When more than one tour on a sheet starts by itself, the first to start runs and the others don't start on that visit.
+The seen flag is stored when the tour ends, by **Done**, the close button, Esc, or leaving the sheet. It is kept in the browser's `localStorage`, under `onboard-qs:<appId>:<sheetId>:<tourId>:v<version>`. Raising **Tour version** gives the tour a new key, so it starts by itself again for everyone. A tour started from the button is marked as seen when it ends, too. A tour starts by itself at most once per visit to the sheet. When more than one tour on a sheet would, the first to start runs and the others don't start on that visit.
 
 #### Update expressions at each step
 
@@ -715,18 +715,16 @@ How a step finds what it points at, for each target type:
 
 ```mermaid
 flowchart TD
-    S([A step is shown]) --> T{Target type}
-    T -- Sheet Object --> O[Look for the object<br/>on the sheet]
-    O --> TC{In a tab container?}
-    TC -- yes --> SW[Switch to its tab,<br/>wait up to 2 s]
-    SW --> F{Found?}
-    TC -- no --> F
-    T -- Custom CSS Selector --> V{Valid CSS?}
-    V -- yes --> Q[Look for the first<br/>element it matches] --> F
+    S([A step is shown]) --> T(Target type?)
+    T -- Sheet Object --> O[Look for the object on the sheet.<br/>In a tab container: switch to its tab,<br/>and wait for it up to 2 s]
+    T -- Custom CSS Selector --> V(Valid CSS?)
+    V -- yes --> Q[Look for the first element it matches]
+    O --> F(Found?)
+    Q --> F
+    F -- yes --> H[Highlight it, with the step beside it]
+    F -- no --> C[Dialog in the middle of the screen]
     V -- no --> C
-    T -- Standalone Dialog --> C[Dialog in the middle<br/>of the screen]
-    F -- yes --> H[Highlight it, with<br/>the step beside it]
-    F -- no --> C
+    T -- Standalone Dialog --> C
 ```
 
 A step with no target at all, a sheet object step with no object chosen or a CSS step with an empty selector, is left out of the tour.
