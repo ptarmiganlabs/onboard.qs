@@ -167,30 +167,52 @@ function validateImportData(data) {
 }
 
 /**
+ * Check whether an imported value is plain text rather than a Qlik expression.
+ *
+ * @param {string|number|boolean|object|null|undefined} value - Imported property value.
+ * @returns {boolean} True for a string that does not start with '='.
+ */
+function isPlainText(value) {
+    return typeof value === 'string' && !value.startsWith('=');
+}
+
+/**
  * Sanitize imported data by stripping HTML from all plain-text string fields.
  *
  * This mutates the validated data in place. Fields that are rendered through
  * markdownToHtml() (popoverDescription) are left untouched — DOMPurify
  * handles those at render time.
  *
+ * Values starting with '=' are Qlik expressions and are left untouched too.
+ * stripHtml() returns serialised HTML, so it would turn `&` (Qlik's string
+ * operator) into `&amp;` and `<` into `&lt;`, breaking the expression. What
+ * an expression evaluates to is sanitised wherever it is rendered.
+ *
  * @param {object} data - Validated import data (from validateImportData).
  */
 function sanitizeImportData(data) {
     /** Tour-level plain-text string fields. */
-    const tourFields = ['tourName', 'nextBtnText', 'prevBtnText', 'doneBtnText', 'overlayColor'];
+    const tourFields = [
+        'tourName',
+        'nextBtnText',
+        'prevBtnText',
+        'doneBtnText',
+        'progressText',
+        'overlayColor',
+    ];
     /** Step-level plain-text string fields. */
     const stepFields = ['popoverTitle', 'customCssSelector'];
 
     for (const tour of data.tours) {
         for (const field of tourFields) {
-            if (typeof tour[field] === 'string') {
+            if (isPlainText(tour[field])) {
                 tour[field] = stripHtml(tour[field]);
             }
         }
         if (Array.isArray(tour.steps)) {
             for (const step of tour.steps) {
                 for (const field of stepFields) {
-                    if (typeof step[field] === 'string') {
+                    if (isPlainText(step[field])) {
                         step[field] = stripHtml(step[field]);
                     }
                 }

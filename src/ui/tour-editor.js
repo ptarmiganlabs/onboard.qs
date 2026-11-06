@@ -27,6 +27,7 @@ const TOUR_EXPR_FIELDS = [
     'nextBtnText',
     'prevBtnText',
     'doneBtnText',
+    'progressText',
 ];
 
 /**
@@ -261,6 +262,7 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
                     nextBtnText: 'Next',
                     prevBtnText: 'Previous',
                     doneBtnText: 'Done',
+                    progressText: '{{current}} of {{total}}',
                     steps: [],
                 });
                 selectedTourIndex = tours.length - 1;
@@ -685,6 +687,13 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         if (doneBtnInput) {
             doneBtnInput.addEventListener('input', (e) => {
                 tour.doneBtnText = e.target.value;
+            });
+        }
+
+        const progressTextInput = overlay.querySelector('.onboard-qs-editor__tour-progress-text');
+        if (progressTextInput) {
+            progressTextInput.addEventListener('input', (e) => {
+                tour.progressText = e.target.value;
             });
         }
     }
@@ -1175,7 +1184,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-progress" ${tour.showProgress !== false ? 'checked' : ''} />
-                        <span>Show progress indicator ${infoIcon('Display a "Step X of Y" progress text inside each popover.')}</span>
+                        <span>Show progress indicator ${infoIcon('Display a progress counter, such as "1 of 5", inside each popover. Its wording is set under Progress text.')}</span>
                     </label>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
                         <input type="checkbox" class="onboard-qs-editor__tour-keyboard" ${tour.allowKeyboard !== false ? 'checked' : ''} />
@@ -1221,6 +1230,11 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         <span>Done button text ${infoIcon('Label shown on the final step button to finish the tour.')}</span>
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-done-btn"
                                value="${escapeAttr(tour.doneBtnText || 'Done')}" />
+                    </label>
+                    <label class="onboard-qs-editor__field">
+                        <span>Progress text ${infoIcon('Progress counter shown in each popover. {{current}} becomes the step number and {{total}} the number of steps; each is filled in once. Supports expressions starting with =.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-progress-text"
+                               value="${escapeAttr(tour.progressText || '{{current}} of {{total}}')}" />
                     </label>
                 </div>
         `;

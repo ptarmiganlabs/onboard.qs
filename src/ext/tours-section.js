@@ -264,7 +264,7 @@ export function toursSection() {
                                         type: 'boolean',
                                         label: 'Show progress indicator',
                                         description:
-                                            'Display a "Step X of Y" progress text inside each popover.',
+                                            'Display a progress counter, such as "1 of 5", inside each popover. Its wording is set under Progress text.',
                                         defaultValue: true,
                                         component: 'switch',
                                         options: [
@@ -367,6 +367,22 @@ export function toursSection() {
                                             'Label shown on the final step button. Supports expressions for localization.',
                                         defaultValue: 'Done',
                                         expression: 'optional',
+                                    },
+                                    progressText: {
+                                        ref: 'progressText',
+                                        type: 'string',
+                                        label: 'Progress text',
+                                        description:
+                                            'Progress counter shown in each popover. {{current}} becomes the step number and {{total}} the number of steps; each is filled in once. Supports expressions for localization.',
+                                        defaultValue: '{{current}} of {{total}}',
+                                        expression: 'optional',
+                                        /**
+                                         * Show only while the progress indicator is on.
+                                         *
+                                         * @param {object} data - Current property data row.
+                                         * @returns {boolean} True if item should be shown.
+                                         */
+                                        show: (data) => data.showProgress !== false,
                                     },
                                 },
                             },

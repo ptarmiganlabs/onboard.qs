@@ -255,7 +255,7 @@ export async function runTour(tourConfig, options = {}) {
         allowClose: true,
         allowKeyboardControl: tourConfig.allowKeyboard !== false,
         showProgress: tourConfig.showProgress !== false,
-        progressText: '{{current}} of {{total}}',
+        progressText: stripHtml(tourConfig.progressText || '{{current}} of {{total}}'),
         showButtons: ['next', 'previous', 'close'],
         overlayColor: safeCssColor(tourConfig.overlayColor, 'rgba(0, 0, 0, 0.6)'),
         overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
