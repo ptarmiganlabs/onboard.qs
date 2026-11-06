@@ -27,13 +27,18 @@ graph TD
 
         subgraph "Tour Engine"
             TR[tour/tour-runner.js<br/>driver.js Integration]
+            TU[tour/tour-helpers.js<br/>Tour Start & Auto-start]
             TS[tour/tour-storage.js<br/>localStorage Tracking]
             TI[tour/tour-io.js<br/>Import/Export]
         end
 
         subgraph "UI Layer"
             WR[ui/widget-renderer.js<br/>Analysis Mode Widget]
+            TBI[ui/toolbar-injector.js<br/>Toolbar Button]
             TE[ui/tour-editor.js<br/>Edit Mode Modal Editor]
+            MED[ui/markdown-editor-dialog.js<br/>Markdown Editor Dialog]
+            MT[ui/markdown-toolbar.js<br/>Write / Preview Editor]
+            CD[ui/confirm-discard.js<br/>Unsaved-Changes Dialog]
         end
 
         subgraph "Theme Layer"
@@ -44,13 +49,29 @@ graph TD
         subgraph "Utilities"
             LG[util/logger.js]
             MD[util/markdown.js]
+            MS[util/markdown-shortcuts.js]
             UU[util/uuid.js]
+            EXP[util/expressions.js]
+            VI[util/visibility.js]
+            CS[util/css-selector.js]
+            DS[util/dialog-size.js]
+            SA[util/sanitize.js]
             XS[util/extension-state.js<br/>Shared State]
             TB[util/tab-switcher.js<br/>Tab Container Support]
         end
 
+        subgraph "Property Panel"
+            EX[ext/index.js<br/>Property Panel Definition]
+            PTS[ext/tours-section.js<br/>Tours]
+            PWS[ext/widget-section.js<br/>Widget Appearance]
+            PTH[ext/theme-section.js<br/>Theme & Styling]
+            THH[ext/theme-helpers.js<br/>Theme Section Helpers]
+            PSS[ext/security-section.js<br/>Security]
+            PAS[ext/about-section.js<br/>About]
+            LUI[ext/lui-icons.js<br/>Button Icons]
+        end
+
         subgraph "Configuration"
-            EX[ext/index.js<br/>Property Panel]
             OP[object-properties.js<br/>Default QAE Properties]
             ST[style.css<br/>All CSS]
         end
@@ -65,42 +86,85 @@ graph TD
     CM --> EA
     CL --> EA
     EP --> WR
+    EP --> TBI
     EP --> TE
+    EP --> TU
     EP --> TH
     TH --> TP
-    WR --> TR
+    WR --> TU
+    TBI --> TU
+    TU --> TR
+    TU --> TS
     TR --> TS
     TE --> TR
     TE --> TI
+    TE --> MT
+    TE --> CD
+    MED --> MT
+    MED --> CD
     TR --> TB
     TB --> XS
     TB --> SE
     EP --> TB
     TR --> PI
+    EP --> EX
+    EX --> PTS
+    EX --> PWS
+    EX --> PTH
+    EX --> PSS
+    EX --> PAS
+    PTS --> TE
+    PTS --> MED
+    PWS --> LUI
+    PTH --> THH
+    THH --> TP
 ```
+
+Each arrow is an import. The map shows the main ones only: it leaves out most imports of the `util/` modules, which are used across the code. The [module table](#module-responsibilities) says what each module is for.
 
 ## Module responsibilities
 
-| Module                       | Responsibility                                                                                                                                                                                                                               |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.js`                   | Nebula/Stardust supernova entry point. Hooks into Qlik lifecycle (`useLayout`, `useApp`, etc.), detects platform once, delegates rendering.                                                                                                  |
-| `platform/index.js`          | Detects whether running on Cloud or client-managed (URL-based). Resolves the correct adapter and Sense version.                                                                                                                              |
-| `platform/client-managed.js` | Client-managed Qlik Sense adapter: sheet ID detection (URL → Qlik API → DOM), Engine API sheet objects, Sense version detection, version-range-to-code-path mapping.                                                                         |
-| `platform/cloud.js`          | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently.                                                                                                                   |
-| `platform/selectors.js`      | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions.                                                                                                                                              |
-| `theme/resolve.js`           | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`. |
-| `theme/presets.js`           | Built-in theme presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values.                                                                                              |
-| `tour/tour-runner.js`        | Transforms tour config into driver.js steps, launches tours, handles highlight preview.                                                                                                                                                      |
-| `tour/tour-storage.js`       | localStorage-based tracking of "has user seen this tour version".                                                                                                                                                                            |
-| `tour/tour-io.js`            | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing).                                                                         |
-| `ui/widget-renderer.js`      | Renders the analysis-mode UI: "Start Tour" button, multi-tour dropdown, auto-start logic.                                                                                                                                                    |
-| `ui/tour-editor.js`          | Full-screen modal editor for creating/editing tours and steps in edit mode.                                                                                                                                                                  |
-| `ext/index.js`               | Qlik property panel definition. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                  |
-| `object-properties.js`       | Default QAE properties for new extension instances.                                                                                                                                                                                          |
-| `util/logger.js`             | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`.                                                                                                                                           |
-| `util/markdown.js`           | Minimal Markdown-to-HTML converter for tour step descriptions, with raw HTML blocks as in CommonMark.                                                                                                                                        |
-| `util/uuid.js`               | UUID v4 generator for tour/step IDs.                                                                                                                                                                                                         |
-| `style.css`                  | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes, hover menu hiding.                                                                                                                                         |
+| Module                         | Responsibility                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.js`                     | Nebula/Stardust supernova entry point. Hooks into Qlik lifecycle (`useLayout`, `useApp`, etc.), detects platform once, delegates rendering.                                                                                                                                                                |
+| `object-properties.js`         | Default QAE properties for new extension instances.                                                                                                                                                                                                                                                        |
+| `style.css`                    | All CSS: widget, editor, buttons, driver.js theme overrides, Cloud z-index fixes, hover menu hiding.                                                                                                                                                                                                       |
+| `data.js`                      | Data targets: none, as Onboard.qs uses no hypercube. Nothing in `src/` imports it.                                                                                                                                                                                                                         |
+| `ext/index.js`                 | Qlik property panel definition, assembled from the section modules below. Provides a hybrid approach (property panel + modal editor).                                                                                                                                                                      |
+| `ext/tours-section.js`         | Tours section: tours and their steps, the **Open tour editor** button, the **Edit in Markdown editor** button, and the **Target object** dropdown. Its `getObjectList()` also builds the tab-container map and labels objects inside tab containers.                                                       |
+| `ext/widget-section.js`        | Widget Appearance section: the start button's visibility, text, icon, style, alignment and size, the toolbar button, and the host UI toggles.                                                                                                                                                              |
+| `ext/theme-section.js`         | Theme & Styling section: the preset, and overrides for the button, popover, progress bar and menu.                                                                                                                                                                                                         |
+| `ext/theme-helpers.js`         | Helpers for the theme section: the color property keys, color-picker values, and the preset's value as placeholder.                                                                                                                                                                                        |
+| `ext/security-section.js`      | Security section: the allowed URI prefixes for videos and iframes in step descriptions.                                                                                                                                                                                                                    |
+| `ext/about-section.js`         | About section: version, build date and links.                                                                                                                                                                                                                                                              |
+| `ext/lui-icons.js`             | The Lui icons offered for the start button's icon.                                                                                                                                                                                                                                                         |
+| `platform/index.js`            | Detects whether running on Cloud or client-managed (URL-based). Resolves the correct adapter and Sense version.                                                                                                                                                                                            |
+| `platform/client-managed.js`   | Client-managed Qlik Sense adapter: sheet ID detection (URL → Qlik API → DOM), Engine API sheet objects, Sense version detection, version-range-to-code-path mapping.                                                                                                                                       |
+| `platform/cloud.js`            | Qlik Cloud adapter: standalone implementation (no delegation to client-managed). Same interface, maintained independently.                                                                                                                                                                                 |
+| `platform/selectors.js`        | Single-source-of-truth CSS selector registry. Maps `(platform, codePath)` → selector functions.                                                                                                                                                                                                            |
+| `tour/tour-runner.js`          | Transforms tour config into driver.js steps, launches tours, handles highlight preview.                                                                                                                                                                                                                    |
+| `tour/tour-helpers.js`         | Starts tours for the widget and the toolbar button (`startTour()`), and decides which tours auto-start (`handleAutoStart()`): at most once per sheet visit, and with **Show only once** on only until the tour is seen. The visit belongs to the sheet, not the object, and `endAutoStartVisit()` ends it. |
+| `tour/tour-storage.js`         | localStorage-based tracking of "has user seen this tour version".                                                                                                                                                                                                                                          |
+| `tour/tour-io.js`              | Tour import/export: serializes tours + theme + widget to JSON, imports with validation, supports three merge modes (Replace Matching, Replace All, Add to Existing).                                                                                                                                       |
+| `theme/resolve.js`             | Theme resolver. Merges a preset's defaults with per-property overrides from the layout, producing a flat map of CSS custom-property name → value. Also provides `applyThemeToElement()`, `buildPopoverThemeCSS()`, and `injectThemeStyle()`.                                                               |
+| `theme/presets.js`             | Built-in theme presets (Default, The Lean Green Machine, Corporate Blue, Corporate Gold). Each preset defines all color, size, and font values.                                                                                                                                                            |
+| `ui/widget-renderer.js`        | Renders the analysis-mode UI: "Start Tour" button and multi-tour dropdown, for the tours whose show condition holds. Hands auto-start to `tour-helpers.js`.                                                                                                                                                |
+| `ui/toolbar-injector.js`       | With **Show toolbar button** on, puts a tour button in the Sense toolbar. Merges the visible tours of every Onboard.qs object on the sheet into one button or dropdown, and puts it back after sheet changes.                                                                                              |
+| `ui/tour-editor.js`            | Full-screen modal editor for creating/editing tours and steps in edit mode.                                                                                                                                                                                                                                |
+| `ui/confirm-discard.js`        | Asks whether to discard unsaved changes. Used by the tour editor and the Markdown editor dialog.                                                                                                                                                                                                           |
+| `ui/markdown-editor-dialog.js` | The larger Markdown editor that the property panel's **Edit in Markdown editor** button opens for a step description.                                                                                                                                                                                      |
+| `ui/markdown-toolbar.js`       | Tabbed Write / Preview Markdown editor with a formatting toolbar, shared by the tour editor and the Markdown editor dialog.                                                                                                                                                                                |
+| `util/css-selector.js`         | Checks that a step's CSS selector parses. The tour runner gives an unparseable one no element instead of throwing, and the property panel warns about one typed in.                                                                                                                                        |
+| `util/dialog-size.js`          | Dialog-size presets for steps: the list the property panel and the tour editor offer, and the size the tour runner applies.                                                                                                                                                                                |
+| `util/expressions.js`          | Expression values: shows `qStringExpression` and `qValueExpression` properties as `=expr` in the tour editor and the Markdown editor dialog, and stores text starting with `=` as an expression again.                                                                                                     |
+| `util/extension-state.js`      | Shared mutable state: the model and app of the Onboard.qs object rendered last, the tab-container map, and a promise that resolves once the map is built.                                                                                                                                                  |
+| `util/logger.js`               | Build-aware logger (`debug` suppressed in production). Exposes `BUILD_TYPE` and `PACKAGE_VERSION`.                                                                                                                                                                                                         |
+| `util/markdown.js`             | Minimal Markdown-to-HTML converter for tour step descriptions, with raw HTML blocks as in CommonMark.                                                                                                                                                                                                      |
+| `util/markdown-shortcuts.js`   | GitHub-style keyboard shortcuts for Markdown textareas.                                                                                                                                                                                                                                                    |
+| `util/sanitize.js`             | Checks Lui icon names, so a configured icon can't inject CSS classes.                                                                                                                                                                                                                                      |
+| `util/tab-switcher.js`         | Tab container support: builds the tab-container map, and switches to a step's tab before the step is shown. See [Tab container support](TOUR-SYSTEM.md#tab-container-support).                                                                                                                             |
+| `util/uuid.js`                 | UUID v4 generator for tour/step IDs.                                                                                                                                                                                                                                                                       |
+| `util/visibility.js`           | Evaluates the show condition of a tour or step: hidden for `0`, `'0'` and `'false'` (in any case), shown otherwise.                                                                                                                                                                                        |
 
 ## Data flow: analysis mode
 
