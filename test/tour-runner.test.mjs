@@ -472,3 +472,68 @@ test('a new layout that arrives during a move is left to the move', async () => 
     assert.equal(last().title, 'Select months');
     assert.equal(last().progress, '2 of 4');
 });
+
+/**
+ * Run a step's onPopoverRender on a stand-in for its popover element.
+ *
+ * @param {object} step - A driver.js step of the running tour.
+ * @returns {object} The inline style the hook set.
+ */
+function renderedStyle(step) {
+    const wrapper = { style: {} };
+    step.popover.onPopoverRender({ wrapper });
+    return wrapper.style;
+}
+
+test('every step popover is laid out as a column, whatever its target', async () => {
+    await runner.runTour(
+        {
+            tourId: 't2',
+            tourName: 'Targets',
+            steps: [
+                { selectorType: 'none', popoverTitle: 'Standalone', dialogSize: 'x-large' },
+                { selectorType: 'css', customCssSelector: '#x', popoverTitle: 'Selector' },
+                { selectorType: 'object', targetObjectId: 'obj9', popoverTitle: 'Object' },
+            ],
+        },
+        { sheetId: 'sheet1' }
+    );
+    const { steps } = runner.currentConfig();
+    assert.equal(steps.length, 3);
+    for (const step of steps) assert.deepEqual(renderedStyle(step), { display: 'flex' });
+});
+
+test('a custom dialog size is capped at the window', async () => {
+    await runner.runTour(
+        {
+            tourId: 't3',
+            tourName: 'Custom',
+            steps: [
+                {
+                    selectorType: 'none',
+                    popoverTitle: 'Big',
+                    dialogSize: 'custom',
+                    customDialogWidth: 1000,
+                    customDialogHeight: 900,
+                },
+                {
+                    selectorType: 'none',
+                    popoverTitle: 'Too big',
+                    dialogSize: 'custom',
+                    customDialogWidth: 5000,
+                    customDialogHeight: 5000,
+                },
+            ],
+        },
+        { sheetId: 'sheet1' }
+    );
+    const [big, tooBig] = runner.currentConfig().steps.map(renderedStyle);
+    assert.deepEqual(big, {
+        display: 'flex',
+        width: '1000px',
+        maxWidth: 'min(1000px, var(--oqs-popover-max-width))',
+        minHeight: 'min(900px, var(--oqs-popover-max-height))',
+    });
+    assert.equal(tooBig.width, '1200px');
+    assert.equal(tooBig.minHeight, 'min(900px, var(--oqs-popover-max-height))');
+});
