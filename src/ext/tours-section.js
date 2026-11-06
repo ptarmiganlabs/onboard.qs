@@ -3,6 +3,7 @@ import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
 import { extensionState } from '../util/extension-state';
 import { DIALOG_SIZE_OPTIONS } from '../util/dialog-size';
 import { extractExpression, wrapIfExpression } from '../util/expressions';
+import { isInvalidSelectorText } from '../util/css-selector';
 import { openTourEditorFor } from '../ui/tour-editor';
 
 /**
@@ -488,6 +489,21 @@ export function toursSection() {
                                                  * @returns {boolean} True if item should be shown.
                                                  */
                                                 show: (data) => data.selectorType === 'css',
+                                            },
+                                            customCssSelectorWarning: {
+                                                component: 'text',
+                                                label: '⚠ This is not a valid CSS selector, so the step will be shown as a dialog without a target.',
+                                                /**
+                                                 * Show the warning while the selector is plain text
+                                                 * that the browser can't parse. A formula can only be
+                                                 * checked when the tour runs.
+                                                 *
+                                                 * @param {object} data - Current property data row.
+                                                 * @returns {boolean} True if the warning should be shown.
+                                                 */
+                                                show: (data) =>
+                                                    data.selectorType === 'css' &&
+                                                    isInvalidSelectorText(data.customCssSelector),
                                             },
                                             popoverTitle: {
                                                 ref: 'popoverTitle',

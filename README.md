@@ -208,7 +208,7 @@ When **Custom** is selected, two additional fields appear: **Custom width (px)**
 
 ### Tour Overlay & Navigation
 
-The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. The text fields take expressions in both places, so one tour can switch language with a variable:
+The following per-tour properties are configured in both the **property panel** and the **tour editor modal**. They control the driver.js overlay, the navigation buttons and the progress counter. Each of them takes an expression in both places, so one tour can switch language with a variable, or change its overlay with the selections:
 
 | Property             | Type    | Default                    | Description                                                                                                                                              |
 | -------------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -572,6 +572,8 @@ The **Custom CSS Selector** target type lets you highlight any DOM element on th
 | Any element by ID                      | `#my-custom-id`                                            |
 
 To find the right selector: right-click the element in the browser → **Inspect** → look for an `id`, `data-tid`, `data-testid` or `tid` attribute. These are the same in every UI language. Avoid `title` attributes, which are translated, and generated classes such as `css-1x2y3z`, which can change with any Sense release. The [demo app tutorial](docs/DEMO-APP-TUTORIAL.md#techniques-worth-copying) shows the selectors its welcome tour uses for Sense's toolbar.
+
+A step whose selector matches nothing is shown as a dialog in the middle of the screen. So is a step whose selector isn't valid CSS: a typo, a selector that ends in `>`, or an ID that starts with a digit, such as `#2024` from a formula. The property panel and the tour editor warn about a selector they can't parse. A selector built by a formula can only be checked when the tour runs.
 
 ---
 

@@ -44,8 +44,24 @@ export const detectPlatformType = () => 'client-managed';
  */
 export const getPlatformAdapter = () => ({ getCurrentSheetId: () => 'sheet1' });
 
-/** Do nothing instead of writing to localStorage. */
-export const markTourSeen = () => {};
+/** @type {Array<Array<any>>} The arguments of each markTourSeen() call, oldest first. */
+export const seen = [];
+
+/**
+ * Record that a tour was marked as seen, instead of writing to localStorage.
+ *
+ * @param {...any} args - App ID, sheet ID, tour ID and tour version.
+ */
+export const markTourSeen = (...args) => {
+    seen.push(args);
+};
+
+/**
+ * Report that no tour has been seen.
+ *
+ * @returns {boolean} Always false.
+ */
+export const hasSeenTour = () => false;
 
 /**
  * Report that no object is inside a tab container.
@@ -64,12 +80,20 @@ export const ensureTabVisibleSync = () => {};
  */
 export const ensureTabVisible = async () => null;
 
-/** Logger that keeps warnings, so tests can check them. */
+/** Logger that keeps warnings and errors, so tests can check them. */
 const logger = {
     warnings: [],
+    errors: [],
     info() {},
     debug() {},
-    error() {},
+    /**
+     * Keep an error.
+     *
+     * @param {...any} args - Error message and details.
+     */
+    error(...args) {
+        logger.errors.push(args.join(' '));
+    },
     /**
      * Keep a warning.
      *

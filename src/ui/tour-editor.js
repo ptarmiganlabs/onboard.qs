@@ -6,7 +6,8 @@ import { exportToursAndTheme, importFromFile, mergeTours } from '../tour/tour-io
 import { createTabbedMarkdownEditor } from './markdown-toolbar';
 import { confirmDiscardChanges } from './confirm-discard';
 import { DIALOG_SIZE_OPTIONS, getDialogSize } from '../util/dialog-size';
-import { wrapIfExpression, extractExpression } from '../util/expressions';
+import { wrapExpressions, overlayExpressions, readNumberOrFormula } from '../util/expressions';
+import { isInvalidSelectorText } from '../util/css-selector';
 
 /**
  * Modal tour editor for edit mode.
@@ -17,88 +18,39 @@ import { wrapIfExpression, extractExpression } from '../util/expressions';
  */
 
 /**
- * Tour-level string properties that support Qlik expression evaluation.
+ * The default and range of each of the editor's number fields: the property
+ * panel's defaults, and the limits the tour runner applies.
  *
- * @type {string[]}
+ * @type {Record<string, {fallback: number, min: number, max?: number}>}
  */
-const TOUR_EXPR_FIELDS = [
-    'tourName',
-    'showCondition',
-    'overlayColor',
-    'nextBtnText',
-    'prevBtnText',
-    'doneBtnText',
-    'progressText',
-];
+const NUMBER_FIELDS = {
+    overlayOpacity: { fallback: 60, min: 0, max: 100 },
+    stagePadding: { fallback: 8, min: 0 },
+    stageRadius: { fallback: 5, min: 0 },
+    customDialogWidth: { fallback: 500, min: 200, max: 1200 },
+    customDialogHeight: { fallback: 350, min: 100, max: 900 },
+};
 
 /**
- * Step-level string properties that support Qlik expression evaluation.
+ * Keep one of the editor's number fields and the tour or step it edits in
+ * step. Each change is read with readNumberOrFormula(). On leaving the field,
+ * it shows the number that will be saved, so a number out of range, or text
+ * that isn't one, is seen to be replaced.
  *
- * @type {string[]}
+ * @param {HTMLInputElement|null} input - The field, if it is shown.
+ * @param {object} target - The tour or step the field edits.
+ * @param {string} key - The property the field edits, a key of NUMBER_FIELDS.
  */
-const STEP_EXPR_FIELDS = [
-    'popoverTitle',
-    'popoverDescription',
-    'customCssSelector',
-    'showCondition',
-];
-
-/**
- * Wrap '='-prefixed string values in qStringExpression format
- * across all expression-capable fields in a tours array.
- *
- * Mutates the tours in place.
- *
- * @param {Array} tours - Array of tour configuration objects.
- */
-function wrapExpressions(tours) {
-    for (const tour of tours) {
-        for (const key of TOUR_EXPR_FIELDS) {
-            tour[key] = wrapIfExpression(tour[key]);
-        }
-        if (tour.steps) {
-            for (const step of tour.steps) {
-                for (const key of STEP_EXPR_FIELDS) {
-                    step[key] = wrapIfExpression(step[key]);
-                }
-            }
-        }
-    }
-}
-
-/**
- * Overlay raw expression strings from model properties onto the
- * editor's tour data (which was cloned from the evaluated layout).
- *
- * This ensures that existing expressions appear as '=...' text in
- * the editor fields instead of their evaluated values.
- *
- * @param {Array} editorTours - The editor's in-memory tours (cloned from layout).
- * @param {Array} propTours - The raw tours from model.getProperties().
- */
-function overlayExpressions(editorTours, propTours) {
-    for (let i = 0; i < editorTours.length && i < propTours.length; i++) {
-        const editorTour = editorTours[i];
-        const propTour = propTours[i];
-
-        for (const key of TOUR_EXPR_FIELDS) {
-            const expr = extractExpression(propTour[key]);
-            if (expr !== null) {
-                editorTour[key] = expr;
-            }
-        }
-
-        if (editorTour.steps && propTour.steps) {
-            for (let j = 0; j < editorTour.steps.length && j < propTour.steps.length; j++) {
-                for (const key of STEP_EXPR_FIELDS) {
-                    const expr = extractExpression(propTour.steps[j][key]);
-                    if (expr !== null) {
-                        editorTour.steps[j][key] = expr;
-                    }
-                }
-            }
-        }
-    }
+function bindNumberField(input, target, key) {
+    if (!input) return;
+    const range = NUMBER_FIELDS[key];
+    input.addEventListener('input', (e) => {
+        target[key] = readNumberOrFormula(e.target.value, range);
+    });
+    input.addEventListener('change', (e) => {
+        const value = readNumberOrFormula(e.target.value, range);
+        if (typeof value === 'number') e.target.value = String(value);
+    });
 }
 
 let currentHighlight = null;
@@ -477,8 +429,11 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
         // Custom CSS selector input
         const cssSelectorInput = overlay.querySelector('.onboard-qs-editor__step-css-selector');
         if (cssSelectorInput) {
+            const selectorWarning = overlay.querySelector('.onboard-qs-editor__selector-warning');
             cssSelectorInput.addEventListener('input', (e) => {
                 step.customCssSelector = e.target.value;
+                if (selectorWarning)
+                    selectorWarning.hidden = !isInvalidSelectorText(e.target.value);
             });
         }
 
@@ -527,19 +482,16 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         }
 
-        const customWidthInput = overlay.querySelector('.onboard-qs-editor__step-custom-width');
-        if (customWidthInput) {
-            customWidthInput.addEventListener('input', (e) => {
-                step.customDialogWidth = parseInt(e.target.value, 10) || 500;
-            });
-        }
-
-        const customHeightInput = overlay.querySelector('.onboard-qs-editor__step-custom-height');
-        if (customHeightInput) {
-            customHeightInput.addEventListener('input', (e) => {
-                step.customDialogHeight = parseInt(e.target.value, 10) || 350;
-            });
-        }
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__step-custom-width'),
+            step,
+            'customDialogWidth'
+        );
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__step-custom-height'),
+            step,
+            'customDialogHeight'
+        );
 
         const interactionCheck = overlay.querySelector('.onboard-qs-editor__step-interaction');
         if (interactionCheck) {
@@ -623,28 +575,21 @@ export async function openTourEditor({ layout, model, app: _app, sheetObjects, o
             });
         }
 
-        const overlayOpacityInput = overlay.querySelector(
-            '.onboard-qs-editor__tour-overlay-opacity'
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-overlay-opacity'),
+            tour,
+            'overlayOpacity'
         );
-        if (overlayOpacityInput) {
-            overlayOpacityInput.addEventListener('input', (e) => {
-                tour.overlayOpacity = parseInt(e.target.value, 10) || 0;
-            });
-        }
-
-        const stagePaddingInput = overlay.querySelector('.onboard-qs-editor__tour-stage-padding');
-        if (stagePaddingInput) {
-            stagePaddingInput.addEventListener('input', (e) => {
-                tour.stagePadding = parseInt(e.target.value, 10) || 0;
-            });
-        }
-
-        const stageRadiusInput = overlay.querySelector('.onboard-qs-editor__tour-stage-radius');
-        if (stageRadiusInput) {
-            stageRadiusInput.addEventListener('input', (e) => {
-                tour.stageRadius = parseInt(e.target.value, 10) || 0;
-            });
-        }
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-stage-padding'),
+            tour,
+            'stagePadding'
+        );
+        bindNumberField(
+            overlay.querySelector('.onboard-qs-editor__tour-stage-radius'),
+            tour,
+            'stageRadius'
+        );
 
         // Navigation button text
         const nextBtnInput = overlay.querySelector('.onboard-qs-editor__tour-next-btn');
@@ -1074,6 +1019,7 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                         <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-css-selector"
                                value="${escapeAttr(step.customCssSelector || '')}"
                                placeholder="e.g., .qlik-help-button, #my-element" />
+                        <small class="onboard-qs-editor__hint onboard-qs-editor__selector-warning"${isInvalidSelectorText(step.customCssSelector) ? '' : ' hidden'}>This is not a valid CSS selector, so the step will be shown as a dialog without a target.</small>
                     </label>
                     <label class="onboard-qs-editor__field">
                         <span>Popover Title ${infoIcon('Bold heading displayed at the top of the tour step popover.')}</span>
@@ -1117,14 +1063,14 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                     </label>
                     <div class="onboard-qs-editor__field-row" style="${step.dialogSize !== 'custom' ? 'display:none' : ''}">
                         <label class="onboard-qs-editor__field">
-                            <span>Width (px)</span>
-                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
-                                   value="${step.customDialogWidth || 500}" min="200" max="1200" />
+                            <span>Width (px) ${infoIcon('Width of the dialog in pixels, from 200 to 1200. A formula starting with = works too.')}</span>
+                            <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-custom-width"
+                                   value="${escapeAttr(String(step.customDialogWidth || 500))}" />
                         </label>
                         <label class="onboard-qs-editor__field">
-                            <span>Height (px)</span>
-                            <input type="number" class="onboard-qs-editor__input onboard-qs-editor__step-custom-height"
-                                   value="${step.customDialogHeight || 350}" min="100" max="900" />
+                            <span>Height (px) ${infoIcon('Minimum height of the dialog in pixels, from 100 to 900. A formula starting with = works too.')}</span>
+                            <input type="text" class="onboard-qs-editor__input onboard-qs-editor__step-custom-height"
+                                   value="${escapeAttr(String(step.customDialogHeight || 350))}" />
                         </label>
                     </div>
                     <label class="onboard-qs-editor__field onboard-qs-editor__field--inline">
@@ -1181,19 +1127,19 @@ function buildDetailPanel(tour, step, stepIndex, sheetObjects) {
                                value="${escapeAttr(tour.overlayColor || 'rgba(0, 0, 0, 0.6)')}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Overlay opacity (0\u2013100) ${infoIcon('How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-opacity"
-                               value="${tour.overlayOpacity != null ? tour.overlayOpacity : 60}" min="0" max="100" />
+                        <span>Overlay opacity (0\u2013100) ${infoIcon('How opaque the backdrop overlay is. 0 = fully transparent, 100 = fully opaque. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-overlay-opacity"
+                               value="${escapeAttr(String(tour.overlayOpacity != null ? tour.overlayOpacity : 60))}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Stage padding (px) ${infoIcon('Extra space (in pixels) between the highlighted element and the cutout edge.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-padding"
-                               value="${tour.stagePadding != null ? tour.stagePadding : 8}" min="0" />
+                        <span>Stage padding (px) ${infoIcon('Extra space (in pixels) between the highlighted element and the cutout edge. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-padding"
+                               value="${escapeAttr(String(tour.stagePadding != null ? tour.stagePadding : 8))}" />
                     </label>
                     <label class="onboard-qs-editor__field">
-                        <span>Stage border radius (px) ${infoIcon('Corner rounding (in pixels) of the highlight cutout around the target element.')}</span>
-                        <input type="number" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-radius"
-                               value="${tour.stageRadius != null ? tour.stageRadius : 5}" min="0" />
+                        <span>Stage border radius (px) ${infoIcon('Corner rounding (in pixels) of the highlight cutout around the target element. A formula starting with = works too.')}</span>
+                        <input type="text" class="onboard-qs-editor__input onboard-qs-editor__tour-stage-radius"
+                               value="${escapeAttr(String(tour.stageRadius != null ? tour.stageRadius : 5))}" />
                     </label>
                 </div>
                 <div class="onboard-qs-editor__section">

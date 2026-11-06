@@ -7,6 +7,7 @@ import { isVisible } from '../util/visibility';
 import { getTabInfo, ensureTabVisibleSync, ensureTabVisible } from '../util/tab-switcher';
 import { extensionState } from '../util/extension-state';
 import { getDialogSize } from '../util/dialog-size';
+import { isValidCssSelector } from '../util/css-selector';
 
 /**
  * Tour runner — builds driver.js step configurations from the extension
@@ -71,6 +72,36 @@ function getStepDialogSettings(step) {
 }
 
 /**
+ * Warn that a step's selector can't be parsed. A tour that updates its
+ * expressions builds its steps again at every move, so runTour() passes one
+ * set for the whole run, and each selector is reported once per run.
+ *
+ * @param {string} selector - The invalid selector.
+ * @param {Set<string>} [reported] - Selectors already reported in this run.
+ */
+function reportInvalidSelector(selector, reported) {
+    if (reported?.has(selector)) return;
+    reported?.add(selector);
+    logger.warn(
+        `"${selector}" is not a valid CSS selector, so its step is shown as a dialog without a target`
+    );
+}
+
+/**
+ * Read a number setting and keep it within a range. A missing or non-numeric
+ * value, such as a formula that evaluates to text, gives the fallback.
+ *
+ * @param {number|string|null|undefined} value - Candidate value.
+ * @param {number} fallback - Default if value is missing or not a number.
+ * @param {number} min - Smallest value allowed.
+ * @param {number} [max] - Largest value allowed.
+ * @returns {number} The value as a number, within the range.
+ */
+function numberInRange(value, fallback, min, max = Infinity) {
+    return Math.min(max, Math.max(min, numberOr(value, fallback)));
+}
+
+/**
  * Build driver.js steps from a tour configuration.
  *
  * @param {object} tourConfig - A single tour from the layout's tours array.
@@ -78,6 +109,8 @@ function getStepDialogSettings(step) {
  * @param {string} [codePath] - Code-path name for selector lookup (e.g. 'default').
  * @param {object} [options] - Additional options.
  * @param {string} [options.allowedUriPatterns] - Comma-separated URL prefixes for media sources.
+ * @param {Set<string>} [options.reportedSelectors] - Invalid selectors already reported in this
+ *   tour run, so each is reported once per run.
  * @returns {Array<object>} Array of driver.js DriveStep objects.
  */
 export function buildDriverSteps(tourConfig, platformType, codePath, options) {
@@ -125,6 +158,13 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                         ? step.customCssSelector
                         : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
 
+                // A selector the browser can't parse matches nothing, so the
+                // step shows as a dialog without a target, as for a missing
+                // element. querySelector() would throw instead, which stops
+                // the tour at the step before this one.
+                const selectorUsable = isValidCssSelector(cssSelector);
+                if (!selectorUsable) reportInvalidSelector(cssSelector, options?.reportedSelectors);
+
                 // For objects inside tab containers, we need to switch to
                 // the correct tab before the element can be found in the DOM.
                 // The sync variant clicks the tab immediately; if Qlik renders
@@ -146,6 +186,7 @@ export function buildDriverSteps(tourConfig, platformType, codePath, options) {
                      * @returns {Element|null} The matching DOM element, or null.
                      */
                     element: () => {
+                        if (!selectorUsable) return null;
                         if (objectId && getTabInfo(objectId)) {
                             ensureTabVisibleSync(objectId, platformType, codePath);
                         }
@@ -365,9 +406,14 @@ export async function runTour(tourConfig, options = {}) {
         await extensionState.tabContainerMapReady;
     }
 
+    // Invalid selectors reported in this run, which builds its steps again at
+    // each move when its expressions are evaluated again
+    const reportedSelectors = new Set();
+
     // Replaced at each move when the tour's expressions are evaluated again
     let steps = buildDriverSteps(tourConfig, platformType, codePath, {
         allowedUriPatterns,
+        reportedSelectors,
     });
 
     if (steps.length === 0) {
@@ -428,6 +474,7 @@ export async function runTour(tourConfig, options = {}) {
 
         const currentSteps = buildDriverSteps(currentTour, platformType, codePath, {
             allowedUriPatterns,
+            reportedSelectors,
         });
         const leaving = steps[activeIdx]._configIndex;
         // Steps are in tour order, so the last step before the one being
@@ -448,6 +495,25 @@ export async function runTour(tourConfig, options = {}) {
 
         useSteps(currentTour, currentSteps);
         return currentIdx;
+    };
+
+    /**
+     * Show a step, or close the tour if driver.js fails to show it. A throw
+     * from moveTo() would leave the tour stuck on the step it was leaving,
+     * with Next doing nothing and only an error in the console.
+     *
+     * @param {number} index - Index of the step to show.
+     */
+    const showStep = (index) => {
+        try {
+            driverObj.moveTo(index);
+        } catch (err) {
+            logger.error(
+                `Tour "${tourConfig.tourName}" could not show step ${index + 1}, so it was closed:`,
+                err
+            );
+            abandonTour(driverObj);
+        }
     };
 
     // Next and Previous wait for the engine, and a second click meanwhile
@@ -482,7 +548,7 @@ export async function runTour(tourConfig, options = {}) {
         // The user can close the tour, and start another, while the awaits above run
         if (targetIdx === null || !isRunning()) return;
         // Past either end, driver.js ends the tour
-        driverObj.moveTo(targetIdx);
+        showStep(targetIdx);
     };
 
     /**
@@ -502,6 +568,7 @@ export async function runTour(tourConfig, options = {}) {
 
         const currentSteps = buildDriverSteps(currentTour, platformType, codePath, {
             allowedUriPatterns,
+            reportedSelectors,
         });
         const currentIdx = currentSteps.findIndex(
             (step) => step._configIndex === shown._configIndex
@@ -512,9 +579,12 @@ export async function runTour(tourConfig, options = {}) {
         const before = popoverContent(steps, shownIdx, driverObj.getConfig());
         useSteps(currentTour, currentSteps);
         if (popoverContent(steps, currentIdx, driverObj.getConfig()) !== before) {
-            driverObj.moveTo(currentIdx);
+            showStep(currentIdx);
         }
     };
+
+    // Set when driver.js fails to show the tour, which then doesn't count as seen
+    let startFailed = false;
 
     const driverConfig = {
         steps,
@@ -525,9 +595,11 @@ export async function runTour(tourConfig, options = {}) {
         showProgress: tourConfig.showProgress !== false,
         showButtons: ['next', 'previous', 'close'],
         overlayColor: safeCssColor(tourConfig.overlayColor, 'rgba(0, 0, 0, 0.6)'),
-        overlayOpacity: tourConfig.overlayOpacity != null ? tourConfig.overlayOpacity / 100 : 0.6,
-        stagePadding: numberOr(tourConfig.stagePadding, 8),
-        stageRadius: numberOr(tourConfig.stageRadius, 5),
+        // A formula can give anything, so these are checked here rather than
+        // trusted to the property panel's min and max
+        overlayOpacity: numberInRange(tourConfig.overlayOpacity, 60, 0, 100) / 100,
+        stagePadding: numberInRange(tourConfig.stagePadding, 8, 0),
+        stageRadius: numberInRange(tourConfig.stageRadius, 5, 0),
         popoverClass: 'onboard-qs-popover',
         ...getTourTexts(tourConfig),
         /**
@@ -547,6 +619,7 @@ export async function runTour(tourConfig, options = {}) {
          * Callback invoked when the driver.js tour is destroyed.
          */
         onDestroyed: () => {
+            if (startFailed) return;
             logger.info(`Tour "${tourConfig.tourName}" completed/closed`);
             // Mark as seen in localStorage
             if (appId && sheetId && tourConfig.tourId) {
@@ -584,8 +657,39 @@ export async function runTour(tourConfig, options = {}) {
     activeTourSheetId = sheetId || null;
     activeTourRefresh =
         reevaluateEachStep && objectId ? { objectId, refresh: refreshShownStep } : null;
-    driverObj.drive();
+    try {
+        driverObj.drive();
+    } catch (err) {
+        startFailed = true;
+        logger.error(`Tour "${tourConfig.tourName}" could not be shown:`, err);
+        abandonTour(driverObj);
+        return null;
+    }
     return driverObj;
+}
+
+/**
+ * Undo what driver.js did to the page for a tour it failed to show.
+ * driver.js puts `driver-active` on `<body>` before it shows the first step,
+ * and its `.driver-active *` rule keeps every click from reaching the sheet
+ * for as long as the class is there.
+ *
+ * @param {object} driverObj - The driver.js instance of the tour.
+ */
+function abandonTour(driverObj) {
+    try {
+        driverObj.destroy();
+    } catch {
+        // The classes driver.js added are removed below either way
+    }
+    if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.remove('driver-active', 'driver-fade', 'driver-simple');
+    }
+    if (activeTour === driverObj) {
+        activeTour = null;
+        activeTourSheetId = null;
+        activeTourRefresh = null;
+    }
 }
 
 /**
@@ -620,6 +724,13 @@ export function highlightStep(step, platformType, codePath) {
         step.selectorType === 'css' && step.customCssSelector
             ? step.customCssSelector
             : getObjectSelectorSync(platformType, step.targetObjectId, codePath);
+
+    // querySelector() would throw on it, and the editor, hidden for the
+    // preview, would not come back
+    if (!isValidCssSelector(cssSelector)) {
+        reportInvalidSelector(cssSelector);
+        return null;
+    }
 
     // For objects inside tab containers, switch to the correct tab first
     const objectId = step.selectorType !== 'css' ? step.targetObjectId : null;

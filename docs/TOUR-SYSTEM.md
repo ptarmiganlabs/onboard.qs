@@ -101,7 +101,7 @@ Each step targets a DOM element using one of three selector strategies:
 | `selectorType`       | Behavior                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | `'object'` (default) | Uses `targetObjectId` → resolved via `getObjectSelectorSync()` to a `.qv-object-{id}` CSS selector |
-| `'css'`              | Uses `customCssSelector` directly — any valid CSS selector                                         |
+| `'css'`              | Uses `customCssSelector` directly. A selector the browser can't parse matches nothing              |
 | `'none'`             | No element — driver.js shows a centered modal dialog                                               |
 
 ## Tour execution flow

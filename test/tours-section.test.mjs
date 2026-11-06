@@ -16,6 +16,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
+import { installFakeDocument } from './support/fake-document.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -315,4 +316,23 @@ test('without a handler, Open tour editor uses the object rendered last only if 
     assert.equal(section.tourEditors.length, 1);
     assert.equal(section.tourEditors[0].model, a.model);
     assert.equal(alerts.length, 1);
+});
+
+test('the panel warns about a CSS selector the browser cannot parse, but not about a formula', () => {
+    const warning = find(section.toursSection(), 'customCssSelectorWarning');
+    assert.equal(warning.component, 'text');
+    const fake = installFakeDocument();
+    try {
+        const shows = (customCssSelector, selectorType = 'css') =>
+            warning.show({ selectorType, customCssSelector });
+        assert.equal(shows('#target >'), true);
+        assert.equal(shows('#2024'), true);
+        assert.equal(shows('#target'), false);
+        assert.equal(shows(''), false);
+        // A formula is evaluated by the engine, so it can only be checked when the tour runs
+        assert.equal(shows({ qStringExpression: { qExpr: "'#' & Only(Year)" } }), false);
+        assert.equal(shows('#target >', 'object'), false);
+    } finally {
+        fake.uninstall();
+    }
 });

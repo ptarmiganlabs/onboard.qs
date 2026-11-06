@@ -16,10 +16,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
+import { installFakeDocument } from './support/fake-document.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const runnerPath = path.join(root, 'src', 'tour', 'tour-runner.js');
+const helpersPath = path.join(root, 'src', 'tour', 'tour-helpers.js');
+const statePath = path.join(root, 'src', 'util', 'extension-state.js');
 const stubsPath = path.join(here, 'support', 'stubs.js');
 const fakeDriverPath = path.join(here, 'support', 'fake-driver.js');
 const stubbedImports = [
@@ -40,9 +43,11 @@ before(async () => {
     await esbuild.build({
         stdin: {
             contents: [
-                `export { runTour, refreshRunningTour } from ${JSON.stringify(runnerPath)};`,
+                `export { runTour, refreshRunningTour, highlightStep } from ${JSON.stringify(runnerPath)};`,
+                `export { startTour } from ${JSON.stringify(helpersPath)};`,
+                `export { extensionState } from ${JSON.stringify(statePath)};`,
                 `export * from ${JSON.stringify(fakeDriverPath)};`,
-                `export { default as logger } from ${JSON.stringify(stubsPath)};`,
+                `export { default as logger, seen } from ${JSON.stringify(stubsPath)};`,
             ].join('\n'),
             resolveDir: root,
         },
@@ -57,7 +62,8 @@ before(async () => {
                 setup(build) {
                     build.onResolve({ filter: /^driver\.js$/ }, () => ({ path: fakeDriverPath }));
                     build.onResolve({ filter: /^\.\.?\// }, (args) =>
-                        args.importer === runnerPath && stubbedImports.includes(args.path)
+                        [runnerPath, helpersPath].includes(args.importer) &&
+                        stubbedImports.includes(args.path)
                             ? { path: stubsPath }
                             : undefined
                     );
@@ -71,6 +77,8 @@ before(async () => {
 beforeEach(() => {
     runner.reset();
     runner.logger.warnings.length = 0;
+    runner.logger.errors.length = 0;
+    runner.seen.length = 0;
 });
 
 /**
@@ -536,4 +544,226 @@ test('a custom dialog size is capped at the window', async () => {
     });
     assert.equal(tooBig.width, '1200px');
     assert.equal(tooBig.minHeight, 'min(900px, var(--oqs-popover-max-height))');
+});
+
+test('a step whose CSS selector is invalid has no target, and the tour goes on to it', async () => {
+    const fake = installFakeDocument();
+    try {
+        await runner.runTour(
+            {
+                tourId: 't4',
+                tourName: 'Selectors',
+                steps: [
+                    { selectorType: 'none', popoverTitle: 'First' },
+                    { selectorType: 'css', customCssSelector: '#t4 >', popoverTitle: 'Invalid' },
+                    { selectorType: 'css', customCssSelector: '#target', popoverTitle: 'Valid' },
+                ],
+            },
+            { sheetId: 'sheet1' }
+        );
+        const [, invalid, valid] = runner.currentConfig().steps;
+        // driver.js shows a step whose element() is null as a dialog without a target
+        assert.equal(invalid.element(), null);
+        assert.equal(invalid.element(), null);
+        assert.equal(valid.element(), fake.target);
+        await runner.clickNext();
+        assert.equal(last().title, 'Invalid');
+        await runner.clickNext();
+        assert.equal(last().title, 'Valid');
+        const reports = runner.logger.warnings.filter((w) => w.includes('"#t4 >"'));
+        assert.equal(reports.length, 1);
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('a formula that builds an invalid selector does not stop the tour from starting', async () => {
+    const fake = installFakeDocument();
+    try {
+        // `='#' & Only(Year)` gives #2024 with 2024 selected: an ID can't start with a digit
+        const tour = {
+            tourId: 't5',
+            tourName: 'Formula selector',
+            steps: [{ selectorType: 'css', customCssSelector: '#2024', popoverTitle: 'Year' }],
+        };
+        const started = await runner.runTour(tour, { sheetId: 'sheet1' });
+        assert.ok(started, 'the tour starts');
+        assert.equal(runner.currentConfig().steps[0].element(), null);
+        assert.equal(last().title, 'Year');
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('a tour that driver.js fails to show leaves the page usable and is not marked as seen', async () => {
+    const fake = installFakeDocument();
+    try {
+        runner.failNextDrive(new Error('could not render the first step'));
+        const result = await runner.runTour(
+            {
+                tourId: 't6',
+                tourName: 'Broken',
+                steps: [{ selectorType: 'none', popoverTitle: 'Never' }],
+            },
+            { appId: 'app1', sheetId: 'sheet1' }
+        );
+        assert.equal(result, null);
+        // Without this, driver.js's `.driver-active *` rule keeps every click from the sheet
+        assert.ok(fake.removedClasses.includes('driver-active'));
+        assert.deepEqual(runner.seen, []);
+
+        // The failed tour doesn't count as running, so another one can start
+        await runner.runTour(
+            {
+                tourId: 't7',
+                tourName: 'Next one',
+                steps: [{ selectorType: 'none', popoverTitle: 'Shown' }],
+            },
+            { appId: 'app1', sheetId: 'sheet1' }
+        );
+        assert.equal(last().title, 'Shown');
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('an invalid selector is reported once per tour run, and again when the tour runs again', async () => {
+    const fake = installFakeDocument();
+    try {
+        const tour = (sel) => ({
+            tourId: 't8',
+            tourName: 'Twice',
+            reevaluateEachStep: true,
+            steps: [
+                { selectorType: 'none', popoverTitle: 'First' },
+                { selectorType: 'css', customCssSelector: '#t8 >', popoverTitle: 'Invalid' },
+                { selectorType: 'none', popoverTitle: `Last ${sel}` },
+            ],
+        });
+        const options = {
+            sheetId: 'sheet1',
+            objectId: 'obj8',
+            getLayout: async () => ({ qInfo: { qId: 'obj8' }, tours: [tour(2)] }),
+        };
+        const reports = () => runner.logger.warnings.filter((w) => w.includes('"#t8 >"')).length;
+
+        await runner.runTour(tour(1), options);
+        // Each move builds the steps again from a new layout
+        await runner.clickNext();
+        await runner.clickNext();
+        assert.equal(reports(), 1);
+        runner.reset();
+
+        await runner.runTour(tour(1), options);
+        assert.equal(reports(), 2);
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('a formula that gives no number, or one out of range, falls back or is capped', async () => {
+    const start = (values) =>
+        runner.runTour(
+            {
+                tourId: 't9',
+                tourName: 'Overlay',
+                ...values,
+                steps: [{ selectorType: 'none', popoverTitle: 'x' }],
+            },
+            { sheetId: 'sheet1' }
+        );
+    const overlay = () => {
+        const { overlayOpacity, stagePadding, stageRadius } = runner.currentConfig();
+        return { overlayOpacity, stagePadding, stageRadius };
+    };
+
+    // A formula that evaluates to text puts that text in the layout
+    await start({ overlayOpacity: 'Nordics', stagePadding: '', stageRadius: null });
+    assert.deepEqual(overlay(), { overlayOpacity: 0.6, stagePadding: 8, stageRadius: 5 });
+    runner.reset();
+
+    await start({ overlayOpacity: 500, stagePadding: -20, stageRadius: -1 });
+    assert.deepEqual(overlay(), { overlayOpacity: 1, stagePadding: 0, stageRadius: 0 });
+    runner.reset();
+
+    await start({ overlayOpacity: 0 });
+    assert.equal(overlay().overlayOpacity, 0);
+});
+
+test('a step that driver.js fails to show closes the tour instead of leaving it stuck', async () => {
+    const fake = installFakeDocument();
+    try {
+        await runner.runTour(
+            {
+                tourId: 't10',
+                tourName: 'Breaks on step 2',
+                steps: [
+                    { selectorType: 'none', popoverTitle: 'First' },
+                    { selectorType: 'none', popoverTitle: 'Second' },
+                ],
+            },
+            { appId: 'app1', sheetId: 'sheet1' }
+        );
+        runner.failNextMove(new Error('could not render step 2'));
+        // Resolves rather than rejecting, so the click handler leaves no unhandled rejection
+        await runner.clickNext();
+
+        assert.equal(last(), 'destroyed');
+        assert.ok(fake.removedClasses.includes('driver-active'));
+        assert.ok(runner.logger.errors.some((e) => e.includes('could not show step 2')));
+
+        // The closed tour no longer blocks another one
+        await runner.runTour(
+            {
+                tourId: 't11',
+                tourName: 'After',
+                steps: [{ selectorType: 'none', popoverTitle: 'Shown' }],
+            },
+            { sheetId: 'sheet1' }
+        );
+        assert.equal(last().title, 'Shown');
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test("the editor's step preview returns nothing for an invalid selector, and warns each time", () => {
+    const fake = installFakeDocument();
+    try {
+        const step = {
+            selectorType: 'css',
+            customCssSelector: '#preview >',
+            popoverTitle: 'Preview',
+        };
+        // Before the fix this threw, after the editor had hidden itself for the preview
+        assert.equal(runner.highlightStep(step, 'client-managed'), null);
+        assert.equal(runner.highlightStep(step, 'client-managed'), null);
+        const reports = runner.logger.warnings.filter((w) => w.includes('"#preview >"'));
+        assert.equal(reports.length, 2);
+    } finally {
+        fake.uninstall();
+    }
+});
+
+test('startTour logs a tour that fails to start, instead of leaving an unhandled rejection', async () => {
+    const failure = Promise.reject(new Error('the tab containers could not be read'));
+    // runTour() awaits this promise; only its own rejection is under test
+    failure.catch(() => {});
+    runner.extensionState.tabContainerMapReady = failure;
+    try {
+        runner.startTour(
+            {
+                tourId: 't12',
+                tourName: 'Cannot start',
+                steps: [{ selectorType: 'none', popoverTitle: 'x' }],
+            },
+            { sheetId: 'sheet1' }
+        );
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        assert.ok(
+            runner.logger.errors.some((e) => e.includes('"Cannot start" could not be started'))
+        );
+    } finally {
+        runner.extensionState.tabContainerMapReady = null;
+    }
 });
