@@ -286,10 +286,12 @@ button** off: on this sheet the tours start only from the button on the sheet.
 **Profitability explained**
 
 - **Step 1** is a _Standalone Dialog_ with **Dialog size** _Large (640 × 420)_. Its description is
-  Markdown with an HTML table in the middle, showing sales and margin per product category. Markdown
-  and HTML can be mixed freely; the README's
+  Markdown with an HTML table in the middle, showing sales and margin per product category. The table
+  has a blank line before and after it, which keeps the HTML and the Markdown apart: Onboard.qs shows
+  the table exactly as written, and the italic line after it is Markdown again. The README's
   [Markdown & HTML in Step Descriptions](../README.md#markdown--html-in-step-descriptions) lists what is
-  allowed.
+  allowed, and [Things to know](#things-to-know-before-you-build-your-own) has the one rule for
+  Markdown inside HTML.
 - **Step 4**'s title is an expression, so it shows the gross margin of whatever is selected:
 
     ```
@@ -515,6 +517,26 @@ selection.
   1.9.0 and earlier the buttons end up off the bottom of the window. Either way, keep texts short,
   prefer _Dynamic (fit content)_, and cap image heights
   ([#281](https://github.com/ptarmiganlabs/onboard.qs/issues/281)).
+- **Markdown inside HTML needs blank lines** from 1.10.1. A line that starts with a block-level tag
+  such as `<div>` or `<table>` begins a block of raw HTML. The block runs to the next blank line, and
+  Onboard.qs shows it exactly as written. Bold, italics, links and code still work in it. A list,
+  heading, quote or rule shows as plain text unless it has a blank line before and after it:
+
+    ```markdown
+    <div style="background: #f0f8ff; padding: 8px;">
+
+    - First point
+    - Second point
+
+    </div>
+    ```
+
+    This is how [CommonMark](https://spec.commonmark.org/0.31.2/#html-blocks) treats HTML. In 1.10.0 and
+    earlier, a list straight inside a `<div>` became a list, but line breaks and empty paragraphs were
+    also added inside tables, SVG and other HTML
+    ([#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)). The README's
+    [Raw HTML](../README.md#raw-html) section has the details.
+
 - **Selectors for Sense's own UI can break.** Titles change with the UI language, and generated classes
   with the Sense version. Use `id`, `data-tid`, `data-testid` and `tid` attributes, and run your tours
   after each Sense upgrade.

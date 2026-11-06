@@ -460,7 +460,7 @@ Step descriptions support a subset of Markdown, converted to HTML by `util/markd
 | blank line          | paragraph break |
 | single newline      | `<br>`          |
 
-Raw HTML passes through as well. A line that starts with a block-level tag such as `<div>` or `<table>`, or that holds nothing but one tag, starts an HTML block, as in CommonMark. The block runs to the next blank line, and the converter adds no paragraphs and no line breaks inside it.
+Raw HTML passes through as well. A line that starts with a block-level tag such as `<div>` or `<table>`, or that holds nothing but one tag after a blank line, starts an HTML block, as in CommonMark. The block runs to the next blank line, and the converter adds no paragraphs and no line breaks inside it. Inline Markdown (bold, italics, links, code) still works in the text between the tags, but block Markdown (lists, headings, quotes, rules) inside an HTML element needs a blank line before and after it, or it shows as plain text. This has been the rule since 1.10.1; earlier versions converted lists inside HTML but also broke tables and SVG ([#317](https://github.com/ptarmiganlabs/onboard.qs/issues/317)).
 
 The converter is intentionally minimal, with no dependency besides DOMPurify, to keep the bundle small. Its HTML output is sanitised through [DOMPurify](https://github.com/cure53/DOMPurify) before reaching the DOM, preventing cross-site scripting (XSS) attacks.
 
