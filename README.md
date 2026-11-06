@@ -297,6 +297,8 @@ Then paste as: `![Alt](data:image/png;base64,<pasted string>)`
 3. Step three
 ```
 
+An ordered list starts at its first item's number, so `2024.` and `2025.` render as 2024. and 2025.
+
 #### Blockquotes
 
 ```markdown
@@ -404,15 +406,18 @@ Key things to note:
 
 ### What Gets Escaped
 
-The parser escapes `&` (when not part of an HTML entity) and `<` only when **not** followed by a letter, `/`, or `!`. This means:
+The parser escapes `&` when it isn't part of an HTML entity, and `<` when it doesn't start an HTML tag (`<name …>`, `</name>`) or comment (`<!-- … -->`). This means:
 
-| Input                   | Result                                    |
-| ----------------------- | ----------------------------------------- |
-| `<strong>Bold</strong>` | Preserved as HTML → **Bold**              |
-| `<img src="..." />`     | Preserved as HTML → rendered image        |
-| `5 < 10`                | Escaped to `5 &lt; 10` → displays as text |
-| `AT&T`                  | Escaped to `AT&amp;T` → displays as text  |
-| `&copy;`                | Preserved → ©                             |
+| Input                   | Result                                          |
+| ----------------------- | ----------------------------------------------- |
+| `<strong>Bold</strong>` | Preserved as HTML → **Bold**                    |
+| `<img src="..." />`     | Preserved as HTML → rendered image              |
+| `5 < 10`                | Escaped to `5 &lt; 10` → displays as text       |
+| `Sales<budget in Q3`    | Escaped to `Sales&lt;budget` → displays as text |
+| `AT&T`                  | Escaped to `AT&amp;T` → displays as text        |
+| `&copy;`                | Preserved → ©                                   |
+
+As in CommonMark, a `<` followed by a name and, later, a `>` is a tag, so `x<y and y>z` loses `<y and y>`. Write `x < y` with spaces, or `x &lt; y`, when text like that comes from a formula.
 
 ### Complete Example
 

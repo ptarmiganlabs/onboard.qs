@@ -285,6 +285,44 @@ test('an evaluated formula description from the demo tours', () => {
     );
 });
 
+// A stray < and list numbers: #320
+
+test('a < that starts no tag shows as text (#320)', () => {
+    assert.equal(
+        md('Sales<budget in Q3, so the target was missed.'),
+        '<p>Sales&lt;budget in Q3, so the target was missed.</p>'
+    );
+    assert.equal(md('a<b, 5 < 10 and <3'), '<p>a&lt;b, 5 &lt; 10 and &lt;3</p>');
+    assert.equal(
+        md('<https://example.com> and <user@example.com>'),
+        '<p>&lt;https://example.com> and &lt;user@example.com></p>'
+    );
+    assert.equal(
+        md('<table><tr><td>Sales<budget</td></tr></table>'),
+        '<table><tr><td>Sales&lt;budget</td></tr></table>'
+    );
+});
+
+test('tags, close tags and comments are kept', () => {
+    assert.equal(
+        md('A <strong>tag</strong>, a stray </b> and a <!-- note --> comment'),
+        '<p>A <strong>tag</strong>, a stray </b> and a <!-- note --> comment</p>'
+    );
+});
+
+test('a < with a tag name and a > later is a tag, as in CommonMark', () => {
+    assert.equal(md('x<y and y>z'), '<p>x<y and y>z</p>');
+});
+
+test('an ordered list starts at its first number (#320)', () => {
+    assert.equal(
+        md('2024. Sales grew 12%\n2025. Sales grew 8%'),
+        '<ol start="2024"><li>Sales grew 12%</li><li>Sales grew 8%</li></ol>'
+    );
+    assert.equal(md('1. One\n2. Two'), '<ol><li>One</li><li>Two</li></ol>');
+    assert.equal(md('1. One\n\n2. Two'), '<ol><li>One</li></ol>\n<ol start="2"><li>Two</li></ol>');
+});
+
 // Line breaks
 
 test('a line that starts with bold, a link or code gets its <br>', () => {

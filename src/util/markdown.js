@@ -8,7 +8,7 @@
  *   - `inline code`
  *   - Line breaks (blank line → paragraph, single newline → <br>)
  *   - Unordered lists (- item or * item)
- *   - Ordered lists (1. item)
+ *   - Ordered lists (1. item), starting at the first item's number
  *   - Headings (### h3 to ###### h6; h1/h2 intentionally omitted for popovers)
  *   - > blockquotes
  *   - --- horizontal rules
@@ -228,9 +228,9 @@ function inline(text, breaks) {
         return keep(`<code>${escapeHtml(code)}</code>`);
     });
 
-    // Escape HTML entities (but preserve already-written HTML tags for power users)
-    // We only escape & and angle brackets that are NOT part of existing HTML tags
-    text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/<(?![/a-zA-Z!])/g, '&lt;');
+    // What is left is text. Escape & unless it starts an entity, and every
+    // <: one that starts a tag or a comment has been set aside above
+    text = text.replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt;');
 
     // Images: ![alt](src "title"), with an optional title in "" or ''
     text = text.replace(
@@ -327,10 +327,12 @@ function renderBlocks(md) {
             endParagraph();
             const items = run(BULLET).map((li) => `<li>${inline(li[1], false)}</li>`);
             html.push(`<ul>${items.join('')}</ul>`);
-        } else if (NUMBERED.test(line)) {
+        } else if ((m = NUMBERED.exec(line))) {
             endParagraph();
+            // The list starts at its first item's number, as in CommonMark
+            const start = Number(m[1]);
             const items = run(NUMBERED).map((li) => `<li>${inline(li[2], false)}</li>`);
-            html.push(`<ol>${items.join('')}</ol>`);
+            html.push(`<ol${start === 1 ? '' : ` start="${start}"`}>${items.join('')}</ol>`);
         } else {
             paragraph.push(line);
         }
