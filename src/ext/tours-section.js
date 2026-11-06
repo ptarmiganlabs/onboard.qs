@@ -496,9 +496,10 @@ export function toursSection() {
                                                  * Open the Markdown editor dialog for this step.
                                                  *
                                                  * @param {object} item - The step data item.
+                                                 * @param {object} [handler] - The property panel's handler.
                                                  */
-                                                action(item) {
-                                                    const cId = item.cId;
+                                                action(item, handler) {
+                                                    const location = findStepInPanel(item, handler);
                                                     // popoverDescription can be a Qlik expression object when
                                                     // the field value is set to a formula (expression: 'optional').
                                                     // Normalise it to a plain string before opening the editor.
@@ -522,7 +523,7 @@ export function toursSection() {
                                                          */
                                                         onSave(text) {
                                                             persistStepProperty(
-                                                                cId,
+                                                                { handler, location, item },
                                                                 'popoverDescription',
                                                                 text
                                                             );
@@ -691,38 +692,104 @@ export function toursSection() {
 }
 
 // ---------------------------------------------------------------------------
-// Helper — persist a single step property via the Enigma API
+// Helpers — act on the object a property panel belongs to
 // ---------------------------------------------------------------------------
+
+/**
+ * Get the Enigma model of the Onboard.qs object a property panel belongs to.
+ *
+ * Sense passes each panel action the panel's handler, which holds the
+ * object's properties and the app. The object needn't be rendered: one
+ * shrunk to a single grid cell may not be.
+ *
+ * @param {object} [handler] - The property panel's handler.
+ * @returns {Promise<object|null>} Enigma model, or null without a handler.
+ */
+async function getPanelModel(handler) {
+    const objectId = handler?.properties?.qInfo?.qId;
+    if (!objectId || typeof handler.app?.getObject !== 'function') return null;
+    return handler.app.getObject(objectId);
+}
+
+/**
+ * Find a step's position in the property panel's copy of the tours.
+ *
+ * Sense passes a step's action the step from that copy. The `cId` the
+ * panel gives a step is only stored once the panel itself saves the
+ * tours: tours made in the tour editor, imported or written through the
+ * Engine API have none. So the step is found by its position.
+ *
+ * @param {object} item - The step, as the panel passes it to the action.
+ * @param {object} [handler] - The property panel's handler.
+ * @returns {{tourIndex: number, stepIndex: number}|null} Position, or null when the step isn't in the handler's copy.
+ */
+function findStepInPanel(item, handler) {
+    for (const [tourIndex, tour] of (handler?.properties?.tours || []).entries()) {
+        const stepIndex = (tour.steps || []).indexOf(item);
+        if (stepIndex !== -1) return { tourIndex, stepIndex };
+    }
+    return null;
+}
+
+/**
+ * Check that a stored step is the one the property panel showed, in case
+ * the tours changed after the panel read them.
+ *
+ * @param {object} stored - Step from the object's stored properties.
+ * @param {object} item - Step from the panel's copy.
+ * @returns {boolean} True when they are the same step.
+ */
+function isSameStep(stored, item) {
+    if (stored.cId && item.cId) return stored.cId === item.cId;
+    return ['selectorType', 'targetObjectId', 'customCssSelector', 'popoverTitle'].every(
+        (key) => JSON.stringify(stored[key] ?? '') === JSON.stringify(item[key] ?? '')
+    );
+}
 
 /**
  * Persist a single step-level property change via the Enigma model.
  *
- * Finds the step by its `cId` across all tours and updates the given
- * property, then calls `setProperties` to save.
+ * With the property panel's handler, updates the step at its position in
+ * the stored tours of the panel's object. Without one, finds the step by
+ * its `cId` in the object rendered last.
  *
- * @param {string} cId - The unique cId of the step.
+ * @param {object} target - The step to change.
+ * @param {object} [target.handler] - The property panel's handler.
+ * @param {{tourIndex: number, stepIndex: number}|null} target.location - Position, from findStepInPanel().
+ * @param {object} target.item - The step, as the property panel passed it.
  * @param {string} property - Property name to update.
  * @param {string} value - New value for the property.
  */
-async function persistStepProperty(cId, property, value) {
-    const { model } = extensionState;
-    if (!model) {
-        logger.warn('Cannot persist property change — model not available');
-        return;
-    }
-
+async function persistStepProperty({ handler, location, item }, property, value) {
     try {
+        const panelModel = location ? await getPanelModel(handler) : null;
+        if (panelModel) {
+            const props = await panelModel.getProperties();
+            const step = props.tours?.[location.tourIndex]?.steps?.[location.stepIndex];
+            if (!step || !isSameStep(step, item)) {
+                logger.warn('Cannot save the change — the tours changed after the panel read them');
+                return;
+            }
+            step[property] = value;
+            await panelModel.setProperties(props);
+            return;
+        }
+
+        const { model } = extensionState;
+        if (!model) {
+            logger.warn('Cannot persist property change — model not available');
+            return;
+        }
         const props = await model.getProperties();
-        const tours = props.tours || [];
-        for (const tour of tours) {
-            const step = (tour.steps || []).find((s) => s.cId === cId);
+        for (const tour of props.tours || []) {
+            const step = (tour.steps || []).find((s) => s.cId === item.cId);
             if (step) {
                 step[property] = value;
                 await model.setProperties(props);
                 return;
             }
         }
-        logger.warn('Step not found for cId:', cId);
+        logger.warn('Step not found for cId:', item.cId);
     } catch (err) {
         logger.warn('Failed to persist Markdown editor change:', err);
     }
