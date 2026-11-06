@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.10.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.10.1...onboard-qs-v1.10.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* **tour:** treat a tour saved without Show only once as having it on ([32cb0d7](https://github.com/ptarmiganlabs/onboard.qs/commit/32cb0d715a03f9b6f452f23da2fe1a759bcb5200)), closes [#332](https://github.com/ptarmiganlabs/onboard.qs/issues/332)
+
+
+### Miscellaneous
+
+* **pdf:** render Mermaid diagrams in README.pdf ([a7a43ff](https://github.com/ptarmiganlabs/onboard.qs/commit/a7a43ff7cf6450a1edb8035ceabc138550055179))
+
+
+### Refactoring
+
+* remove the unused src/data.js ([b139f0c](https://github.com/ptarmiganlabs/onboard.qs/commit/b139f0c0470b568b412fa27d72a494fa477d4152))
+
+
+### Documentation
+
+* **architecture:** list every module in the component map and module table ([e6f83d6](https://github.com/ptarmiganlabs/onboard.qs/commit/e6f83d6aa4d18ddb233738e082b8b4f22bd84e95))
+* **architecture:** match the lifecycle, data flows and file tree to src/ ([1a72d15](https://github.com/ptarmiganlabs/onboard.qs/commit/1a72d154d49a1728d596c13764ba60222ec13f57))
+* **demo:** add the coffee demo app from the README's video ([00e0c73](https://github.com/ptarmiganlabs/onboard.qs/commit/00e0c7359204817bd9bb5a72b8ab9e8f84602d92))
+* **development:** bring Build Commands and How It Works in line with the code ([27e2cd8](https://github.com/ptarmiganlabs/onboard.qs/commit/27e2cd8c4ba1021daf9b3e6066fba92527cb3c4c))
+* **development:** list every file in src/ and scripts/ in the project tree ([97b49c2](https://github.com/ptarmiganlabs/onboard.qs/commit/97b49c2d6859a5b05dd2ec717246bb0a16ca4dd3))
+* **readme:** make the auto-start and target diagrams shorter ([31292b4](https://github.com/ptarmiganlabs/onboard.qs/commit/31292b4849c721f22bb6a457cf94ef38aa61e4f3))
+* **readme:** show the coffee demo app in the screenshots, and draw how tours run ([250bd1e](https://github.com/ptarmiganlabs/onboard.qs/commit/250bd1e43868618f3d681fe4c895ab1f8ce587b6))
+* **tour-system:** match the tour runner and tour editor as they are now ([c57f7d2](https://github.com/ptarmiganlabs/onboard.qs/commit/c57f7d22644b6b0e878371ce29276c464db2ecbb))
+* **tour-system:** show that a missing Show only once counts as on ([6b2f526](https://github.com/ptarmiganlabs/onboard.qs/commit/6b2f52682ed9aa24cd1b34ebd4d0dea3baf0ff3f))
+
 ## [1.10.1](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.10.0...onboard-qs-v1.10.1) (2026-11-06)
 
 
