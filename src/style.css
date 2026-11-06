@@ -866,8 +866,20 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Stay inside the window: a tall description scrolls while the title and
+   the buttons stay in view. tour-runner.js sets display: flex inline,
+   replacing the display: block that driver.js sets there. The compound
+   selector beats driver.js's `.driver-popover { all: unset }`, which is
+   injected after this file. */
+.driver-popover.onboard-qs-popover {
+    --oqs-popover-max-height: calc(100vh - 32px);
+    max-height: var(--oqs-popover-max-height);
+    flex-direction: column;
+}
+
 /* Step dialog size presets — compound selectors override
-   both driver.js's max-width:300px and our base max-width:380px */
+   both driver.js's max-width:300px and our base max-width:380px.
+   A min-height wins over max-height, so cap it at the window height. */
 .onboard-qs-popover.onboard-qs-dialog-dynamic {
     max-width: 480px;
     width: auto;
@@ -876,25 +888,25 @@
 .onboard-qs-popover.onboard-qs-dialog-small {
     width: 320px;
     max-width: 320px;
-    min-height: 220px;
+    min-height: min(220px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-medium {
     width: 480px;
     max-width: 480px;
-    min-height: 320px;
+    min-height: min(320px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-large {
     width: 640px;
     max-width: 640px;
-    min-height: 420px;
+    min-height: min(420px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-x-large {
     width: 800px;
     max-width: 800px;
-    min-height: 520px;
+    min-height: min(520px, var(--oqs-popover-max-height));
 }
 
 .onboard-qs-popover.onboard-qs-dialog-custom {
@@ -911,6 +923,17 @@
     font-size: var(--oqs-popover-font-size, 13px);
     color: var(--oqs-popover-text, #555);
     line-height: 1.5;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* A scrolling description keeps its children's outer margins inside it,
+   so drop them to keep the gaps to the title and the buttons unchanged */
+.onboard-qs-popover .driver-popover-description > :first-child {
+    margin-top: 0;
+}
+.onboard-qs-popover .driver-popover-description > :last-child {
+    margin-bottom: 0;
 }
 
 .onboard-qs-popover .driver-popover-footer {

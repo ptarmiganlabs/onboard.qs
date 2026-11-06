@@ -31,31 +31,42 @@ function clampDialogDimension(value, fallback, min, max) {
 /**
  * Build dialog size settings for a step popover.
  *
+ * Every popover gets an `onPopoverRender`, because driver.js shows each
+ * popover with an inline `display: block`. The flex layout that keeps a
+ * tall popover inside the window (see `.onboard-qs-popover` in style.css)
+ * can only replace it inline.
+ *
  * @param {object} step - Step configuration from tour config.
- * @returns {{popoverClass: string, onPopoverRender?: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
+ * @returns {{popoverClass: string, onPopoverRender: (popover: {wrapper?: HTMLElement}) => void}} Popover size settings.
  */
 function getStepDialogSettings(step) {
     const size = getDialogSize(step);
-    const settings = {
+    const custom =
+        size === 'custom'
+            ? {
+                  width: clampDialogDimension(step.customDialogWidth, 500, 200, 1200),
+                  height: clampDialogDimension(step.customDialogHeight, 350, 100, 900),
+              }
+            : null;
+    return {
         popoverClass: `onboard-qs-popover onboard-qs-dialog-${size}`,
-    };
-    if (size === 'custom') {
-        const width = clampDialogDimension(step.customDialogWidth, 500, 200, 1200);
-        const height = clampDialogDimension(step.customDialogHeight, 350, 100, 900);
         /**
-         * Apply custom size to the rendered driver.js popover.
+         * Lay out the rendered driver.js popover and apply a custom size.
          *
          * @param {{wrapper?: HTMLElement}} popover - The rendered popover object.
          */
-        settings.onPopoverRender = (popover) => {
-            if (popover?.wrapper) {
-                popover.wrapper.style.width = `${width}px`;
-                popover.wrapper.style.maxWidth = `${width}px`;
-                popover.wrapper.style.minHeight = `${height}px`;
+        onPopoverRender: (popover) => {
+            if (!popover?.wrapper) return;
+            popover.wrapper.style.display = 'flex';
+            if (custom) {
+                popover.wrapper.style.width = `${custom.width}px`;
+                popover.wrapper.style.maxWidth = `${custom.width}px`;
+                // A minimum height taller than the window would push the
+                // buttons out of view again
+                popover.wrapper.style.minHeight = `min(${custom.height}px, var(--oqs-popover-max-height))`;
             }
-        };
-    }
-    return settings;
+        },
+    };
 }
 
 /**
