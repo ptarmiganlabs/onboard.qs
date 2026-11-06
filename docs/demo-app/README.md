@@ -12,7 +12,7 @@ script generates, so there are no data connections to set up and nothing to relo
 
 To use them:
 
-1. Install Onboard.qs 1.8.2 or later, as described in the README's
+1. Install Onboard.qs 1.9.0 or later, as described in the README's
    [Getting Started](../../README.md#getting-started).
 2. Import one or both files in the QMC (**Apps** › **Import**).
 3. Open the app from the hub and go to sheet 1. The welcome tour starts by itself.
