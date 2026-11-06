@@ -95,7 +95,9 @@ export function handleAutoStart(tours, layout, context) {
             return;
         }
 
-        if (tour.showOnce) {
+        // The property panel and the tour editor show a tour saved without this setting as
+        // "Show only once" on, so only an explicit false turns it off (#332).
+        if (tour.showOnce !== false) {
             const seen = hasSeenTour(
                 context.appId,
                 context.sheetId,
