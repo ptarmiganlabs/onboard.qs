@@ -87,12 +87,13 @@ const BULLET = /^[*-]\s+(.+)$/;
 const NUMBERED = /^(\d+)\.\s+(.+)$/;
 
 // Inline, a code span and raw HTML have the same precedence, as in
-// CommonMark: whichever starts first wins. The content of a <pre>, <script>,
-// <style> or <textarea> element is raw HTML too.
+// CommonMark: whichever starts first wins. A <pre>, <script>, <style> or
+// <textarea> element is kept whole, and so is an <svg> or <math> one: a <br>
+// or <strong> added inside SVG or MathML would end it.
 const ATOM = new RegExp(
     [
         String.raw`(?<!\x60)(\x60+)(?!\x60)([\s\S]*?[^\x60])\1(?!\x60)`,
-        String.raw`<(${RAW_TEXT})\b[^>]*>[\s\S]*?<\/\3\s*>`,
+        String.raw`<(${RAW_TEXT}|svg|math)\b[^>]*>[\s\S]*?<\/\3\s*>`,
         String.raw`<!--(?:-?>|[\s\S]*?--!?>)`,
         OPEN_TAG,
         CLOSE_TAG,
@@ -100,15 +101,32 @@ const ATOM = new RegExp(
     'gi'
 );
 
-// Marks HTML set aside while the inline rules run: `\uFFFC` + "h" for HTML
-// the author wrote + its index + `\uFFFC`. U+FFFC (object replacement
-// character) is a symbol, so emphasis treats it as punctuation, as it treats
-// the < and > it stands for. A description can't contain one: renderBlocks()
-// replaces it.
-const KEPT = /\uFFFC(h?)(\d+)\uFFFC/g;
-const BREAK = /\n(?![ \t]*\uFFFCh)/g;
+// Marks HTML set aside while the inline rules run: `\uFFFC`, then "h" for HTML
+// the author wrote or "b" for a block-level tag the author wrote, then its
+// index, then `\uFFFC`. U+FFFC (object replacement character) is a symbol, so
+// emphasis treats it as punctuation, as it treats the < and > it stands for.
+// A description can't contain one: renderBlocks() replaces it.
+const KEPT = /\uFFFC([hb]?)(\d+)\uFFFC/g;
+const BREAK = /\n(?![ \t]*\uFFFC[hb])/g;
+// Emphasis never pairs across a block-level tag, such as from one table cell
+// to the next, which would leave the tags crossing each other
+const BLOCK_KEPT = /(\uFFFCb\d+\uFFFC)/;
+const BLOCK_TAG = new RegExp(String.raw`^<\/?(?:${BLOCK_TAGS})(?![\w-])`, 'i');
 const PUNCTUATION = /[\p{P}\p{S}]/u;
 const WHITESPACE = /\s/;
+
+/**
+ * The character before a position, as a whole code point, so that an emoji
+ * counts as the symbol it is. At the start of the text it's a space.
+ *
+ * @param {string} s - Text.
+ * @param {number} i - Position.
+ * @returns {string} The character.
+ */
+const charBefore = (s, i) => {
+    const c = s.codePointAt(i - 2);
+    return c > 0xffff ? String.fromCodePoint(c) : (s[i - 1] ?? ' ');
+};
 
 /**
  * Escape text for element content.
@@ -139,9 +157,10 @@ const attr = (text) => text.replace(/"/g, '&quot;');
  */
 function emphasis(line) {
     const runs = [...line.matchAll(/\*+|_+/g)].map((m) => {
-        // The start and the end of the line count as whitespace
-        const before = line[m.index - 1] ?? ' ';
-        const after = line[m.index + m[0].length] ?? ' ';
+        // Whole code points, and the start and the end of the line count as
+        // whitespace
+        const before = charBefore(line, m.index);
+        const after = String.fromCodePoint(line.codePointAt(m.index + m[0].length) ?? 0x20);
         const punctBefore = PUNCTUATION.test(before);
         const punctAfter = PUNCTUATION.test(after);
         const left =
@@ -213,10 +232,11 @@ function inline(text, breaks) {
      * Set HTML aside until the inline rules are done.
      *
      * @param {string} html - The HTML.
-     * @param {boolean} [authored] - Whether the author wrote it, rather than this converter.
+     * @param {string} [mark] - "h" for HTML the author wrote, "b" for a block-level tag the
+     *   author wrote, and nothing for HTML this converter made.
      * @returns {string} The placeholder that stands for it.
      */
-    const keep = (html, authored) => `\uFFFC${authored ? 'h' : ''}${kept.push(html) - 1}\uFFFC`;
+    const keep = (html, mark = '') => `\uFFFC${mark}${kept.push(html) - 1}\uFFFC`;
 
     /**
      * Put the HTML that was set aside back, including HTML inside it.
@@ -224,10 +244,32 @@ function inline(text, breaks) {
      * @param {string} s - Text with placeholders.
      * @returns {string} The text with the HTML back in place.
      */
-    const restore = (s) => s.replace(KEPT, (_, _h, n) => restore(kept[n]));
+    const restore = (s) => s.replace(KEPT, (_, _mark, n) => restore(kept[n]));
+
+    /**
+     * Apply emphasis, one line and one block-level element at a time, and
+     * then the line breaks.
+     *
+     * @param {string} s - Text with placeholders.
+     * @returns {string} The text with emphasis and breaks.
+     */
+    const format = (s) => {
+        s = s
+            .split('\n')
+            .map((line) =>
+                line
+                    .split(BLOCK_KEPT)
+                    .map((part, k) => (k % 2 ? part : emphasis(part)))
+                    .join('')
+            )
+            .join('\n');
+        // A single newline becomes <br>, except before a line that starts
+        // with HTML the author wrote
+        return breaks ? s.replace(BREAK, '<br>') : s;
+    };
 
     text = text.replace(ATOM, (match, ticks, code) => {
-        if (!ticks) return keep(match, true);
+        if (!ticks) return keep(match, BLOCK_TAG.test(match) ? 'b' : 'h');
         // As in CommonMark: line endings become spaces, and one space is
         // stripped from each end of code that has a space at both ends
         code = code.replace(/\n/g, ' ');
@@ -251,18 +293,13 @@ function inline(text, breaks) {
         }
     );
 
-    // Links: [text](url). The text stays, so emphasis works in it.
-    text = text.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        (_, label, href) =>
-            keep(`<a href="${attr(href)}" target="_blank" rel="noopener">`) + label + keep('</a>')
+    // Links: [text](url). The text gets its emphasis on its own, as in
+    // CommonMark, so that emphasis can't cross the link's edge.
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
+        keep(`<a href="${attr(href)}" target="_blank" rel="noopener">${format(label)}</a>`)
     );
 
-    text = text.split('\n').map(emphasis).join('\n');
-
-    // A single newline becomes <br>, except before a line that starts with
-    // HTML the author wrote
-    return restore(breaks ? text.replace(BREAK, '<br>') : text);
+    return restore(format(text));
 }
 
 /**

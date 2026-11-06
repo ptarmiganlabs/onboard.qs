@@ -287,6 +287,39 @@ test('emphasis can wrap HTML, and works in the text of an HTML block (#318)', ()
     );
 });
 
+test('an emoji next to * or _ counts as the symbol it is, as in CommonMark', () => {
+    assert.equal(md('💡_Tip_ and 💡**Note**'), '<p>💡<em>Tip</em> and 💡<strong>Note</strong></p>');
+    assert.equal(md('x**💰**y'), '<p>x**💰**y</p>');
+});
+
+test('emphasis stays inside a link, and can wrap one, as in CommonMark', () => {
+    const a = '<a href="https://example.com" target="_blank" rel="noopener">';
+    assert.equal(md('[**a](https://example.com)**'), `<p>${a}**a</a>**</p>`);
+    assert.equal(
+        md('[**a**](https://example.com) and **[b](https://example.com)**'),
+        `<p>${a}<strong>a</strong></a> and <strong>${a}b</a></strong></p>`
+    );
+});
+
+test('emphasis never pairs across a table cell or another block-level tag', () => {
+    assert.equal(
+        md('<table><tr><td>*</td><td>*</td></tr></table>'),
+        '<table><tr><td>*</td><td>*</td></tr></table>'
+    );
+    assert.equal(md('<ul><li>_a</li><li>b_</li></ul>'), '<ul><li>_a</li><li>b_</li></ul>');
+    assert.equal(
+        md('<div>**Note:** <span>*one*</span></div>'),
+        '<div><strong>Note:</strong> <span><em>one</em></span></div>'
+    );
+});
+
+test('an <svg> or <math> element is kept as written, even inside a paragraph', () => {
+    const svg = '<svg width="9" height="9">\n<text x="0">Label\n**more**</text>\n</svg>';
+    assert.equal(md(`Sales:\n${svg}`), `<p>Sales:\n${svg}</p>`);
+    const math = '<math>\n<mi>x</mi>\n<mo>*</mo>\n<mi>y</mi>\n</math>';
+    assert.equal(md(`Product: ${math} *see below*`), `<p>Product: ${math} <em>see below</em></p>`);
+});
+
 test('a code span shows the HTML and Markdown in it as text (#318)', () => {
     assert.equal(
         md('Use the `<kbd>` tag, not `**bold**`'),
