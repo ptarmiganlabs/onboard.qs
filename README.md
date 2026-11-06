@@ -82,7 +82,7 @@ _This project is maintained by [Göran Sander](https://github.com/mountaindude) 
 
 ### Create Your First Tour
 
-1. With the extension on a sheet, click **Edit Tours** (or use the property panel).
+1. With the extension on a sheet, click **Edit Tours** on the object, or **Open tour editor** at the top of the property panel's **Tours** section. The panel button also works when the object is too small to show its own.
 2. Click **+ Add Tour**, give it a name.
 3. Click **+ Add Step**, select a target object from the dropdown (or switch to **Custom CSS Selector** for non-object elements).
 4. Enter a title and description (Markdown supported).

@@ -2,6 +2,8 @@ import logger from '../util/logger';
 import { openMarkdownEditorDialog } from '../ui/markdown-editor-dialog';
 import { extensionState } from '../util/extension-state';
 import { DIALOG_SIZE_OPTIONS } from '../util/dialog-size';
+import { openTourEditor } from '../ui/tour-editor';
+import { getPlatformAdapter } from '../platform/index';
 
 /**
  * Get the list of objects on the current sheet for dropdown population.
@@ -162,6 +164,21 @@ export function toursSection() {
         type: 'items',
         label: 'Tours',
         items: {
+            // The object's own "Edit Tours" button is out of reach when the
+            // object is shrunk to a single grid cell
+            openTourEditorBtn: {
+                label: 'Open tour editor',
+                component: 'button',
+                /**
+                 * Open the tour editor for the object this panel belongs to.
+                 *
+                 * @param {object} _data - The object's properties.
+                 * @param {object} [handler] - The property panel's handler.
+                 */
+                action(_data, handler) {
+                    openTourEditorFromPanel(handler);
+                },
+            },
             toursList: {
                 type: 'array',
                 ref: 'tours',
@@ -709,6 +726,37 @@ async function getPanelModel(handler) {
     const objectId = handler?.properties?.qInfo?.qId;
     if (!objectId || typeof handler.app?.getObject !== 'function') return null;
     return handler.app.getObject(objectId);
+}
+
+/**
+ * Open the tour editor for the object a property panel belongs to.
+ *
+ * @param {object} [handler] - The property panel's handler.
+ * @returns {Promise<void>} Resolves once the editor is open, or given up.
+ */
+async function openTourEditorFromPanel(handler) {
+    try {
+        const model = await getPanelModel(handler);
+        if (!model) {
+            logger.warn('Cannot open the tour editor — the property panel passed no object');
+            return;
+        }
+        const sheetObjects = await getPlatformAdapter().getSheetObjects(handler.app);
+        await openTourEditor({
+            layout: await model.getLayout(),
+            model,
+            app: handler.app,
+            sheetObjects,
+            /**
+             * Callback when the tour editor is closed.
+             */
+            onClose: () => {
+                logger.debug('Tour editor closed');
+            },
+        });
+    } catch (err) {
+        logger.warn('Failed to open the tour editor:', err);
+    }
 }
 
 /**

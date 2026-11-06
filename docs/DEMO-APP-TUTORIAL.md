@@ -87,7 +87,8 @@ There are two places to configure all this, and they edit the same settings:
 - **The property panel**, under **Tours**, **Widget Appearance** and **Theme & Styling**.
 - **The tour editor.** In edit mode the object shows an **Edit Tours** button, which opens a larger
   editor with a Markdown editor for step texts, and **Export** and **Import** buttons for moving tours
-  between apps.
+  between apps. **Open tour editor**, at the top of the property panel's **Tours** section, opens it
+  too, which helps when the object is too small to show its button.
 
 Step descriptions are Markdown, and can mix in HTML. Text fields such as tour names, step titles, step
 descriptions and button labels also take **Qlik expressions**: start the value with `=`, the same as

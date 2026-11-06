@@ -344,7 +344,7 @@ This helps tour authors identify which tab an object belongs to when configuring
 
 ## Tour editor (edit mode)
 
-The tour editor is a full-screen modal overlay (`tour-editor.js`, ~879 lines) that opens when the user clicks "Edit Tours" in the extension placeholder.
+The tour editor is a full-screen modal overlay (`tour-editor.js`, ~879 lines) that opens when the user clicks "Edit Tours" in the extension placeholder, or "Open tour editor" at the top of the property panel's Tours section.
 
 ```mermaid
 flowchart TD
