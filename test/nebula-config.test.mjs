@@ -119,12 +119,13 @@ test("the replace plugin of nebula's own Rollup configuration replaces every bui
         const replace = input.plugins.flat().find((plugin) => plugin?.name === 'replace');
         assert.ok(replace, `nebula runs no replace plugin in a ${mode} build`);
 
-        const result = replace.transform(source, loggerPath);
-        assert.ok(result, `the ${mode} build replaces nothing in src/util/logger.js`);
+        // The plugin returns null when it replaces nothing, so a broken replacement names each
+        // token it leaves rather than failing on the null.
+        const code = replace.transform(source, loggerPath)?.code ?? source;
         for (const name of TOKEN_NAMES) {
+            assert.ok(!code.includes(name), `${name} is left in a ${mode} build`);
             const value = nebulaConfig.build.replacementStrings[name];
-            assert.ok(result.code.includes(`= ${value};`), `${name} does not become ${value}`);
-            assert.ok(!result.code.includes(name), `${name} is left in a ${mode} build`);
+            assert.ok(code.includes(`= ${value};`), `${name} does not become ${value}`);
         }
     }
 });
@@ -145,7 +146,7 @@ test('every script that runs nebula build or nebula serve names nebula.config.cj
 
 test('the build tokens have the same names in every list of them', () => {
     assert.deepEqual(SORTED_NAMES, ['__BUILD_DATE__', '__BUILD_TYPE__', '__PACKAGE_VERSION__']);
-    assert.deepEqual(Object.keys(nebulaConfig.build.replacementStrings).sort(), SORTED_NAMES);
+    assert.deepEqual(Object.keys(nebulaConfig.build.replacementStrings ?? {}).sort(), SORTED_NAMES);
     const eslintGlobals = eslintConfig.flatMap((entry) => tokensIn(entry.languageOptions?.globals));
     assert.deepEqual(eslintGlobals.sort(), SORTED_NAMES);
 });
