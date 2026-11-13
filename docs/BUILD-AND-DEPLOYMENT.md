@@ -175,4 +175,4 @@ flowchart LR
     style SU fill:#f44,color:#fff
 ```
 
-Rollup replaces `__BUILD_TYPE__` while nebula builds, so `IS_PRODUCTION` is settled at build time: in the production build Rollup writes `false` where `logger.debug()` tests `!IS_PRODUCTION`, and terser drops the `console.log` that can no longer run. The production bundle physically cannot log debug messages.
+Rollup replaces `__BUILD_TYPE__` while nebula builds, so `IS_PRODUCTION` is settled at build time: in the production build Rollup writes `false` where `logger.debug()` tests `!IS_PRODUCTION`, and terser drops the `console.log` that can no longer run. The production bundle physically cannot log debug messages. Until 2026-11-13 the debug code was still in it: the token was patched in after terser had run, so terser could not tell that the code would never run, and only the check at run time kept it quiet.
