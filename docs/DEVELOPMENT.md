@@ -27,7 +27,7 @@ npm install
 | `npm run build`        | Development build of `dist/` only (no zip)                                                                                       |
 | `npm run build:dist`   | Production build of `dist/` only (minified, no zip)                                                                              |
 | `npm run sense`        | `nebula sense`: builds the Sense extension folder `onboard-qs-ext/`, with its `.qext`, from `dist/`                              |
-| `npm run post-build`   | Replaces the version, build-type and build-date tokens in `dist/` and `onboard-qs-ext/`, and adds bundle metadata to the `.qext` |
+| `npm run post-build`   | Fails if a version, build-type or build-date token is left in `dist/` or `onboard-qs-ext/`, then adds bundle metadata to `.qext` |
 | `npm run generate-pdf` | Writes `README.pdf` from `README.md`, with the Mermaid diagrams drawn. CI puts it in the release zip                             |
 | `npm run zip`          | Zips `onboard-qs-ext/` and `README.md` into `onboard-qs.zip`                                                                     |
 | `npm test`             | Unit tests in `test/`, with Node's built-in test runner                                                                          |
@@ -38,7 +38,7 @@ npm install
 | `npm run start`        | nebula serve (local dev mode)                                                                                                    |
 | `npm run cloc`         | Count lines of code                                                                                                              |
 
-The `pack:prod` script is the main build pipeline: it runs `build:dist` (Rollup bundle), `sense` (the extension folder and its metadata), `post-build` (token replacement and `.qext` metadata), `generate-pdf` (`README.pdf`) and `zip` (creates `onboard-qs.zip`). `pack:dev` runs the same steps with the development build.
+The `pack:prod` script is the main build pipeline: it runs `build:dist` (Rollup bundle), `sense` (the extension folder and its metadata), `post-build` (a check that Rollup replaced every build token, and `.qext` metadata), `generate-pdf` (`README.pdf`) and `zip` (creates `onboard-qs.zip`). `pack:dev` runs the same steps with the development build.
 
 For full details on the build toolchain, see [BUILD-AND-DEPLOYMENT.md](BUILD-AND-DEPLOYMENT.md).
 
@@ -49,11 +49,12 @@ For full details on the build toolchain, see [BUILD-AND-DEPLOYMENT.md](BUILD-AND
 ```text
 onboard.qs/
 ├── package.json              # Project manifest, scripts, dependencies
-├── nebula.config.cjs         # nebula.js / Rollup build configuration
+├── nebula.config.cjs         # nebula build's options: the build tokens for Rollup to replace
 ├── eslint.config.js          # ESLint flat config
 ├── scripts/
 │   ├── build-date.cjs        # Shared build-date generator (CJS)
-│   ├── post-build.mjs        # Token replacement (version, build type, build date)
+│   ├── build-tokens.cjs      # The build tokens (version, build type, build date) and their values
+│   ├── post-build.mjs        # Fails on a build token left in a bundle; .qext bundle metadata
 │   ├── generate-readme-pdf.mjs # README.md → README.pdf for the release zip, Mermaid diagrams drawn
 │   └── zip-extension.mjs     # Zip builder for Sense deployment
 ├── test/                     # Unit tests, run with `npm test` (node --test)
