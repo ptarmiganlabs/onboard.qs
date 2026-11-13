@@ -10,8 +10,8 @@ flowchart LR
     NB --> UMD[dist/onboard-qs.js<br/>UMD bundle]
     NB --> ESM[dist/onboard-qs.esm.js<br/>ES module]
     NB --> SYS[dist/onboard-qs.systemjs.js<br/>SystemJS]
-    UMD --> SENSE[nebula sense<br/>Generate .qext metadata]
-    SENSE --> PB[post-build.mjs<br/>Copy files to onboard-qs-ext/]
+    UMD --> SENSE[nebula sense<br/>Copy bundle to onboard-qs-ext/,<br/>generate .qext metadata]
+    SENSE --> PB[post-build.mjs<br/>Check for build tokens,<br/>add bundle metadata to .qext]
     PB --> ZIP[zip-extension.mjs<br/>Create .zip package]
     ZIP --> PKG[onboard-qs.zip<br/>Ready to deploy]
 
@@ -39,15 +39,20 @@ flowchart LR
 
 ### nebula.config.cjs
 
-The nebula build config (`nebula.config.cjs`) customizes the Rollup pipeline:
+`nebula build` reads the `build` section of `nebula.config.cjs` as its command-line options. It never reads a key it does not know, and gives no error or warning for one, so the file can only set options that nebula has: it cannot add a plugin to nebula's Rollup pipeline. Every script that runs `nebula build` or `nebula serve` names the file with `--config nebula.config.cjs`. Without it, nebula looks for `nebula.config.js`, finds none, and builds with no options at all.
+
+The file sets one option, `replacementStrings`: the build tokens, from `scripts/build-tokens.cjs`. nebula hands them to the Rollup replace plugin that its build already runs, so each token in the source becomes its value as Rollup reads the module, before terser minifies the production bundle:
 
 ```mermaid
 flowchart TD
-    A[nebula.config.cjs] --> B["@rollup/plugin-replace"]
-    B --> C["__BUILD_TYPE__ → 'development' | 'production'"]
-    B --> D["__PACKAGE_VERSION__ → package.json version"]
-    B --> E["__BUILD_DATE__ → human-readable build timestamp"]
+    A[scripts/build-tokens.cjs] --> B[nebula.config.cjs<br/>replacementStrings]
+    B --> R["nebula's Rollup replace plugin"]
+    R --> C["__BUILD_TYPE__ → 'development' | 'production'"]
+    R --> D["__PACKAGE_VERSION__ → package.json version"]
+    R --> E["__BUILD_DATE__ → human-readable build timestamp"]
 ```
+
+Until 2026-11-13 the file set `replacement` and a `rollup()` hook instead, and nebula reads neither. So Rollup replaced no token, `scripts/post-build.mjs` patched them into the finished bundles, and `npm start`, which named no config file, served a bundle that stopped at its first token. `post-build.mjs` now replaces nothing: it fails the build if a token is left in a bundle, or if `dist/` holds no bundle. `test/nebula-config.test.mjs` fails on a `build` key that nebula does not read, on a script that runs nebula without the file, and when nebula's own replace plugin leaves a token; `test/post-build.test.mjs` fails when `post-build.mjs` patches a token or passes an empty `dist/`.
 
 These compile-time constants control:
 
@@ -128,7 +133,7 @@ flowchart TD
 
 ### Local development with nebula serve
 
-`npm run start` launches a local dev server with hot reload. This is useful for testing the extension's rendering without deploying to a Qlik Sense server, but it does not provide a full Qlik Sense environment (no Enigma API, no real sheets).
+`npm run start` launches a local dev server with hot reload. This is useful for testing the extension's rendering without deploying to a Qlik Sense server, but it does not provide a full Qlik Sense environment (no Enigma API, no real sheets). It runs `nebula serve --config nebula.config.cjs`, so its build replaces the build tokens like the others.
 
 ## Dependencies
 
@@ -140,15 +145,14 @@ flowchart TD
 
 ### Build-time
 
-| Package                  | Purpose                   |
-| ------------------------ | ------------------------- |
-| `@nebula.js/cli-build`   | Rollup-based build        |
-| `@nebula.js/cli-sense`   | Generate `.qext` metadata |
-| `@rollup/plugin-replace` | Compile-time constants    |
-| `cross-env`              | Cross-platform env vars   |
-| `archiver`               | Zip creation              |
-| `eslint` + plugins       | Linting                   |
-| `prettier`               | Code formatting           |
+| Package                | Purpose                   |
+| ---------------------- | ------------------------- |
+| `@nebula.js/cli-build` | Rollup-based build        |
+| `@nebula.js/cli-sense` | Generate `.qext` metadata |
+| `cross-env`            | Cross-platform env vars   |
+| `archiver`             | Zip creation              |
+| `eslint` + plugins     | Linting                   |
+| `prettier`             | Code formatting           |
 
 ## Logging in builds
 
@@ -171,4 +175,4 @@ flowchart LR
     style SU fill:#f44,color:#fff
 ```
 
-The `BUILD_TYPE` constant is replaced at build time by `@rollup/plugin-replace`, so the production bundle physically cannot log debug messages — the dead code is eliminated by Rollup's tree-shaking.
+Rollup replaces `__BUILD_TYPE__` while nebula builds, so `IS_PRODUCTION` is settled at build time: in the production build Rollup writes `false` where `logger.debug()` tests `!IS_PRODUCTION`, and terser drops the `console.log` that can no longer run. The production bundle physically cannot log debug messages.

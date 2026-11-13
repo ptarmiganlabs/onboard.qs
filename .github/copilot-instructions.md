@@ -81,7 +81,8 @@ If any check fails, fix the issues and run checks again.
 
 - `onboard-qs-ext/` — unpacked extension folder (UMD bundle + .qext manifest)
 - `onboard-qs.zip` — deployable package (~40 KB)
-- The `scripts/post-build.mjs` script handles token replacement (`__BUILD_TYPE__`, `__PACKAGE_VERSION__`)
+- Rollup replaces the build tokens (`__BUILD_TYPE__`, `__PACKAGE_VERSION__`, `__BUILD_DATE__`, listed in `scripts/build-tokens.cjs`) while nebula builds, through `replacementStrings` in `nebula.config.cjs`, the one key nebula reads for them. The `scripts/post-build.mjs` script fails the build if a token is left in a bundle, and replaces nothing
+- Every script that runs `nebula build` or `nebula serve` passes `--config nebula.config.cjs`; without it nebula builds with no options (`test/nebula-config.test.mjs`)
 - The `scripts/zip-extension.mjs` script creates the zip from the extension folder
 
 ## Repo Hygiene
