@@ -11,11 +11,10 @@
  */
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { removeScriptFolders, runScriptIn } from './support/run-script.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const postBuild = path.resolve(here, '..', 'scripts', 'post-build.mjs');
@@ -24,30 +23,16 @@ const QEXT = path.join('onboard-qs-ext', 'onboard-qs.qext');
 const BUNDLE = path.join('dist', 'onboard-qs.js');
 const EXT_BUNDLE = path.join('onboard-qs-ext', 'dist', 'onboard-qs.js');
 
-const folders = [];
-
-after(async () => {
-    await Promise.all(folders.map((folder) => rm(folder, { recursive: true, force: true })));
-});
+after(removeScriptFolders);
 
 /**
  * Run post-build.mjs in a new temporary folder that holds the given files.
  *
  * @param {object} files - Each file's content, by its path in the folder.
  *
- * @returns {Promise<{folder: string, status: number, output: string}>} The folder, the exit code
- *     and what the script printed, stdout and stderr together.
+ * @returns {Promise<{folder: string, status: number|null, output: string}>} See runScriptIn.
  */
-async function runPostBuild(files) {
-    const folder = await mkdtemp(path.join(os.tmpdir(), 'onboard-qs-post-build-'));
-    folders.push(folder);
-    for (const [file, content] of Object.entries(files)) {
-        await mkdir(path.dirname(path.join(folder, file)), { recursive: true });
-        await writeFile(path.join(folder, file), content);
-    }
-    const run = spawnSync(process.execPath, [postBuild], { cwd: folder, encoding: 'utf8' });
-    return { folder, status: run.status, output: `${run.stdout}${run.stderr}` };
-}
+const runPostBuild = (files) => runScriptIn(postBuild, files);
 
 test('fails when dist/ holds no bundle', async () => {
     const { status, output } = await runPostBuild({ [QEXT]: '{}' });
