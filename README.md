@@ -1,4 +1,21 @@
-# Onboard.qs
+<p align="center"><img src="docs/logo/onboard-qs-logo-256.png" alt="Onboard.qs logo" width="140"></p>
+
+<h1 align="center">Onboard.qs</h1>
+
+<p align="center"><strong>Interactive onboarding tours for Qlik Sense apps, no coding required</strong></p>
+
+<p align="center">
+<a href="https://github.com/ptarmiganlabs/onboard.qs/releases"><img src="https://img.shields.io/github/v/release/ptarmiganlabs/onboard.qs?include_prereleases" alt="Latest release"></a>
+<a href="https://github.com/ptarmiganlabs/onboard.qs/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"></a>
+<a href="https://github.com/sponsors/ptarmiganlabs"><img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors" alt="Sponsor Ptarmigan Labs on GitHub"></a>
+</p>
+
+<p align="center">
+<a href="#getting-started">Getting started</a> ·
+<a href="https://github.com/ptarmiganlabs/onboard.qs/discussions">Questions</a> ·
+<a href="https://github.com/ptarmiganlabs/onboard.qs/issues">Report a bug</a> ·
+<a href="https://github.com/sponsors/ptarmiganlabs">❤️ Sponsor</a>
+</p>
 
 Interactive onboarding tours for Qlik Sense apps — no coding required.  
 Works with both **Qlik Sense Cloud** and **Qlik Sense Enterprise on Windows** (client-managed).
@@ -7,16 +24,18 @@ Drop this extension onto any Qlik Sense sheet to create guided, step-by-step wal
 
 ## ❤️ Support the project
 
-If you find this project helpful and use it in your Qlik Sense environment, please consider supporting it financially! Your sponsorship helps ensure the project's long-term sustainability and allows me to continue maintaining it, fixing bugs, and adding new features.
+Onboard.qs is free and open source, under the MIT licence. If you use it, please consider sponsoring its development: sponsorships pay for maintenance, bug fixes and new features, and keep the project going.
 
-**👉 [Sponsor the project on GitHub](https://github.com/sponsors/ptarmiganlabs)** - Click the "Sponsor" button at the repository page to become a sponsor.
+**[❤️ Sponsor Ptarmigan Labs on GitHub](https://github.com/sponsors/ptarmiganlabs)**
 
-- ⭐ **Star the repository** on GitHub - it helps others discover the project
-- 🍴 **Fork and contribute** - pull requests are welcome!
-- 💬 **Share your feedback** - let me know how you're using it
-- 🐛 **Report issues** - help improve stability and functionality
+Other ways to help:
 
-_This project is maintained by [Göran Sander](https://github.com/mountaindude) and supported by [Ptarmigan Labs](https://ptarmiganlabs.com)._
+- ⭐ **Star the repository**: it helps others find the project.
+- 💬 **Share your feedback** in [Discussions](https://github.com/ptarmiganlabs/onboard.qs/discussions): tell us how you use it.
+- 🐛 **Report issues** in [Issues](https://github.com/ptarmiganlabs/onboard.qs/issues).
+- 🍴 **Contribute**: pull requests are welcome.
+
+_Maintained by [Göran Sander](https://github.com/mountaindude) and supported by [Ptarmigan Labs](https://ptarmiganlabs.com)._
 
 ---
 
