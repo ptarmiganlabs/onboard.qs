@@ -29,7 +29,7 @@ npm install
 | `npm run sense`        | `nebula sense`: builds the Sense extension folder `onboard-qs-ext/`, with its `.qext`, from `dist/`                              |
 | `npm run post-build`   | Fails if a version, build-type or build-date token is left in `dist/` or `onboard-qs-ext/`, then adds bundle metadata to `.qext` |
 | `npm run generate-pdf` | Writes `README.pdf` from `README.md`, with the Mermaid diagrams drawn. CI puts it in the release zip                             |
-| `npm run zip`          | Zips `onboard-qs-ext/` and `README.md` into `onboard-qs.zip`                                                                     |
+| `npm run zip`          | Zips `onboard-qs-ext/` and `README.md` into `onboard-qs.zip`, and fails the build if either is missing                           |
 | `npm test`             | Unit tests in `test/`, with Node's built-in test runner                                                                          |
 | `npm run lint`         | ESLint check                                                                                                                     |
 | `npm run lint:fix`     | ESLint auto-fix                                                                                                                  |
