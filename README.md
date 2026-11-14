@@ -17,6 +17,10 @@
 <a href="https://github.com/sponsors/ptarmiganlabs">❤️ Sponsor</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/onboard-qs_readme.webp" alt="Onboard.qs in a Qlik Sense app: a welcome tour that starts by itself, a data story whose figures are Qlik expressions, a step that follows selections on a map, and the tour editor" width="900" />
+</p>
+
 Interactive onboarding tours for Qlik Sense apps — no coding required.  
 Works with both **Qlik Sense Cloud** and **Qlik Sense Enterprise on Windows** (client-managed).
 
@@ -36,12 +40,6 @@ Other ways to help:
 - 🍴 **Contribute**: pull requests are welcome.
 
 _Maintained by [Göran Sander](https://github.com/mountaindude) and supported by [Ptarmigan Labs](https://ptarmiganlabs.com)._
-
----
-
-<p align="center">
-  <img src="docs/screenshots/onboard-qs_readme.webp" alt="Onboard.qs in a Qlik Sense app: a welcome tour that starts by itself, a data story whose figures are Qlik expressions, a step that follows selections on a map, and the tour editor" width="900" />
-</p>
 
 ---
 
