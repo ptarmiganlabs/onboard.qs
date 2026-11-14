@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="t">
-  <title id="t">Onboard.qs — interactive onboarding tours for Qlik Sense apps</title>
+  <title id="t">Onboard.qs — interactive onboarding tours for Qlik Sense apps, no coding required</title>
   <defs>
     <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#EFFAF3"/>
@@ -29,7 +29,7 @@
   </g>
 
   <text x="600" y="760" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="42" font-weight="400" fill="#007A38">Interactive onboarding tours</text>
-  <text x="600" y="816" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="42" font-weight="400" fill="#007A38">for Qlik Sense apps</text>
+  <text x="600" y="816" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="42" font-weight="400" fill="#007A38">for Qlik Sense apps, no coding required</text>
 
   <rect x="0" y="1188" width="1200" height="12" fill="url(#iconGrad)"/>
 </svg>
