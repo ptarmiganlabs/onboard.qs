@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.10.3](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.10.2...onboard-qs-v1.10.3) (2026-11-27)
+
+
+### Miscellaneous
+
+* check the whole extension before zipping, and leave no partial zip ([b7918ac](https://github.com/ptarmiganlabs/onboard.qs/commit/b7918ac34f95ae957d1472a4fe7ee46abfa1bb5d))
+* **ci:** remove the Copilot coding agent setup workflow ([d425232](https://github.com/ptarmiganlabs/onboard.qs/commit/d425232a75d4026acb7258145ef3d5a1e69ab01e))
+* fail the zip step when it cannot make a whole zip ([5daac57](https://github.com/ptarmiganlabs/onboard.qs/commit/5daac578bf25b2ec6a32418bad16badf1a1adbf8))
+* let Rollup replace the build tokens, through the option nebula reads ([aca5ad2](https://github.com/ptarmiganlabs/onboard.qs/commit/aca5ad21023b2eabed5d4b50b4b4969eabcf9e29))
+* name each token a broken replacement leaves ([e74152d](https://github.com/ptarmiganlabs/onboard.qs/commit/e74152dd26b5044072940182620d33a35ba954e2))
+
+
+### Documentation
+
+* add sponsor section to README ([13617bf](https://github.com/ptarmiganlabs/onboard.qs/commit/13617bf14ccf7566092b4953250f61c7e893115b))
+* **build:** say the debug code stayed in production bundles until now ([8cf562d](https://github.com/ptarmiganlabs/onboard.qs/commit/8cf562de3583d1397259ab224b626781f6391dee))
+* **demo-app:** refresh the coffee app export ([8c94bab](https://github.com/ptarmiganlabs/onboard.qs/commit/8c94bab3ad75fd92627cb08f4ab54a383fcd1dde))
+* show the README picture right under the header ([519fd5d](https://github.com/ptarmiganlabs/onboard.qs/commit/519fd5d437092638f0be7923ad4be28f120422fc))
+* the website's tagline on the social, og and square cards ([5ac3d7b](https://github.com/ptarmiganlabs/onboard.qs/commit/5ac3d7b5c577fa849b2abcb18800087a1946f069))
+
 ## [1.10.2](https://github.com/ptarmiganlabs/onboard.qs/compare/onboard-qs-v1.10.1...onboard-qs-v1.10.2) (2026-11-06)
 
 
